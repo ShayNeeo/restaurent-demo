@@ -2,24 +2,24 @@
 ```mermaid
 graph TD
     subgraph "User's Device"
-        U[<i class='fa fa-user'></i> User's Browser]
+        U["<i class='fa fa-user'></i> User's Browser"]
     end
 
     subgraph "Cloud Infrastructure"
-        LB[<i class='fa fa-network-wired'></i> Load Balancer /<br>API Gateway]
+        LB["<i class='fa fa-network-wired'></i> Load Balancer /<br>API Gateway"]
         
         subgraph "Web Server / Frontend"
-            FE[<i class='fa fa-window-maximize'></i> Web App <br>(React/Vue/Angular)]
+            FE["<i class='fa fa-window-maximize'></i> Web App <br>(React/Vue/Angular)"]
         end
 
         subgraph "Backend Services (Private Network)"
-            API[<i class='fa fa-server'></i> API Server <br>(Handles Logic)]
-            DB[(<i class='fa fa-database'></i> Database <br>(Stores Data))]
+            API["<i class='fa fa-server'></i> API Server <br>(Handles Logic)"]
+            DB[("<i class='fa fa-database'></i> Database <br>(Stores Data)")]
         end
     end
 
     subgraph "External Services"
-        PG[<i class='fa fa-credit-card'></i> Payment Gateway API<br>(Stripe, PayPal, etc.)]
+        PG["<i class='fa fa-credit-card'></i> Payment Gateway API<br>(Stripe, PayPal, etc.)"]
     end
 
     %% --- Connections ---
