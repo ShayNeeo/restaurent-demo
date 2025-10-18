@@ -32,11 +32,11 @@ graph TD
     API -- Reads/Writes Data --> DB
     API -- Secure API Call --> PG
 
-    %% --- Styling ---
-    style U fill:#d1e7dd,stroke:#198754
-    style FE fill:#cff4fc,stroke:#0dcaf0
-    style API fill:#fff3cd,stroke:#ffc107
-    style DB fill:#f8d7da,stroke:#dc3545
-    style PG fill:#e2e3e5,stroke:#6c757d
-    style LB fill:#cfe2ff,stroke:#0d6efd
+    %% --- Styling for Dark Mode ---
+    style U fill:#1e40af,stroke:#60a5fa
+    style FE fill:#047857,stroke:#34d399
+    style API fill:#7c2d12,stroke:#fb923c
+    style DB fill:#86198f,stroke:#e879f9
+    style PG fill:#374151,stroke:#9ca3af
+    style LB fill:#5b21b6,stroke:#a78bfa
     
