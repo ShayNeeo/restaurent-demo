@@ -1,4 +1,5 @@
 # restaurent-demo
+```mermaid
 graph TD
     subgraph "User's Device"
         U[<i class='fa fa-user'></i> User's Browser]
@@ -38,3 +39,4 @@ graph TD
     style DB fill:#f8d7da,stroke:#dc3545
     style PG fill:#e2e3e5,stroke:#6c757d
     style LB fill:#cfe2ff,stroke:#0d6efd
+    
