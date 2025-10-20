@@ -1,0 +1,27 @@
+{
+  "name": "restaurent-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Express + TypeScript server serving static Restaurent template and bundling client script",
+  "scripts": {
+    "dev": "concurrently -n srv,cli -c green,blue \"nodemon\" \"node esbuild.mjs --watch\"",
+    "build": "node esbuild.mjs",
+    "start": "node dist/server.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "http-proxy-middleware": "^3.0.3"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^22.7.4",
+    "@types/http-proxy-middleware": "^1.3.7",
+    "concurrently": "^9.0.1",
+    "esbuild": "^0.23.1",
+    "nodemon": "^3.1.7",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.6.3"
+  }
+}
+
