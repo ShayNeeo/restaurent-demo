@@ -1,4 +1,5 @@
 use axum::Router;
+use tower::ServiceBuilder;
 // removed unused import
 use dotenvy::dotenv;
 use std::{net::SocketAddr, sync::Arc};
@@ -42,7 +43,8 @@ async fn main() {
     let addr = SocketAddr::from(([127, 0, 0, 1], 8080));
     tracing::info!("listening on {}", addr);
     let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
-    axum::serve(listener, app_router).await.unwrap();
+    let svc = ServiceBuilder::new().service(app_router);
+    axum::serve(listener, svc).await.unwrap();
 }
 
 
