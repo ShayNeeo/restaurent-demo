@@ -107,10 +107,29 @@ if [ -n "${DOMAIN:-}" ] && [ -n "${ADMIN_EMAIL:-}" ]; then
   KEY="$CERT_DIR/${DOMAIN}.key"
   if [ ! -f "$CRT" ] || [ ! -f "$KEY" ]; then
     echo "[install] Generating self-signed cert for $DOMAIN"
+    # Build SAN list from DOMAIN (support comma-separated), trimming empties
+    RAW_DOM="$DOMAIN"
+    SAN_ENTRIES=""
+    IFS=',' read -ra PARTS <<< "$RAW_DOM"
+    for d in "${PARTS[@]}"; do
+      d="${d// /}"
+      d="${d#,}"
+      d="${d%,}"
+      if [ -n "$d" ]; then
+        if [ -z "$SAN_ENTRIES" ]; then
+          SAN_ENTRIES="DNS:$d"
+        else
+          SAN_ENTRIES="$SAN_ENTRIES,DNS:$d"
+        fi
+      fi
+    done
+    if [ -z "$SAN_ENTRIES" ]; then SAN_ENTRIES="DNS:$DOMAIN"; fi
+    SAN_ENTRIES="$SAN_ENTRIES,IP:127.0.0.1"
+
     openssl req -x509 -nodes -days 825 -newkey rsa:2048 \
       -keyout "$KEY" -out "$CRT" \
       -subj "/C=US/ST=State/L=City/O=SelfSigned/OU=IT/CN=$DOMAIN/emailAddress=$ADMIN_EMAIL" \
-      -addext "subjectAltName=DNS:$DOMAIN,IP:127.0.0.1"
+      -addext "subjectAltName=$SAN_ENTRIES"
   fi
   # Update frontend env for HTTPS
   if ! grep -q '^FRONTEND_HTTPS=' "$ROOT_DIR/frontend/.env" 2>/dev/null; then
