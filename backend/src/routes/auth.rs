@@ -4,6 +4,7 @@ use std::sync::Arc;
 use uuid::Uuid;
 use argon2::{Argon2, password_hash::{PasswordHasher, SaltString, PasswordVerifier, PasswordHash}};
 use jsonwebtoken::{encode, Header, EncodingKey};
+use sqlx::Row;
 
 use crate::state::AppState;
 
@@ -29,27 +30,29 @@ async fn signup(State(state): State<Arc<AppState>>, Json(payload): Json<SignupRe
     let id = Uuid::new_v4().to_string();
     let salt = SaltString::generate(&mut rand::thread_rng());
     let password_hash = Argon2::default().hash_password(payload.password.as_bytes(), &salt).unwrap().to_string();
-    let _ = sqlx::query!(
-        r#"INSERT INTO users (id, email, password_hash) VALUES (?, ?, ?)"#,
-        id,
-        payload.email,
-        password_hash
-    )
-    .execute(&state.pool)
-    .await;
+    let _ = sqlx::query(r#"INSERT INTO users (id, email, password_hash) VALUES (?, ?, ?)"#)
+        .bind(&id)
+        .bind(&payload.email)
+        .bind(&password_hash)
+        .execute(&state.pool)
+        .await;
     let token = issue_jwt(&state, &id, &payload.email);
     Json(AuthResponse { token })
 }
 
 async fn login(State(state): State<Arc<AppState>>, Json(payload): Json<LoginRequest>) -> Json<AuthResponse> {
-    let user = sqlx::query!("SELECT id, email, password_hash FROM users WHERE email = ?", payload.email)
+    let user = sqlx::query("SELECT id, email, password_hash FROM users WHERE email = ?")
+        .bind(&payload.email)
         .fetch_optional(&state.pool)
         .await
         .unwrap();
     if let Some(u) = user {
-        let parsed_hash = PasswordHash::new(&u.password_hash).unwrap();
+        let uid: String = u.get("id");
+        let uemail: String = u.get("email");
+        let upw: String = u.get("password_hash");
+        let parsed_hash = PasswordHash::new(&upw).unwrap();
         if Argon2::default().verify_password(payload.password.as_bytes(), &parsed_hash).is_ok() {
-            let token = issue_jwt(&state, &u.id, &u.email);
+            let token = issue_jwt(&state, &uid, &uemail);
             return Json(AuthResponse { token });
         }
     }
