@@ -1,4 +1,5 @@
 use axum::Router;
+use axum::routing::IntoMakeService;
 use tower::make::Shared;
 // removed unused import
 use dotenvy::dotenv;
@@ -43,7 +44,7 @@ async fn main() {
     let addr = SocketAddr::from(([127, 0, 0, 1], 8080));
     tracing::info!("listening on {}", addr);
     let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
-    axum::serve(listener, Shared::new(app_router)).await.unwrap();
+    axum::serve(listener, app_router.into_make_service()).await.unwrap();
 }
 
 
