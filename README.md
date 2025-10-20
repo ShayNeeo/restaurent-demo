@@ -40,6 +40,7 @@ graph TD
     style PG fill:#374151,stroke:#9ca3af
     style LB fill:#5b21b6,stroke:#a78bfa
 
+////
 Quick start (local dev)
 
 1. Frontend (Express + TypeScript)
