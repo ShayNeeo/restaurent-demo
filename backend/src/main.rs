@@ -1,5 +1,5 @@
 use axum::Router;
-use tower::make::Shared;
+use axum::extract::connect_info::IntoMakeServiceWithConnectInfo;
 // removed unused import
 use dotenvy::dotenv;
 use std::{net::SocketAddr, sync::Arc};
@@ -38,12 +38,13 @@ async fn main() {
 
     let state = Arc::new(state::AppState { pool, jwt_secret, stripe_secret, app_url, smtp_host, smtp_port, smtp_username, smtp_password, smtp_from, paypal_client_id, paypal_secret, paypal_api_base, paypal_webhook_id });
 
-    let app: Router<_> = routes::build_router(state);
+    let app_router: Router<_> = routes::build_router(state);
 
     let addr = SocketAddr::from(([127, 0, 0, 1], 8080));
     tracing::info!("listening on {}", addr);
     let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
-    axum::serve(listener, Shared::new(app)).await.unwrap();
+    let make = app_router.into_make_service_with_connect_info::<SocketAddr>();
+    axum::serve(listener, make).await.unwrap();
 }
 
 
