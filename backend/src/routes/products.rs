@@ -1,4 +1,4 @@
-use axum::{routing::get, Json, Router, extract::State};
+use axum::{routing::get, Json, Router, extract::State, Extension};
 use serde::Serialize;
 use std::sync::Arc;
 use sqlx::Row;
@@ -11,11 +11,11 @@ pub struct Product { pub id: String, pub name: String, pub unit_amount: i64, pub
 #[derive(Serialize)]
 pub struct ProductsResponse { pub products: Vec<Product> }
 
-pub fn router() -> Router<Arc<AppState>> {
+pub fn router() -> Router {
     Router::new().route("/api/products", get(list))
 }
 
-async fn list(State(state): State<Arc<AppState>>) -> Json<ProductsResponse> {
+async fn list(Extension(state): Extension<Arc<AppState>>) -> Json<ProductsResponse> {
     let rows = sqlx::query(r#"SELECT id, name, unit_amount, currency FROM products LIMIT 20"#)
         .fetch_all(&state.pool)
         .await

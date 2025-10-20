@@ -1,4 +1,4 @@
-use axum::{routing::post, Json, Router, extract::State};
+use axum::{routing::post, Json, Router, Extension};
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 use uuid::Uuid;
@@ -20,13 +20,13 @@ pub struct AuthResponse { pub token: String }
 #[derive(Serialize)]
 struct Claims { sub: String, email: String, exp: usize }
 
-pub fn router() -> Router<Arc<AppState>> {
+pub fn router() -> Router {
     Router::new()
         .route("/api/auth/signup", post(signup))
         .route("/api/auth/login", post(login))
 }
 
-async fn signup(State(state): State<Arc<AppState>>, Json(payload): Json<SignupRequest>) -> Json<AuthResponse> {
+async fn signup(Extension(state): Extension<Arc<AppState>>, Json(payload): Json<SignupRequest>) -> Json<AuthResponse> {
     let id = Uuid::new_v4().to_string();
     let salt = SaltString::generate(&mut rand::thread_rng());
     let password_hash = Argon2::default().hash_password(payload.password.as_bytes(), &salt).unwrap().to_string();
@@ -40,7 +40,7 @@ async fn signup(State(state): State<Arc<AppState>>, Json(payload): Json<SignupRe
     Json(AuthResponse { token })
 }
 
-async fn login(State(state): State<Arc<AppState>>, Json(payload): Json<LoginRequest>) -> Json<AuthResponse> {
+async fn login(Extension(state): Extension<Arc<AppState>>, Json(payload): Json<LoginRequest>) -> Json<AuthResponse> {
     let user = sqlx::query("SELECT id, email, password_hash FROM users WHERE email = ?")
         .bind(&payload.email)
         .fetch_optional(&state.pool)

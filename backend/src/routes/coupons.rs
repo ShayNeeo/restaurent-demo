@@ -1,4 +1,4 @@
-use axum::{routing::post, Json, Router, extract::State};
+use axum::{routing::post, Json, Router, Extension};
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 use sqlx::Row;
@@ -11,11 +11,11 @@ pub struct ApplyCouponRequest { pub code: String }
 #[derive(Serialize)]
 pub struct ApplyCouponResponse { pub valid: bool, pub amount_off: Option<i64>, pub percent_off: Option<i64> }
 
-pub fn router() -> Router<Arc<AppState>> {
+pub fn router() -> Router {
     Router::new().route("/api/coupons/apply", post(apply))
 }
 
-async fn apply(State(state): State<Arc<AppState>>, Json(payload): Json<ApplyCouponRequest>) -> Json<ApplyCouponResponse> {
+async fn apply(Extension(state): Extension<Arc<AppState>>, Json(payload): Json<ApplyCouponRequest>) -> Json<ApplyCouponResponse> {
     let code = payload.code.trim().to_uppercase();
     let row = sqlx::query(r#"SELECT code, percent_off, amount_off, remaining_uses FROM coupons WHERE code = ?"#)
         .bind(&code)

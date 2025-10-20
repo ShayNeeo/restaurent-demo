@@ -6,7 +6,7 @@ use serde::Serialize;
 #[derive(Serialize)]
 struct Health { ok: bool }
 
-pub fn router() -> Router<Arc<AppState>> {
+pub fn router() -> Router {
     Router::new().route("/api/health", get(handler))
 }
 

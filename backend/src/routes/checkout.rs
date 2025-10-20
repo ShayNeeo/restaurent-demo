@@ -1,4 +1,4 @@
-use axum::{routing::post, Json, Router, extract::State};
+use axum::{routing::post, Json, Router, Extension};
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 
@@ -13,11 +13,11 @@ pub struct CheckoutRequest { pub cart: Vec<CartItem>, pub coupon: Option<String>
 #[derive(Serialize)]
 pub struct CheckoutResponse { pub url: String }
 
-pub fn router() -> Router<Arc<AppState>> {
+pub fn router() -> Router {
     Router::new().route("/api/checkout", post(start))
 }
 
-async fn start(State(state): State<Arc<AppState>>, Json(payload): Json<CheckoutRequest>) -> Json<CheckoutResponse> {
+async fn start(Extension(state): Extension<Arc<AppState>>, Json(payload): Json<CheckoutRequest>) -> Json<CheckoutResponse> {
     // Prefer PayPal if configured
     if state.paypal_client_id.is_some() && state.paypal_secret.is_some() {
         let total_cents: i64 = payload.cart.iter().map(|i| i.unit_amount * i.quantity).sum();
