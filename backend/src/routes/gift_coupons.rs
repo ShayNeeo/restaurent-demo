@@ -1,4 +1,4 @@
-use axum::{routing::post, Json, Router, extract::State};
+use axum::{routing::post, Json, Router, Extension};
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 
@@ -10,11 +10,11 @@ pub struct BuyGiftRequest { pub amount_eur: i64 }
 #[derive(Serialize)]
 pub struct BuyGiftResponse { pub url: String }
 
-pub fn router() -> Router<Arc<AppState>> {
+pub fn router() -> Router {
     Router::new().route("/api/gift-coupons/buy", post(buy))
 }
 
-async fn buy(State(state): State<Arc<AppState>>, Json(payload): Json<BuyGiftRequest>) -> Json<BuyGiftResponse> {
+async fn buy(Extension(state): Extension<Arc<AppState>>, Json(payload): Json<BuyGiftRequest>) -> Json<BuyGiftResponse> {
     let amount_cents = payload.amount_eur * 100;
     let bonus_cents = (amount_cents as f64 * 0.10).round() as i64;
     let _total_value = amount_cents + bonus_cents;
