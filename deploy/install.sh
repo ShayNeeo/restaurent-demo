@@ -100,42 +100,73 @@ fi
 echo "[install] Building backend..."
 cargo build --release
 
-CERT_DIR="$ROOT_DIR/certs"
-if [ -n "${DOMAIN:-}" ] && [ -n "${ADMIN_EMAIL:-}" ]; then
-  mkdir -p "$CERT_DIR"
-  CRT="$CERT_DIR/${DOMAIN}.crt"
-  KEY="$CERT_DIR/${DOMAIN}.key"
-  if [ ! -f "$CRT" ] || [ ! -f "$KEY" ]; then
-    echo "[install] Generating self-signed cert for $DOMAIN"
-    # Build SAN list from DOMAIN (support comma-separated), trimming empties
-    RAW_DOM="$DOMAIN"
-    SAN_ENTRIES=""
-    IFS=',' read -ra PARTS <<< "$RAW_DOM"
-    for d in "${PARTS[@]}"; do
-      d="${d// /}"
-      d="${d#,}"
-      d="${d%,}"
-      if [ -n "$d" ]; then
-        if [ -z "$SAN_ENTRIES" ]; then
-          SAN_ENTRIES="DNS:$d"
-        else
-          SAN_ENTRIES="$SAN_ENTRIES,DNS:$d"
-        fi
-      fi
-    done
-    if [ -z "$SAN_ENTRIES" ]; then SAN_ENTRIES="DNS:$DOMAIN"; fi
-    SAN_ENTRIES="$SAN_ENTRIES,IP:127.0.0.1"
+# If DOMAIN and ADMIN_EMAIL provided, set up Nginx reverse proxy and Let's Encrypt
+if [ -n "${DOMAIN:-}" ] && [ -n "${ADMIN_EMAIL:-}" ] && [ "$APT_AVAILABLE" = true ]; then
+  echo "[install] Setting up Nginx reverse proxy for $DOMAIN"
+  $SUDO apt-get install -y nginx certbot python3-certbot-nginx > /dev/null
 
-    openssl req -x509 -nodes -days 825 -newkey rsa:2048 \
-      -keyout "$KEY" -out "$CRT" \
-      -subj "/C=US/ST=State/L=City/O=SelfSigned/OU=IT/CN=$DOMAIN/emailAddress=$ADMIN_EMAIL" \
-      -addext "subjectAltName=$SAN_ENTRIES"
+  # Build -d flags (support comma-separated domains)
+  DOM_FLAGS=""
+  IFS=',' read -ra DLIST <<< "$DOMAIN"
+  for d in "${DLIST[@]}"; do
+    d="${d// /}"
+    d="${d#,}"
+    d="${d%,}"
+    if [ -n "$d" ]; then
+      DOM_FLAGS="$DOM_FLAGS -d $d"
+    fi
+  done
+  PRIMARY_DOMAIN="${DLIST[0]}"
+
+  # Write nginx site config
+  SITE_PATH="/etc/nginx/sites-available/$PRIMARY_DOMAIN"
+  if [ ! -f "$SITE_PATH" ]; then
+    echo "[install] Writing nginx config: $SITE_PATH"
+    $SUDO bash -c "cat > '$SITE_PATH' <<'NGINXCONF'
+server {
+    listen 80;
+    server_name $PRIMARY_DOMAIN;
+
+    location /api/ {
+        proxy_pass http://127.0.0.1:8080;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location / {
+        proxy_pass http://127.0.0.1:5173;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+NGINXCONF"
+    # Enable site
+    if [ ! -f "/etc/nginx/sites-enabled/$PRIMARY_DOMAIN" ]; then
+      $SUDO ln -s "$SITE_PATH" "/etc/nginx/sites-enabled/$PRIMARY_DOMAIN"
+    fi
+    # Optionally disable default
+    if [ -f "/etc/nginx/sites-enabled/default" ]; then
+      $SUDO rm -f "/etc/nginx/sites-enabled/default"
+    fi
+    $SUDO nginx -t && $SUDO systemctl reload nginx || echo "[install] Warning: nginx reload failed"
   fi
-  # Update frontend env for HTTPS
-  if ! grep -q '^FRONTEND_HTTPS=' "$ROOT_DIR/frontend/.env" 2>/dev/null; then
-    echo "FRONTEND_HTTPS=1" >> "$ROOT_DIR/frontend/.env"
-    echo "FRONTEND_SSL_CERT_PATH=$CRT" >> "$ROOT_DIR/frontend/.env"
-    echo "FRONTEND_SSL_KEY_PATH=$KEY" >> "$ROOT_DIR/frontend/.env"
+
+  echo "[install] Obtaining Let's Encrypt certificate for $DOMAIN"
+  set +e
+  $SUDO certbot --nginx --non-interactive --agree-tos -m "$ADMIN_EMAIL" $DOM_FLAGS
+  CERTBOT_RC=$?
+  set -e
+  if [ $CERTBOT_RC -ne 0 ]; then
+    echo "[install] Certbot failed (code $CERTBOT_RC). Nginx will serve HTTP only."
+  else
+    echo "[install] Certificate obtained. Reloading nginx."
+    $SUDO systemctl reload nginx || true
   fi
 fi
 
