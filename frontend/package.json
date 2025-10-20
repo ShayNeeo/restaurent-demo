@@ -5,7 +5,9 @@
   "description": "Express + TypeScript server serving static Restaurent template and bundling client script",
   "scripts": {
     "dev": "concurrently -n srv,cli -c green,blue \"nodemon\" \"node esbuild.mjs --watch\"",
-    "build": "node esbuild.mjs",
+    "build:client": "node esbuild.mjs",
+    "build:server": "tsc -p tsconfig.json",
+    "build": "npm run build:client && npm run build:server",
     "start": "node dist/server.js"
   },
   "dependencies": {

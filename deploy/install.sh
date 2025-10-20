@@ -76,7 +76,7 @@ if [ ! -f .env ]; then
 fi
 echo "[install] Installing frontend deps..."
 npm install
-echo "[install] Building client bundle..."
+echo "[install] Building frontend (client + server)..."
 npm run build
 
 cd "$ROOT_DIR/backend"
