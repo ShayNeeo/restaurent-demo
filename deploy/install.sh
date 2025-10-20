@@ -116,7 +116,10 @@ if [ -n "${DOMAIN:-}" ] && [ -n "${ADMIN_EMAIL:-}" ] && [ "$APT_AVAILABLE" = tru
       DOM_FLAGS="$DOM_FLAGS -d $d"
     fi
   done
-  PRIMARY_DOMAIN="${DLIST[0]}"
+  PRIMARY_DOMAIN_RAW="${DLIST[0]}"
+  PRIMARY_DOMAIN="${PRIMARY_DOMAIN_RAW// /}"
+  PRIMARY_DOMAIN="${PRIMARY_DOMAIN#,}"
+  PRIMARY_DOMAIN="${PRIMARY_DOMAIN%,}"
 
   # Write nginx site config
   SITE_PATH="/etc/nginx/sites-available/$PRIMARY_DOMAIN"
