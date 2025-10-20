@@ -1,4 +1,4 @@
-use axum::{Router};
+use axum::Router;
 use std::sync::Arc;
 
 use crate::state::AppState;
@@ -12,7 +12,7 @@ pub mod gift_coupons;
 pub mod webhooks;
 pub mod paypal;
 
-pub fn build_router(state: Arc<AppState>) -> Router {
+pub fn build_router(state: Arc<AppState>) -> Router<Arc<AppState>> {
     Router::new()
         .merge(health::router())
         .merge(products::router())

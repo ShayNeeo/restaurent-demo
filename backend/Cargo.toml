@@ -15,7 +15,7 @@ tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt", "std"] 
 thiserror = "1.0"
 uuid = { version = "1.10", features = ["v4", "serde"] }
 time = { version = "0.3", features = ["serde-well-known"] }
-sqlx = { version = "0.7", default-features = false, features = ["runtime-tokio", "sqlite", "uuid", "time", "macros"] }
+sqlx = { version = "0.7", default-features = false, features = ["runtime-tokio", "sqlite", "uuid", "time", "macros", "migrate"] }
 argon2 = "0.5"
 jsonwebtoken = "9.3"
 reqwest = { version = "0.12", features = ["json", "rustls-tls"] }
