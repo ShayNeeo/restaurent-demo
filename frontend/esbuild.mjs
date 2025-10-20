@@ -10,7 +10,7 @@ const isWatch = process.argv.includes('--watch');
 const clientEntry = resolve(__dirname, 'src/client/index.ts');
 const outFile = resolve(__dirname, '../Restaurent/assets/js/app.js');
 
-const ctx = await build({
+await build({
   entryPoints: [clientEntry],
   bundle: true,
   outfile: outFile,
