@@ -32,7 +32,7 @@ ensure_prereqs() {
       ca-certificates curl gnupg \
       build-essential pkg-config \
       sqlite3 libsqlite3-dev \
-      openssl
+      openssl libssl-dev
 
     # Ensure Node.js 20.x
     NODE_OK=false
