@@ -125,10 +125,10 @@ if [ -n "${DOMAIN:-}" ] && [ -n "${ADMIN_EMAIL:-}" ] && [ "$APT_AVAILABLE" = tru
   SITE_PATH="/etc/nginx/sites-available/$PRIMARY_DOMAIN"
   if [ ! -f "$SITE_PATH" ]; then
     echo "[install] Writing nginx config: $SITE_PATH"
-    $SUDO bash -c "cat > '$SITE_PATH' <<'NGINXCONF'
+    $SUDO tee "$SITE_PATH" > /dev/null <<'NGINXCONF'
 server {
     listen 80;
-    server_name $PRIMARY_DOMAIN;
+    server_name __DOMAIN__;
 
     location /api/ {
         proxy_pass http://127.0.0.1:8080;
@@ -148,7 +148,8 @@ server {
         proxy_set_header X-Forwarded-Proto $scheme;
     }
 }
-NGINXCONF"
+NGINXCONF
+    $SUDO sed -i "s/__DOMAIN__/$PRIMARY_DOMAIN/g" "$SITE_PATH"
     # Enable site
     if [ ! -f "/etc/nginx/sites-enabled/$PRIMARY_DOMAIN" ]; then
       $SUDO ln -s "$SITE_PATH" "/etc/nginx/sites-enabled/$PRIMARY_DOMAIN"
