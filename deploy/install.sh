@@ -81,7 +81,9 @@ npm run build
 
 cd "$ROOT_DIR/backend"
 if [ ! -f .env ]; then
-  echo "DATABASE_URL=sqlite://./app.db" > .env
+  DATA_DIR="$ROOT_DIR/backend/data"
+  mkdir -p "$DATA_DIR"
+  echo "DATABASE_URL=sqlite://$DATA_DIR/app.db" > .env
   echo "JWT_SECRET=$(openssl rand -hex 16 || echo dev_secret)" >> .env
   echo "APP_URL=http://localhost:5173" >> .env
   echo "# STRIPE_SECRET_KEY=sk_test_xxx" >> .env
@@ -96,6 +98,12 @@ if [ ! -f .env ]; then
   echo "# PAYPAL_SECRET=your_paypal_secret" >> .env
   echo "# PAYPAL_API_BASE=https://api-m.sandbox.paypal.com" >> .env
   echo "# PAYPAL_WEBHOOK_ID=your_paypal_webhook_id" >> .env
+else
+  DATA_DIR="$ROOT_DIR/backend/data"
+  mkdir -p "$DATA_DIR"
+  if grep -q '^DATABASE_URL=sqlite://\./' .env; then
+    sed -i "s|^DATABASE_URL=sqlite://\./.*$|DATABASE_URL=sqlite://$DATA_DIR/app.db|" .env
+  fi
 fi
 echo "[install] Building backend..."
 cargo build --release
@@ -125,10 +133,11 @@ if [ -n "${DOMAIN:-}" ] && [ -n "${ADMIN_EMAIL:-}" ] && [ "$APT_AVAILABLE" = tru
   SITE_PATH="/etc/nginx/sites-available/$PRIMARY_DOMAIN"
   if [ ! -f "$SITE_PATH" ]; then
     echo "[install] Writing nginx config: $SITE_PATH"
+    WWW_DOMAIN="www.$PRIMARY_DOMAIN"
     $SUDO tee "$SITE_PATH" > /dev/null <<'NGINXCONF'
 server {
-    listen 80;
-    server_name __DOMAIN__;
+    listen 80 default_server;
+    server_name __DOMAIN__ __WWW_DOMAIN__ _;
 
     location /api/ {
         proxy_pass http://127.0.0.1:8080;
@@ -150,6 +159,7 @@ server {
 }
 NGINXCONF
     $SUDO sed -i "s/__DOMAIN__/$PRIMARY_DOMAIN/g" "$SITE_PATH"
+    $SUDO sed -i "s/__WWW_DOMAIN__/$WWW_DOMAIN/g" "$SITE_PATH"
     # Enable site
     if [ ! -f "/etc/nginx/sites-enabled/$PRIMARY_DOMAIN" ]; then
       $SUDO ln -s "$SITE_PATH" "/etc/nginx/sites-enabled/$PRIMARY_DOMAIN"
@@ -163,7 +173,7 @@ NGINXCONF
 
   echo "[install] Obtaining Let's Encrypt certificate for $DOMAIN"
   set +e
-  $SUDO certbot --nginx --non-interactive --agree-tos -m "$ADMIN_EMAIL" $DOM_FLAGS
+  $SUDO certbot --nginx --redirect --non-interactive --agree-tos -m "$ADMIN_EMAIL" $DOM_FLAGS
   CERTBOT_RC=$?
   set -e
   if [ $CERTBOT_RC -ne 0 ]; then
@@ -172,6 +182,11 @@ NGINXCONF
     echo "[install] Certificate obtained. Reloading nginx."
     $SUDO systemctl reload nginx || true
   fi
+fi
+
+echo "[install] Stopping any existing processes..."
+if [ -x "$ROOT_DIR/deploy/uninstall.sh" ]; then
+  "$ROOT_DIR/deploy/uninstall.sh" || true
 fi
 
 echo "[install] Starting backend (detached)..."
