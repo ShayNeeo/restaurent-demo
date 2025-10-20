@@ -42,7 +42,7 @@ async fn main() {
     let addr = SocketAddr::from(([127, 0, 0, 1], 8080));
     tracing::info!("listening on {}", addr);
     let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
-    axum::serve(listener, app_router.into_service()).await.unwrap();
+    axum::serve(listener, app_router).await.unwrap();
 }
 
 
