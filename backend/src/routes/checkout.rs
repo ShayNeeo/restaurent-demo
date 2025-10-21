@@ -21,7 +21,7 @@ async fn start(Extension(state): Extension<Arc<AppState>>, Json(payload): Json<C
     // Prefer PayPal if configured
     if state.paypal_client_id.is_some() && state.paypal_secret.is_some() {
         let total_cents: i64 = payload.cart.iter().map(|i| i.unit_amount * i.quantity).sum();
-        if let Ok(order) = create_paypal_order(&state, total_cents, "/paypal/return", "/paypal/cancel", Some("Cart checkout".into())).await {
+        if let Ok(order) = create_paypal_order(&state, total_cents, "/api/paypal/return", "/api/paypal/cancel", Some("Cart checkout".into())).await {
             if let Some(approval) = find_approval_url(&order) { return Json(CheckoutResponse { url: approval }); }
         }
     }

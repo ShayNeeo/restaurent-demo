@@ -11,10 +11,10 @@ struct ReturnParams { token: Option<String> }
 pub fn router() -> Router {
     // In production, capture PayPal order IDs on return and finalize order/gift coupon.
     Router::new()
-        .route("/paypal/return", get(paypal_return))
-        .route("/paypal/cancel", get(|| async { "CANCEL" }))
-        .route("/paypal/gift/return", get(paypal_gift_return))
-        .route("/paypal/gift/cancel", get(|| async { "CANCEL" }))
+        .route("/api/paypal/return", get(paypal_return))
+        .route("/api/paypal/cancel", get(|| async { "CANCEL" }))
+        .route("/api/paypal/gift/return", get(paypal_gift_return))
+        .route("/api/paypal/gift/cancel", get(|| async { "CANCEL" }))
 }
 
 async fn paypal_return() -> Redirect {
