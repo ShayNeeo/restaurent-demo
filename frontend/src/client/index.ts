@@ -279,6 +279,42 @@ if (giftCode) {
   document.getElementById('close-gift-overlay')?.addEventListener('click', () => container.remove());
 }
 
+async function initAdmin() {
+  if (location.pathname !== '/admin') return;
+  const token = getToken();
+  const res = await fetch(`${API_BASE}/admin/tables`, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
+  if (!res.ok) {
+    showAuthModal();
+    return;
+  }
+  const data = await res.json();
+  const overlay = document.createElement('div');
+  overlay.style.position = 'fixed'; overlay.style.top = '0'; overlay.style.left = '0'; overlay.style.right = '0'; overlay.style.bottom = '0'; overlay.style.background = 'rgba(0,0,0,.6)'; overlay.style.zIndex = '1300';
+  overlay.innerHTML = `
+    <div style="max-width:840px;margin:5% auto;background:#111827;color:#fff;border-radius:12px;padding:20px;">
+      <div style="display:flex;gap:8px;align-items:center">
+        <select id="admin-table" style="flex:1;padding:8px;border-radius:8px;background:#1f2937;color:#fff;border:1px solid #374151"></select>
+        <input id="admin-limit" type="number" value="50" min="1" max="500" style="width:100px;padding:8px;border-radius:8px;background:#1f2937;color:#fff;border:1px solid #374151" />
+        <button id="admin-load" style="background:#10b981;border:none;color:#fff;padding:8px 12px;border-radius:8px">Load</button>
+        <button id="admin-close" style="background:#374151;border:none;color:#fff;padding:8px 12px;border-radius:8px">Close</button>
+      </div>
+      <div id="admin-data" style="margin-top:12px;max-height:480px;overflow:auto"></div>
+    </div>`;
+  document.body.appendChild(overlay);
+  const sel = overlay.querySelector('#admin-table') as HTMLSelectElement;
+  (data.tables || []).forEach((t: string) => { const o = document.createElement('option'); o.value = t; o.textContent = t; sel.appendChild(o); });
+  overlay.querySelector('#admin-close')?.addEventListener('click', () => overlay.remove());
+  overlay.querySelector('#admin-load')?.addEventListener('click', async () => {
+    const tbl = sel.value; const limit = Number((overlay.querySelector('#admin-limit') as HTMLInputElement).value) || 50;
+    const res2 = await fetch(`${API_BASE}/admin/query?table=${encodeURIComponent(tbl)}&limit=${limit}`, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
+    const rows = await res2.json();
+    const c = overlay.querySelector('#admin-data') as HTMLElement;
+    if (!Array.isArray(rows) || rows.length === 0) { c.innerHTML = '<div style="color:#9ca3af">No rows</div>'; return; }
+    const cols = Object.keys(rows[0]);
+    c.innerHTML = `<table style="width:100%;border-collapse:collapse"><thead><tr>${cols.map(h=>`<th style=\"text-align:left;border-bottom:1px solid #374151;padding:6px\">${h}</th>`).join('')}</tr></thead><tbody>${rows.map((r:any)=>`<tr>${cols.map(k=>`<td style=\"border-bottom:1px solid #374151;padding:6px\">${String(r[k]??'')}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
+  });
+}
+
 // Show generic thank-you if on /thank-you without a code
 if (location.pathname === '/thank-you' && !giftCode) {
   const container = document.createElement('div');
