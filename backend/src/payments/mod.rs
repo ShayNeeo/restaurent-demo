@@ -65,7 +65,7 @@ pub fn find_approval_url(order: &PayPalOrderResp) -> Option<String> {
 }
 
 #[derive(Deserialize)]
-struct PayPalCaptureResp { id: String, status: String }
+pub struct PayPalCaptureResp { pub id: String, pub status: String }
 
 pub async fn capture_paypal_order(state: &AppState, order_id: &str) -> Result<PayPalCaptureResp> {
     let bearer = get_paypal_access_token(state).await?;

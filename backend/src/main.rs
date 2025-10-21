@@ -1,5 +1,4 @@
 use axum::Router;
-use tower::make::Shared;
 // removed unused import
 use dotenvy::dotenv;
 use std::{net::SocketAddr, sync::Arc};
