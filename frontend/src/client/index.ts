@@ -227,6 +227,29 @@ if (giftCode) {
   document.getElementById('close-gift-overlay')?.addEventListener('click', () => container.remove());
 }
 
+// Show generic thank-you if on /thank-you without a code
+if (location.pathname === '/thank-you' && !giftCode) {
+  const container = document.createElement('div');
+  container.style.position = 'fixed';
+  container.style.top = '0';
+  container.style.left = '0';
+  container.style.right = '0';
+  container.style.bottom = '0';
+  container.style.background = 'rgba(0,0,0,.6)';
+  container.style.zIndex = '1100';
+  container.innerHTML = `
+    <div style="max-width:520px;margin:10% auto;background:#111827;color:#fff;border-radius:12px;padding:20px;text-align:center;">
+      <h2 style="margin:0 0 10px">Thank you!</h2>
+      <p>Your purchase was successful. If you bought a gift coupon, your code has been sent to your email.</p>
+      <div style="margin-top:12px">
+        <button id="close-thankyou-overlay" style="background:#374151;border:none;color:#fff;padding:8px 12px;border-radius:8px;cursor:pointer">Close</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(container);
+  document.getElementById('close-thankyou-overlay')?.addEventListener('click', () => container.remove());
+}
+
 async function buyGiftCoupon() {
   const input = document.getElementById('gift-amount') as HTMLInputElement | null;
   if (!input) return;
