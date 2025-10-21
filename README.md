@@ -39,7 +39,7 @@ graph TD
     style DB fill:#86198f,stroke:#e879f9
     style PG fill:#374151,stroke:#9ca3af
     style LB fill:#5b21b6,stroke:#a78bfa
-
+```
 
 #Quick start (local dev)
 
