@@ -1,9 +1,9 @@
-use axum::{routing::get, extract::{Query, State}, Json, Router, http::HeaderMap};
+use axum::{routing::get, extract::Query, Json, Router, http::HeaderMap, Extension};
 use serde::Serialize;
 use serde::Deserialize;
 use jsonwebtoken::{DecodingKey, Validation, decode};
 use std::sync::Arc;
-use sqlx::Row;
+use sqlx::{Row, Column};
 
 use crate::state::AppState;
 
@@ -35,7 +35,7 @@ pub fn router() -> Router {
         .route("/api/admin/query", get(query_table))
 }
 
-async fn list_tables(State(state): State<Arc<AppState>>, headers: HeaderMap) -> Result<Json<Tables>, axum::http::StatusCode> {
+async fn list_tables(Extension(state): Extension<Arc<AppState>>, headers: HeaderMap) -> Result<Json<Tables>, axum::http::StatusCode> {
     if !require_admin(&headers, &state) { return Err(axum::http::StatusCode::UNAUTHORIZED); }
     let rows = sqlx::query_scalar::<_, String>(
         r#"SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name"#
@@ -46,7 +46,7 @@ async fn list_tables(State(state): State<Arc<AppState>>, headers: HeaderMap) -> 
     Ok(Json(Tables { tables: rows }))
 }
 
-async fn query_table(State(state): State<Arc<AppState>>, headers: HeaderMap, Query(params): Query<QueryParams>) -> Result<Json<serde_json::Value>, axum::http::StatusCode> {
+async fn query_table(Extension(state): Extension<Arc<AppState>>, headers: HeaderMap, Query(params): Query<QueryParams>) -> Result<Json<serde_json::Value>, axum::http::StatusCode> {
     if !require_admin(&headers, &state) { return Err(axum::http::StatusCode::UNAUTHORIZED); }
     let limit = params.limit.unwrap_or(50).max(1).min(500);
     let sql = format!("SELECT * FROM {} LIMIT {}", params.table.replace('"', ""), limit);
@@ -55,7 +55,7 @@ async fn query_table(State(state): State<Arc<AppState>>, headers: HeaderMap, Que
     for row in rows {
         let mut obj = serde_json::Map::new();
         for (idx, col) in row.columns().iter().enumerate() {
-            let name = col.name().to_string();
+            let name = Column::name(col).to_string();
             let val: Result<String, _> = row.try_get(idx);
             obj.insert(name, serde_json::Value::String(val.unwrap_or_default()));
         }
