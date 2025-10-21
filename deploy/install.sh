@@ -200,7 +200,10 @@ fi
 echo "[install] Starting backend (detached)..."
 (
   cd "$ROOT_DIR/backend"
-  nohup ./target/release/restaurent-backend > "$ROOT_DIR/.backend.log" 2>&1 & echo $! > "$ROOT_DIR/.backend.pid"
+  # Ensure DB file exists and pass absolute DATABASE_URL to avoid any CWD issues
+  DB_URL_ABS="sqlite:////$DATA_DIR/app.db"
+  touch "$DATA_DIR/app.db"
+  nohup env DATABASE_URL="$DB_URL_ABS" ./target/release/restaurent-backend > "$ROOT_DIR/.backend.log" 2>&1 & echo $! > "$ROOT_DIR/.backend.pid"
 ) 
 
 echo "[install] Starting frontend (detached)..."
