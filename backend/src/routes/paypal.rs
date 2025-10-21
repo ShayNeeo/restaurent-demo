@@ -3,6 +3,7 @@ use serde::Deserialize;
 use std::sync::Arc;
 use uuid::Uuid;
 use crate::{state::AppState, payments::capture_paypal_order};
+use crate::email::send_email;
 
 #[derive(Deserialize)]
 struct ReturnParams { token: Option<String> }
@@ -32,6 +33,16 @@ async fn paypal_gift_return(Extension(state): Extension<Arc<AppState>>, Query(pa
                     .bind(0_i64)
                     .execute(&state.pool)
                     .await;
+                // if we stored a pending email, send confirmation
+                if let Ok(row) = sqlx::query(r#"SELECT email FROM pending_gifts WHERE order_id = ?"#)
+                    .bind(&order_id)
+                    .fetch_optional(&state.pool)
+                    .await
+                {
+                    if let Some(r) = row { if let Ok(email) = r.try_get::<String, _>("email") { if !email.is_empty() {
+                        let _ = send_email(&state, &email, "Your Gift Coupon", &format!("Your gift coupon code: {}", code)).await;
+                    }}}
+                }
                 return Redirect::to(&format!("/thank-you?code={}", code));
             }
         }

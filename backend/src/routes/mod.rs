@@ -11,6 +11,7 @@ pub mod auth;
 pub mod gift_coupons;
 pub mod webhooks;
 pub mod paypal;
+pub mod admin;
 
 pub fn build_router(state: Arc<AppState>) -> Router {
     Router::new()
@@ -22,6 +23,7 @@ pub fn build_router(state: Arc<AppState>) -> Router {
         .merge(gift_coupons::router())
         .merge(webhooks::router())
         .merge(paypal::router())
+        .merge(admin::router())
         .layer(Extension(state))
 }
 

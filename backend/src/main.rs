@@ -34,8 +34,9 @@ async fn main() {
     let paypal_secret = std::env::var("PAYPAL_SECRET").ok();
     let paypal_api_base = std::env::var("PAYPAL_API_BASE").unwrap_or_else(|_| "https://api-m.sandbox.paypal.com".into());
     let paypal_webhook_id = std::env::var("PAYPAL_WEBHOOK_ID").ok();
+    let admin_email = std::env::var("ADMIN_EMAIL").ok();
 
-    let state = Arc::new(state::AppState { pool, jwt_secret, stripe_secret, app_url, smtp_host, smtp_port, smtp_username, smtp_password, smtp_from, paypal_client_id, paypal_secret, paypal_api_base, paypal_webhook_id });
+    let state = Arc::new(state::AppState { pool, jwt_secret, stripe_secret, app_url, smtp_host, smtp_port, smtp_username, smtp_password, smtp_from, paypal_client_id, paypal_secret, paypal_api_base, paypal_webhook_id, admin_email });
 
     let app_router: Router<_> = routes::build_router(state);
 

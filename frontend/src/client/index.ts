@@ -16,6 +16,23 @@ type CouponApplyResponse = {
 const API_BASE = '/api';
 
 const storageKey = 'restaurant_cart_v1';
+const tokenKey = 'restaurant_jwt_v1';
+const emailKey = 'restaurant_email_v1';
+
+function getToken(): string | null { return localStorage.getItem(tokenKey); }
+function setToken(token: string) { localStorage.setItem(tokenKey, token); }
+function setEmail(email: string) { localStorage.setItem(emailKey, email); }
+function getEmail(): string | null { return localStorage.getItem(emailKey); }
+
+function decodeJwtEmail(token: string | null): string | null {
+  if (!token) return null;
+  try {
+    const parts = token.split('.');
+    if (parts.length !== 3) return null;
+    const payload = JSON.parse(atob(parts[1]));
+    return payload?.email || null;
+  } catch { return null; }
+}
 
 function loadCart(): CartItem[] {
   try {
@@ -57,10 +74,13 @@ function ensureUI() {
   style.textContent = `
   #cart-fab{position:fixed;right:16px;bottom:16px;background:#ef4444;color:#fff;border-radius:9999px;padding:12px 16px;font-weight:700;cursor:pointer;z-index:1000;box-shadow:0 4px 10px rgba(0,0,0,.2)}
   #cart-fab .badge{background:#111827;color:#fff;border-radius:9999px;padding:2px 6px;margin-left:8px;font-size:12px}
-  #cart-panel{position:fixed;right:16px;bottom:72px;max-width:360px;width:92vw;background:#111827;color:#fff;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.3);padding:16px;display:none;z-index:1000}
+  #cart-panel{position:fixed;right:16px;bottom:72px;max-width:420px;width:92vw;background:#111827;color:#fff;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.3);padding:16px;display:none;z-index:1000}
   #cart-panel.open{display:block}
   #cart-panel input, #cart-panel button{border-radius:8px}
-  #cart-items{max-height:240px;overflow:auto;margin:8px 0}
+  #cart-items{max-height:280px;overflow:auto;margin:8px 0}
+  .qty-btn{background:#374151;border:none;color:#fff;width:28px;height:28px;border-radius:6px;cursor:pointer}
+  .del-btn{background:#ef4444;border:none;color:#fff;width:28px;height:28px;border-radius:6px;cursor:pointer}
+  .auth-link{cursor:pointer;color:#60a5fa}
   `;
   document.head.appendChild(style);
 
@@ -77,7 +97,10 @@ function ensureUI() {
   panel.innerHTML = `
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
       <div style="font-weight:700;font-size:16px">Your Cart</div>
-      <button id="cart-close" style="background:#374151;color:#fff;border:none;padding:6px 10px">Close</button>
+      <div>
+        <span id="account-link" class="auth-link" style="margin-right:8px"></span>
+        <button id="cart-close" style="background:#374151;color:#fff;border:none;padding:6px 10px">Close</button>
+      </div>
     </div>
     <div id="cart-items"></div>
     <div style="display:flex;gap:8px;margin:8px 0">
@@ -116,15 +139,40 @@ function refreshPanel(discountCents = 0) {
     itemsEl.innerHTML = cart
       .map(
         (i) => `
-        <div style="display:flex;justify-content:space-between;gap:8px;align-items:center;border-bottom:1px solid #374151;padding:6px 0">
+        <div data-pid="${i.productId}" style="display:flex;justify-content:space-between;gap:8px;align-items:center;border-bottom:1px solid #374151;padding:6px 0">
           <div>
             <div style="font-weight:600">${i.name}</div>
-            <div style="font-size:12px;color:#9ca3af">${i.quantity} × ${formatCents(i.unitAmount, i.currency)}</div>
+            <div style="font-size:12px;color:#9ca3af">${formatCents(i.unitAmount, i.currency)}</div>
           </div>
-          <div>${formatCents(i.unitAmount * i.quantity, i.currency)}</div>
+          <div style="display:flex;align-items:center;gap:6px">
+            <button class="qty-btn" data-act="dec">-</button>
+            <div>${i.quantity}</div>
+            <button class="qty-btn" data-act="inc">+</button>
+            <div style="width:16px"></div>
+            <div>${formatCents(i.unitAmount * i.quantity, i.currency)}</div>
+            <button class="del-btn" data-act="del">×</button>
+          </div>
         </div>`
       )
       .join('');
+    // delegate quantity & delete
+    itemsEl.onclick = (e) => {
+      const t = e.target as HTMLElement;
+      const act = t.getAttribute('data-act');
+      if (!act) return;
+      const row = (t.closest('[data-pid]') as HTMLElement) || null;
+      if (!row) return;
+      const pid = row.getAttribute('data-pid')!;
+      const cart = loadCart();
+      const it = cart.find(x => x.productId === pid);
+      if (!it) return;
+      if (act === 'inc') it.quantity += 1;
+      if (act === 'dec') it.quantity = Math.max(1, it.quantity - 1);
+      if (act === 'del') { const idx = cart.findIndex(x => x.productId === pid); if (idx >= 0) cart.splice(idx, 1); }
+      saveCart(cart);
+      renderBadge();
+      refreshPanel(discountCents);
+    };
   }
   const sub = subtotal(cart);
   const total = Math.max(0, sub - discountCents);
@@ -180,6 +228,7 @@ async function checkout() {
   const cart = loadCart();
   if (cart.length === 0) return;
   const code = (document.getElementById('coupon-input') as HTMLInputElement | null)?.value?.trim();
+  if (!getToken()) { showAuthModal(); return; }
   const res = await fetch(`${API_BASE}/checkout`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -255,10 +304,12 @@ async function buyGiftCoupon() {
   if (!input) return;
   const eur = Number(input.value);
   if (!eur || eur < 10) return;
+  if (!getToken()) { showAuthModal(); return; }
+  const email = getEmail() || decodeJwtEmail(getToken());
   const res = await fetch(`${API_BASE}/gift-coupons/buy`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ amount_eur: eur })
+    body: JSON.stringify({ amount_eur: eur, email })
   });
   const data = await res.json();
   if (data?.url) window.location.href = data.url;
