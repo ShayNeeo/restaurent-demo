@@ -90,7 +90,7 @@ cd "$ROOT_DIR/backend"
 if [ ! -f .env ]; then
   DATA_DIR="$ROOT_DIR/backend/data"
   mkdir -p "$DATA_DIR"
-  echo "DATABASE_URL=sqlite:////$DATA_DIR/app.db" > .env
+  echo "DATABASE_URL=sqlite://./data/app.db" > .env
   echo "JWT_SECRET=$(openssl rand -hex 16 || echo dev_secret)" >> .env
   echo "APP_URL=http://localhost:5173" >> .env
   echo "# STRIPE_SECRET_KEY=sk_test_xxx" >> .env
@@ -108,8 +108,9 @@ if [ ! -f .env ]; then
 else
   DATA_DIR="$ROOT_DIR/backend/data"
   mkdir -p "$DATA_DIR"
-  if grep -q '^DATABASE_URL=sqlite://\./' .env; then
-    sed -i "s|^DATABASE_URL=sqlite://\./.*$|DATABASE_URL=sqlite:////$DATA_DIR/app.db|" .env
+  # Normalize any sqlite URL to a relative path that works from backend CWD
+  if grep -Eq '^DATABASE_URL=sqlite://.*' .env; then
+    sed -i "s|^DATABASE_URL=sqlite://.*$|DATABASE_URL=sqlite://./data/app.db|" .env
   fi
 fi
 echo "[install] Building backend..."
@@ -203,6 +204,13 @@ echo "[install] Starting backend (detached)..."
 ) 
 
 echo "[install] Starting frontend (detached)..."
+# Ensure port 5173 is free (kill any processes bound to it)
+if command -v ss >/dev/null 2>&1; then
+  PIDS=$(ss -lntp | awk '/:5173 /{print $7}' | sed 's/users:(//' | sed 's/)//' | sed 's/\"//g' | tr ',' '\n' | sed -n 's/^pid=\([0-9]\+\).*$/\1/p' | sort -u)
+  for P in $PIDS; do
+    kill "$P" 2>/dev/null || true
+  done
+fi
 nohup node "$ROOT_DIR/frontend/dist/server.js" > "$ROOT_DIR/.frontend.log" 2>&1 & echo $! > "$ROOT_DIR/.frontend.pid"
 
 echo "[install] Done. PIDs: backend=$(cat "$ROOT_DIR/.backend.pid"), frontend=$(cat "$ROOT_DIR/.frontend.pid")"
