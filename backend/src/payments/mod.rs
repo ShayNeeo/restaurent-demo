@@ -64,3 +64,17 @@ pub fn find_approval_url(order: &PayPalOrderResp) -> Option<String> {
     order.links.iter().find(|l| l.rel == "approve").map(|l| l.href.clone())
 }
 
+#[derive(Deserialize)]
+struct PayPalCaptureResp { id: String, status: String }
+
+pub async fn capture_paypal_order(state: &AppState, order_id: &str) -> Result<PayPalCaptureResp> {
+    let bearer = get_paypal_access_token(state).await?;
+    let url = format!("{}/v2/checkout/orders/{}/capture", state.paypal_api_base, order_id);
+    let resp = reqwest::Client::new()
+        .post(url)
+        .bearer_auth(bearer.trim_start_matches("Bearer "))
+        .send().await?;
+    let body: PayPalCaptureResp = resp.json().await?;
+    Ok(body)
+}
+

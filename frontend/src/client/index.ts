@@ -197,6 +197,36 @@ renderBadge();
 refreshPanel();
 injectAddToCart();
 
+// Show coupon code if returned from PayPal gift purchase
+const params = new URLSearchParams(location.search);
+const giftCode = params.get('code');
+if (giftCode) {
+  const container = document.createElement('div');
+  container.style.position = 'fixed';
+  container.style.top = '0';
+  container.style.left = '0';
+  container.style.right = '0';
+  container.style.bottom = '0';
+  container.style.background = 'rgba(0,0,0,.6)';
+  container.style.zIndex = '1100';
+  container.innerHTML = `
+    <div style="max-width:520px;margin:10% auto;background:#111827;color:#fff;border-radius:12px;padding:20px;text-align:center;">
+      <h2 style="margin:0 0 10px">Thank you!</h2>
+      <p>Your gift coupon code:</p>
+      <div style="font-size:22px;font-weight:800;letter-spacing:1px;background:#1f2937;padding:10px;border-radius:8px;display:inline-block;">${giftCode}</div>
+      <div style="margin-top:12px">
+        <button id="copy-gift-code" style="background:#10b981;border:none;color:#fff;padding:8px 12px;border-radius:8px;cursor:pointer">Copy</button>
+        <button id="close-gift-overlay" style="background:#374151;border:none;color:#fff;padding:8px 12px;border-radius:8px;cursor:pointer;margin-left:8px">Close</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(container);
+  document.getElementById('copy-gift-code')?.addEventListener('click', async () => {
+    try { await navigator.clipboard.writeText(giftCode); } catch {}
+  });
+  document.getElementById('close-gift-overlay')?.addEventListener('click', () => container.remove());
+}
+
 async function buyGiftCoupon() {
   const input = document.getElementById('gift-amount') as HTMLInputElement | null;
   if (!input) return;

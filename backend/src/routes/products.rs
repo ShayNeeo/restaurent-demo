@@ -1,4 +1,4 @@
-use axum::{routing::get, Json, Router, extract::State, Extension};
+use axum::{routing::get, Json, Router, Extension};
 use serde::Serialize;
 use std::sync::Arc;
 use sqlx::Row;

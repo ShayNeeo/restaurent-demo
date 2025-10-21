@@ -1,5 +1,4 @@
 use axum::Router;
-use axum::routing::IntoMakeService;
 use tower::make::Shared;
 // removed unused import
 use dotenvy::dotenv;
