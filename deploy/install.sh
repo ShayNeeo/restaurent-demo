@@ -83,7 +83,7 @@ cd "$ROOT_DIR/backend"
 if [ ! -f .env ]; then
   DATA_DIR="$ROOT_DIR/backend/data"
   mkdir -p "$DATA_DIR"
-  echo "DATABASE_URL=sqlite://$DATA_DIR/app.db" > .env
+  echo "DATABASE_URL=sqlite:////$DATA_DIR/app.db" > .env
   echo "JWT_SECRET=$(openssl rand -hex 16 || echo dev_secret)" >> .env
   echo "APP_URL=http://localhost:5173" >> .env
   echo "# STRIPE_SECRET_KEY=sk_test_xxx" >> .env
@@ -102,7 +102,7 @@ else
   DATA_DIR="$ROOT_DIR/backend/data"
   mkdir -p "$DATA_DIR"
   if grep -q '^DATABASE_URL=sqlite://\./' .env; then
-    sed -i "s|^DATABASE_URL=sqlite://\./.*$|DATABASE_URL=sqlite://$DATA_DIR/app.db|" .env
+    sed -i "s|^DATABASE_URL=sqlite://\./.*$|DATABASE_URL=sqlite:////$DATA_DIR/app.db|" .env
   fi
 fi
 echo "[install] Building backend..."
