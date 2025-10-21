@@ -2,6 +2,7 @@ use axum::{routing::get, Router, extract::Query, response::Redirect, Extension};
 use serde::Deserialize;
 use std::sync::Arc;
 use uuid::Uuid;
+use sqlx::Row;
 use crate::{state::AppState, payments::capture_paypal_order};
 use crate::email::send_email;
 

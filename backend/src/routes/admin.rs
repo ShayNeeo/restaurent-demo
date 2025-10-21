@@ -3,6 +3,7 @@ use serde::Serialize;
 use serde::Deserialize;
 use jsonwebtoken::{DecodingKey, Validation, decode};
 use std::sync::Arc;
+use sqlx::Row;
 
 use crate::state::AppState;
 
@@ -28,7 +29,7 @@ struct Tables { tables: Vec<String> }
 #[derive(Deserialize)]
 struct QueryParams { table: String, limit: Option<i64> }
 
-pub fn router() -> Router<Arc<AppState>> {
+pub fn router() -> Router {
     Router::new()
         .route("/api/admin/tables", get(list_tables))
         .route("/api/admin/query", get(query_table))

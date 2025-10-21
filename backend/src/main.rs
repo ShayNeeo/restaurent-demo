@@ -8,6 +8,7 @@ mod state;
 mod db;
 mod routes;
 mod payments;
+mod email;
 
 #[tokio::main]
 async fn main() {
