@@ -79,6 +79,13 @@ npm install
 echo "[install] Building frontend (client + server)..."
 npm run build
 
+# Sanitize frontend .env (port and HTTPS when behind nginx)
+if [ -f "$ROOT_DIR/frontend/.env" ]; then
+  if ! grep -q '^PORT=\([0-9]\)\+$' "$ROOT_DIR/frontend/.env"; then
+    sed -i 's/^PORT=.*/PORT=5173/' "$ROOT_DIR/frontend/.env"
+  fi
+fi
+
 cd "$ROOT_DIR/backend"
 if [ ! -f .env ]; then
   DATA_DIR="$ROOT_DIR/backend/data"
@@ -190,7 +197,10 @@ if [ -x "$ROOT_DIR/deploy/uninstall.sh" ]; then
 fi
 
 echo "[install] Starting backend (detached)..."
-nohup "$ROOT_DIR/backend/target/release/restaurent-backend" > "$ROOT_DIR/.backend.log" 2>&1 & echo $! > "$ROOT_DIR/.backend.pid"
+(
+  cd "$ROOT_DIR/backend"
+  nohup ./target/release/restaurent-backend > "$ROOT_DIR/.backend.log" 2>&1 & echo $! > "$ROOT_DIR/.backend.pid"
+) 
 
 echo "[install] Starting frontend (detached)..."
 nohup node "$ROOT_DIR/frontend/dist/server.js" > "$ROOT_DIR/.frontend.log" 2>&1 & echo $! > "$ROOT_DIR/.frontend.pid"
