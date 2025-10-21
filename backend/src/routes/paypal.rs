@@ -2,13 +2,11 @@ use axum::{routing::get, Router, extract::Query, response::Redirect, Extension};
 use serde::Deserialize;
 use std::sync::Arc;
 use uuid::Uuid;
-
 use crate::{state::AppState, payments::capture_paypal_order};
 
 #[derive(Deserialize)]
 struct ReturnParams { token: Option<String> }
-use std::sync::Arc;
-use crate::state::AppState;
+// cleaned duplicate imports
 
 pub fn router() -> Router {
     // In production, capture PayPal order IDs on return and finalize order/gift coupon.
