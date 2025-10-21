@@ -240,6 +240,9 @@ async function checkout() {
   }
 }
 
+// Initialize admin if on admin page
+initAdmin();
+
 // Boot
 ensureUI();
 renderBadge();
