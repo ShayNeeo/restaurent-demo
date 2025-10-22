@@ -65,6 +65,7 @@ pub fn find_approval_url(order: &PayPalOrderResp) -> Option<String> {
 }
 
 #[derive(Deserialize)]
+#[allow(dead_code)]
 pub struct PayPalCaptureResp { pub id: String, pub status: String }
 
 pub async fn capture_paypal_order(state: &AppState, order_id: &str) -> Result<PayPalCaptureResp> {

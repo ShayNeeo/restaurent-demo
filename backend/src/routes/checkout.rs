@@ -7,6 +7,7 @@ use jsonwebtoken::{DecodingKey, Validation, decode};
 use crate::{state::AppState, payments::{create_paypal_order, find_approval_url}};
 
 #[derive(Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct CartItem { pub product_id: String, pub name: String, pub unit_amount: i64, pub quantity: i64, pub currency: String }
 
 #[derive(Deserialize)]
@@ -20,6 +21,7 @@ pub fn router() -> Router {
 }
 
 #[derive(Deserialize)]
+#[allow(dead_code)]
 struct Claims { sub: String, email: String, exp: usize }
 
 async fn start(Extension(state): Extension<Arc<AppState>>, headers: HeaderMap, Json(payload): Json<CheckoutRequest>) -> Json<CheckoutResponse> {
@@ -66,15 +68,15 @@ async fn start(Extension(state): Extension<Arc<AppState>>, headers: HeaderMap, J
     if state.paypal_client_id.is_some() && state.paypal_secret.is_some() {
         if let Ok(order) = create_paypal_order(&state, total_cents, "/api/paypal/return", "/api/paypal/cancel", Some("Cart checkout".into())).await {
             // Store pending order mapping for finalization on return
-            let _ = sqlx::query(r#"INSERT OR REPLACE INTO pending_orders (order_id, email, amount_cents, items_json) VALUES (?, ?, ?, ?)"#)
+            let _ = sqlx::query(r#"INSERT OR REPLACE INTO pending_orders (order_id, user_id, email, amount_cents, items_json) VALUES (?, ?, ?, ?, ?)"#)
                 .bind(&order.id)
+                .bind(user_id.as_deref())
                 .bind(payload.email.as_deref().unwrap_or(""))
                 .bind(total_cents)
                 .bind(serde_json::json!({
                     "cart": payload.cart,
                     "coupon_code": applied_coupon,
-                    "discount_cents": discount_cents,
-                    "user_id": user_id
+                    "discount_cents": discount_cents
                 }).to_string())
                 .execute(&state.pool)
                 .await;

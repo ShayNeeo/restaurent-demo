@@ -8,6 +8,7 @@ use sqlx::{Row, Column};
 use crate::state::AppState;
 
 #[derive(Deserialize)]
+#[allow(dead_code)]
 struct Claims { sub: String, email: String, exp: usize }
 
 fn require_admin(headers: &HeaderMap, state: &AppState) -> bool {

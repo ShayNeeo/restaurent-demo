@@ -39,6 +39,18 @@ async fn main() {
 
     let state = Arc::new(state::AppState { pool, jwt_secret, stripe_secret, app_url, smtp_host, smtp_port, smtp_username, smtp_password, smtp_from, paypal_client_id, paypal_secret, paypal_api_base, paypal_webhook_id, admin_email });
 
+    // Spawn background cleanup task
+    let cleanup_pool = state.pool.clone();
+    tokio::spawn(async move {
+        let mut interval = tokio::time::interval(tokio::time::Duration::from_secs(3600)); // Run every hour
+        loop {
+            interval.tick().await;
+            if let Err(e) = db::cleanup_stale_pending(&cleanup_pool).await {
+                tracing::error!("Cleanup task failed: {:?}", e);
+            }
+        }
+    });
+
     let app_router: Router<_> = routes::build_router(state);
 
     let addr = SocketAddr::from(([127, 0, 0, 1], 8080));

@@ -9,6 +9,8 @@ pub async fn send_email(state: &AppState, to: &str, subject: &str, body: &str) -
     let username = state.smtp_username.as_ref().ok_or_else(|| anyhow::anyhow!("smtp username not set"))?;
     let password = state.smtp_password.as_ref().ok_or_else(|| anyhow::anyhow!("smtp password not set"))?;
 
+    tracing::info!("Sending email to {} with subject: {}", to, subject);
+
     let email = Message::builder()
         .from(from.parse()?)
         .to(to.parse()?)
@@ -20,7 +22,15 @@ pub async fn send_email(state: &AppState, to: &str, subject: &str, body: &str) -
         .credentials(lettre::transport::smtp::authentication::Credentials::new(username.clone(), password.clone()))
         .build();
 
-    mailer.send(&email)?;
-    Ok(())
+    match mailer.send(&email) {
+        Ok(_) => {
+            tracing::info!("Email sent successfully to {}", to);
+            Ok(())
+        }
+        Err(e) => {
+            tracing::error!("Failed to send email to {}: {:?}", to, e);
+            Err(anyhow::anyhow!("Email send failed: {:?}", e))
+        }
+    }
 }
 

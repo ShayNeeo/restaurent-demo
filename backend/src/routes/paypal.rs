@@ -24,12 +24,13 @@ async fn paypal_return(Extension(state): Extension<Arc<AppState>>, Query(params)
         if let Ok(captured) = capture_paypal_order(&state, &order_id).await {
             if captured.status == "COMPLETED" {
                 // finalize any pending order
-                if let Ok(row) = sqlx::query(r#"SELECT email, amount_cents, items_json FROM pending_orders WHERE order_id = ?"#)
+                if let Ok(row) = sqlx::query(r#"SELECT user_id, email, amount_cents, items_json FROM pending_orders WHERE order_id = ?"#)
                     .bind(&order_id)
                     .fetch_optional(&state.pool)
                     .await
                 {
                     if let Some(r) = row {
+                        let user_id: Option<String> = r.try_get("user_id").ok();
                         let email: String = r.try_get("email").unwrap_or_default();
                         let amount_cents: i64 = r.try_get("amount_cents").unwrap_or(0);
                         let items_json: String = r.try_get("items_json").unwrap_or_default();
@@ -37,7 +38,6 @@ async fn paypal_return(Extension(state): Extension<Arc<AppState>>, Query(params)
                         // parse items
                         let parsed: serde_json::Value = serde_json::from_str(&items_json).unwrap_or(serde_json::json!({}));
                         let coupon_code = parsed.get("coupon_code").and_then(|v| v.as_str()).map(|s| s.to_string());
-                        let user_id = parsed.get("user_id").and_then(|v| v.as_str()).map(|s| s.to_string());
                         let items = parsed.get("cart").and_then(|v| v.as_array()).cloned().unwrap_or_default();
                         let items_for_email = items.clone();  // Clone for email loop
 
@@ -102,12 +102,16 @@ async fn paypal_return(Extension(state): Extension<Arc<AppState>>, Query(params)
                                 lines.push_str(&format!("- {} x{} @ €{:.2}\n", name, qty, unit as f64 / 100.0));
                             }
                             let body = format!(
-                                "Thank you for your order!\n\nItems:\n{}\nTotal paid: €{:.2}\n\nOrder ID: {}",
+                                "Thank you for your order!\n\nItems:\n{}\nTotal paid: €{:.2}\n\nOrder ID: {}\n\nYou can view your invoice at: {}/thank-you/{}",
                                 lines,
                                 amount_cents as f64 / 100.0,
+                                order_db_id,
+                                state.app_url,
                                 order_db_id
                             );
-                            let _ = send_email(&state, &email, "Your Order Confirmation", &body).await;
+                            if let Err(e) = send_email(&state, &email, "Your Order Confirmation", &body).await {
+                                tracing::error!("Failed to send order confirmation email: {:?}", e);
+                            }
                         }
 
                         // cleanup pending
@@ -115,9 +119,10 @@ async fn paypal_return(Extension(state): Extension<Arc<AppState>>, Query(params)
                             .bind(&order_id)
                             .execute(&state.pool)
                             .await;
+
+                        return Redirect::to(&format!("/thank-you/{}", order_db_id));
                     }
                 }
-                return Redirect::to("/thank-you");
             }
         }
     }
@@ -152,7 +157,17 @@ async fn paypal_gift_return(Extension(state): Extension<Arc<AppState>>, Query(pa
                     .await
                 {
                     if let Some(r) = row { if let Ok(email) = r.try_get::<String, _>("email") { if !email.is_empty() {
-                        let _ = send_email(&state, &email, "Your Gift Coupon", &format!("Your gift coupon code: {} (value €{:.2})", code, total_value as f64 / 100.0)).await;
+                        let body = format!(
+                            "Thank you for your gift coupon purchase!\n\nYour gift coupon code: {}\nValue: €{:.2}\n\nYou can use this code at checkout to get €{:.2} off your order.\n\nView your purchase: {}/thank-you?code={}",
+                            code,
+                            total_value as f64 / 100.0,
+                            total_value as f64 / 100.0,
+                            state.app_url,
+                            code
+                        );
+                        if let Err(e) = send_email(&state, &email, "Your Gift Coupon", &body).await {
+                            tracing::error!("Failed to send gift coupon email: {:?}", e);
+                        }
                     }}}
                 }
                 // cleanup pending

@@ -9,6 +9,7 @@ use crate::state::AppState;
 pub struct ApplyCouponRequest { pub code: String, pub cart: Option<Vec<CartItem>> }
 
 #[derive(Deserialize)]
+#[allow(dead_code)]
 pub struct CartItem { pub product_id: String, pub name: String, pub unit_amount: i64, pub quantity: i64, pub currency: String }
 
 #[derive(Serialize)]

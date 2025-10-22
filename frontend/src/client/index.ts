@@ -492,28 +492,111 @@ async function initAdmin() {
   renderUsers();
 }
 
-// Show generic thank-you if on /thank-you without a code
-if (location.pathname === '/thank-you' && !giftCode) {
-  const container = document.createElement('div');
-  container.style.position = 'fixed';
-  container.style.top = '0';
-  container.style.left = '0';
-  container.style.right = '0';
-  container.style.bottom = '0';
-  container.style.background = 'rgba(0,0,0,.6)';
-  container.style.zIndex = '1100';
-  container.innerHTML = `
-    <div style="max-width:520px;margin:10% auto;background:#111827;color:#fff;border-radius:12px;padding:20px;text-align:center;">
-      <h2 style="margin:0 0 10px">Thank you!</h2>
-      <p>Your purchase was successful. If you bought a gift coupon, your code has been sent to your email.</p>
-      <div style="margin-top:12px">
-        <button id="close-thankyou-overlay" style="background:#374151;border:none;color:#fff;padding:8px 12px;border-radius:8px;cursor:pointer">Close</button>
+// Handle thank-you page
+async function initThankYou() {
+  const pathParts = location.pathname.split('/');
+  if (pathParts[1] !== 'thank-you') return;
+  
+  const orderId = pathParts[2];
+  const thankYouContent = document.getElementById('thank-you-content');
+  if (!thankYouContent) return;
+
+  if (!orderId) {
+    // Generic thank you (no order ID)
+    if (giftCode) return; // Gift code overlay will handle it
+    thankYouContent.innerHTML = `
+      <h2 class="headline-1 section-title text-center">Thank you!</h2>
+      <p class="text-center">Your purchase was successful. If you bought a gift coupon, your code has been sent to your email.</p>
+      <div style="text-align:center;margin-top:16px">
+        <a href="/" class="btn btn-primary"><span class="text text-1">Back to Home</span><span class="text text-2" aria-hidden="true">Back to Home</span></a>
       </div>
-    </div>
-  `;
-  document.body.appendChild(container);
-  document.getElementById('close-thankyou-overlay')?.addEventListener('click', () => container.remove());
+    `;
+    return;
+  }
+
+  // Fetch order details
+  try {
+    const res = await fetch(`${API_BASE}/orders/${orderId}`);
+    if (!res.ok) throw new Error('Order not found');
+    const order = await res.json();
+    
+    let itemsHtml = '';
+    let subtotal = 0;
+    for (const item of order.items) {
+      const lineTotal = item.unit_amount * item.quantity;
+      subtotal += lineTotal;
+      itemsHtml += `
+        <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--white-alpha-10)">
+          <div>
+            <div style="font-weight:600">${item.name}</div>
+            <div style="font-size:14px;color:var(--quick-silver)">Qty: ${item.quantity} × ${formatCents(item.unit_amount)}</div>
+          </div>
+          <div style="font-weight:600">${formatCents(lineTotal)}</div>
+        </div>
+      `;
+    }
+    
+    const discount = subtotal - order.total_cents;
+    
+    thankYouContent.innerHTML = `
+      <h2 class="headline-1 section-title text-center">Thank You!</h2>
+      <p class="text-center">Your order has been confirmed.</p>
+      
+      <div style="background:var(--smoky-black-2);padding:20px;border-radius:12px;margin-top:20px;border:1px solid var(--white-alpha-10)">
+        <h3 style="margin:0 0 12px;font-size:18px">Order Invoice</h3>
+        <div style="margin-bottom:12px">
+          <div style="font-size:14px;color:var(--quick-silver)">Order ID:</div>
+          <div style="font-weight:600">${order.id}</div>
+        </div>
+        <div style="margin-bottom:12px">
+          <div style="font-size:14px;color:var(--quick-silver)">Email:</div>
+          <div>${order.email}</div>
+        </div>
+        <div style="margin-bottom:12px">
+          <div style="font-size:14px;color:var(--quick-silver)">Date:</div>
+          <div>${new Date(order.created_at).toLocaleString()}</div>
+        </div>
+        
+        <div style="margin-top:16px">
+          <div style="font-weight:700;margin-bottom:8px">Items:</div>
+          ${itemsHtml}
+        </div>
+        
+        <div style="margin-top:16px;padding-top:12px;border-top:2px solid var(--white-alpha-20)">
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+            <div>Subtotal:</div>
+            <div>${formatCents(subtotal)}</div>
+          </div>
+          ${discount > 0 ? `
+            <div style="display:flex;justify-content:space-between;margin-bottom:4px;color:var(--gold-crayola)">
+              <div>Discount${order.coupon_code ? ` (${order.coupon_code})` : ''}:</div>
+              <div>-${formatCents(discount)}</div>
+            </div>
+          ` : ''}
+          <div style="display:flex;justify-content:space-between;font-size:20px;font-weight:700;margin-top:8px">
+            <div>Total:</div>
+            <div>${formatCents(order.total_cents)}</div>
+          </div>
+        </div>
+      </div>
+      
+      <div style="text-align:center;margin-top:20px">
+        <p style="color:var(--quick-silver)">A confirmation email has been sent to <strong>${order.email}</strong></p>
+        <a href="/" class="btn btn-primary" style="margin-top:12px"><span class="text text-1">Back to Home</span><span class="text text-2" aria-hidden="true">Back to Home</span></a>
+      </div>
+    `;
+  } catch (err) {
+    thankYouContent.innerHTML = `
+      <h2 class="headline-1 section-title text-center">Order Not Found</h2>
+      <p class="text-center">We couldn't find this order. Please contact support if you need assistance.</p>
+      <div style="text-align:center;margin-top:16px">
+        <a href="/" class="btn btn-primary"><span class="text text-1">Back to Home</span><span class="text text-2" aria-hidden="true">Back to Home</span></a>
+      </div>
+    `;
+  }
 }
+
+initThankYou();
 
 async function buyGiftCoupon() {
   const input = (document.getElementById('panel-gift-amount') as HTMLInputElement | null) || (document.getElementById('gift-amount') as HTMLInputElement | null);
@@ -532,6 +615,8 @@ async function buyGiftCoupon() {
 }
 
 // Bind page-level gift buy button if present (on /coupon)
-document.getElementById('gift-buy')?.addEventListener('click', buyGiftCoupon);
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('gift-buy')?.addEventListener('click', buyGiftCoupon);
+});
 
 

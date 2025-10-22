@@ -14,6 +14,7 @@ pub struct AppState {
     pub paypal_client_id: Option<String>,
     pub paypal_secret: Option<String>,
     pub paypal_api_base: String,
+    #[allow(dead_code)]
     pub paypal_webhook_id: Option<String>,
     pub admin_email: Option<String>,
 }
