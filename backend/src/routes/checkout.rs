@@ -2,6 +2,7 @@ use axum::{routing::post, Json, Router, Extension, http::HeaderMap};
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 use sqlx::Row;
+use jsonwebtoken::{DecodingKey, Validation, decode};
 
 use crate::{state::AppState, payments::{create_paypal_order, find_approval_url}};
 
@@ -18,7 +19,10 @@ pub fn router() -> Router {
     Router::new().route("/api/checkout", post(start))
 }
 
-async fn start(Extension(state): Extension<Arc<AppState>>, _headers: HeaderMap, Json(payload): Json<CheckoutRequest>) -> Json<CheckoutResponse> {
+#[derive(Deserialize)]
+struct Claims { sub: String, email: String, exp: usize }
+
+async fn start(Extension(state): Extension<Arc<AppState>>, headers: HeaderMap, Json(payload): Json<CheckoutRequest>) -> Json<CheckoutResponse> {
     // compute subtotal
     let subtotal_cents: i64 = payload.cart.iter().map(|i| i.unit_amount * i.quantity).sum();
 
@@ -48,6 +52,16 @@ async fn start(Extension(state): Extension<Arc<AppState>>, _headers: HeaderMap, 
 
     let total_cents = std::cmp::max(0, subtotal_cents - discount_cents);
 
+    // extract user_id from JWT if provided
+    let mut user_id: Option<String> = None;
+    if let Some(auth) = headers.get(axum::http::header::AUTHORIZATION).and_then(|v| v.to_str().ok()) {
+        if let Some(token) = auth.strip_prefix("Bearer ") {
+            if let Ok(data) = decode::<Claims>(token, &DecodingKey::from_secret(state.jwt_secret.as_bytes()), &Validation::default()) {
+                user_id = Some(data.claims.sub);
+            }
+        }
+    }
+
     // Prefer PayPal if configured
     if state.paypal_client_id.is_some() && state.paypal_secret.is_some() {
         if let Ok(order) = create_paypal_order(&state, total_cents, "/api/paypal/return", "/api/paypal/cancel", Some("Cart checkout".into())).await {
@@ -59,7 +73,8 @@ async fn start(Extension(state): Extension<Arc<AppState>>, _headers: HeaderMap, 
                 .bind(serde_json::json!({
                     "cart": payload.cart,
                     "coupon_code": applied_coupon,
-                    "discount_cents": discount_cents
+                    "discount_cents": discount_cents,
+                    "user_id": user_id
                 }).to_string())
                 .execute(&state.pool)
                 .await;

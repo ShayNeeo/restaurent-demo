@@ -35,6 +35,9 @@ pub fn router() -> Router {
         .route("/api/admin/query", get(query_table))
         .route("/api/admin/coupons", post(add_coupon))
         .route("/api/admin/coupons/:code", delete(delete_coupon))
+        .route("/api/admin/columns", get(columns_for_table))
+        .route("/api/admin/insert", post(generic_insert))
+        .route("/api/admin/delete", post(generic_delete))
 }
 
 async fn list_tables(Extension(state): Extension<Arc<AppState>>, headers: HeaderMap) -> Result<Json<Tables>, axum::http::StatusCode> {
@@ -89,6 +92,80 @@ async fn delete_coupon(Extension(state): Extension<Arc<AppState>>, headers: Head
         .execute(&state.pool)
         .await
         .map_err(|_| axum::http::StatusCode::BAD_REQUEST)?;
+    Ok(Json(serde_json::json!({"ok": true})))
+}
+
+#[derive(Deserialize)]
+struct ColumnsQuery { table: String }
+
+#[derive(Serialize)]
+struct ColumnInfo { name: String, r#type: String, notnull: bool, pk: bool, dflt_value: Option<String> }
+
+fn sanitize_table(input: &str) -> String {
+    input.chars().filter(|c| c.is_ascii_alphanumeric() || *c == '_').collect()
+}
+
+async fn columns_for_table(Extension(state): Extension<Arc<AppState>>, headers: HeaderMap, Query(q): Query<ColumnsQuery>) -> Result<Json<Vec<ColumnInfo>>, axum::http::StatusCode> {
+    if !require_admin(&headers, &state) { return Err(axum::http::StatusCode::UNAUTHORIZED); }
+    let t = sanitize_table(&q.table);
+    let sql = format!("PRAGMA table_info({})", t);
+    let rows = sqlx::query(&sql).fetch_all(&state.pool).await.map_err(|_| axum::http::StatusCode::BAD_REQUEST)?;
+    let mut cols = Vec::new();
+    for r in rows {
+        let name: String = r.get("name");
+        let ty: String = r.get("type");
+        let notnull: i64 = r.get("notnull");
+        let pk: i64 = r.get("pk");
+        let dflt_value: Option<String> = r.try_get("dflt_value").ok();
+        cols.push(ColumnInfo { name, r#type: ty, notnull: notnull != 0, pk: pk != 0, dflt_value });
+    }
+    Ok(Json(cols))
+}
+
+#[derive(Deserialize)]
+struct GenericInsertPayload { table: String, values: serde_json::Map<String, serde_json::Value> }
+
+async fn generic_insert(Extension(state): Extension<Arc<AppState>>, headers: HeaderMap, Json(payload): Json<GenericInsertPayload>) -> Result<Json<serde_json::Value>, axum::http::StatusCode> {
+    if !require_admin(&headers, &state) { return Err(axum::http::StatusCode::UNAUTHORIZED); }
+    let t = sanitize_table(&payload.table);
+    if payload.values.is_empty() { return Err(axum::http::StatusCode::BAD_REQUEST); }
+    let cols: Vec<String> = payload.values.keys().cloned().collect();
+    let placeholders = vec!["?"; cols.len()].join(", ");
+    let sql = format!("INSERT INTO {} ({}) VALUES ({})", t, cols.join(", "), placeholders);
+    let mut q = sqlx::query(&sql);
+    for c in &cols {
+        let v = payload.values.get(c).unwrap();
+        match v {
+            serde_json::Value::Number(n) => {
+                if let Some(i) = n.as_i64() { q = q.bind(i); }
+                else if let Some(f) = n.as_f64() { q = q.bind(f); }
+                else { q = q.bind(n.to_string()); }
+            }
+            serde_json::Value::Bool(b) => { q = q.bind((*b as i64)); }
+            serde_json::Value::String(s) => { q = q.bind(s); }
+            _ => { q = q.bind(v.to_string()); }
+        }
+    }
+    q.execute(&state.pool).await.map_err(|_| axum::http::StatusCode::BAD_REQUEST)?;
+    Ok(Json(serde_json::json!({"ok": true})))
+}
+
+#[derive(Deserialize)]
+struct GenericDeletePayload { table: String, key: String, value: serde_json::Value }
+
+async fn generic_delete(Extension(state): Extension<Arc<AppState>>, headers: HeaderMap, Json(payload): Json<GenericDeletePayload>) -> Result<Json<serde_json::Value>, axum::http::StatusCode> {
+    if !require_admin(&headers, &state) { return Err(axum::http::StatusCode::UNAUTHORIZED); }
+    let t = sanitize_table(&payload.table);
+    let key = sanitize_table(&payload.key);
+    let sql = format!("DELETE FROM {} WHERE {} = ?", t, key);
+    let mut q = sqlx::query(&sql);
+    match payload.value {
+        serde_json::Value::Number(n) => { if let Some(i) = n.as_i64() { q = q.bind(i); } else { q = q.bind(n.to_string()); } }
+        serde_json::Value::Bool(b) => { q = q.bind((b as i64)); }
+        serde_json::Value::String(ref s) => { q = q.bind(s); }
+        _ => { q = q.bind(payload.value.to_string()); }
+    }
+    q.execute(&state.pool).await.map_err(|_| axum::http::StatusCode::BAD_REQUEST)?;
     Ok(Json(serde_json::json!({"ok": true})))
 }
 

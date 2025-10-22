@@ -98,6 +98,19 @@ function showAuthModal() {
       setEmail(email);
       close();
       if (location.pathname === '/admin') { initAdmin(); }
+      // resume action after auth
+      const action = localStorage.getItem('post_auth_action');
+      if (action === 'checkout') {
+        localStorage.removeItem('post_auth_action');
+        setTimeout(() => checkout(), 0);
+      } else if (action === 'buy_gift') {
+        const amt = localStorage.getItem('post_auth_gift_amount');
+        localStorage.removeItem('post_auth_action');
+        localStorage.removeItem('post_auth_gift_amount');
+        const input = (document.getElementById('panel-gift-amount') as HTMLInputElement | null) || (document.getElementById('gift-amount') as HTMLInputElement | null);
+        if (input && amt) input.value = amt;
+        setTimeout(() => buyGiftCoupon(), 0);
+      }
     }
   });
 }
@@ -313,7 +326,7 @@ async function checkout() {
   const cart = loadCart();
   if (cart.length === 0) return;
   const code = (document.getElementById('coupon-input') as HTMLInputElement | null)?.value?.trim();
-  if (!getToken()) { showAuthModal(); return; }
+  if (!getToken()) { localStorage.setItem('post_auth_action','checkout'); showAuthModal(); return; }
   const email = getEmail() || decodeJwtEmail(getToken());
   const res = await fetch(`${API_BASE}/checkout`, {
     method: 'POST',
@@ -384,6 +397,30 @@ async function initAdmin() {
         <button id="admin-load" style="background:#10b981;border:none;color:#fff;padding:8px 12px;border-radius:8px">Load</button>
         <button id="admin-close" style="background:#374151;border:none;color:#fff;padding:8px 12px;border-radius:8px">Close</button>
       </div>
+      <div style="margin-top:12px; padding:12px; border:1px solid #374151; border-radius:8px;">
+        <div style="font-weight:700;margin-bottom:8px">Coupons Manager</div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center">
+          <input id="cp-code" placeholder="CODE" style="flex:1;min-width:120px;padding:8px;border:1px solid #374151;background:#1f2937;color:#fff;border-radius:8px" />
+          <input id="cp-amount" type="number" placeholder="amount_off (cents)" style="width:180px;padding:8px;border:1px solid #374151;background:#1f2937;color:#fff;border-radius:8px" />
+          <input id="cp-percent" type="number" placeholder="percent_off" style="width:140px;padding:8px;border:1px solid #374151;background:#1f2937;color:#fff;border-radius:8px" />
+          <input id="cp-uses" type="number" placeholder="remaining_uses" style="width:160px;padding:8px;border:1px solid #374151;background:#1f2937;color:#fff;border-radius:8px" />
+          <button id="cp-add" style="background:#10b981;border:none;color:#fff;padding:8px 12px;border-radius:8px">Add/Update</button>
+        </div>
+        <div id="cp-list" style="margin-top:10px"></div>
+      </div>
+      <div style="margin-top:12px; padding:12px; border:1px solid #374151; border-radius:8px;">
+        <div style="font-weight:700;margin-bottom:8px">Users Manager</div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center">
+          <input id="us-email" placeholder="email" style="flex:1;min-width:200px;padding:8px;border:1px solid #374151;background:#1f2937;color:#fff;border-radius:8px" />
+          <select id="us-role" style="width:150px;padding:8px;border:1px solid #374151;background:#1f2937;color:#fff;border-radius:8px">
+            <option value="customer">customer</option>
+            <option value="admin">admin</option>
+          </select>
+          <button id="us-set" style="background:#10b981;border:none;color:#fff;padding:8px 12px;border-radius:8px">Set Role</button>
+          <button id="us-del" style="background:#b91c1c;border:none;color:#fff;padding:8px 12px;border-radius:8px">Delete User</button>
+        </div>
+        <div id="us-list" style="margin-top:10px"></div>
+      </div>
       <div id="admin-data" style="margin-top:12px;max-height:480px;overflow:auto"></div>
     </div>`;
   document.body.appendChild(overlay);
@@ -399,6 +436,60 @@ async function initAdmin() {
     const cols = Object.keys(rows[0]);
     c.innerHTML = `<table style="width:100%;border-collapse:collapse"><thead><tr>${cols.map(h=>`<th style=\"text-align:left;border-bottom:1px solid #374151;padding:6px\">${h}</th>`).join('')}</tr></thead><tbody>${rows.map((r:any)=>`<tr>${cols.map(k=>`<td style=\"border-bottom:1px solid #374151;padding:6px\">${String(r[k]??'')}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
   });
+
+  // Coupons manager logic
+  const renderCoupons = async () => {
+    const res3 = await fetch(`${API_BASE}/admin/query?table=coupons&limit=200`, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
+    const rows = await res3.json();
+    const host = overlay.querySelector('#cp-list') as HTMLElement;
+    if (!Array.isArray(rows) || rows.length === 0) { host.innerHTML = '<div style="color:#9ca3af">No coupons</div>'; return; }
+    host.innerHTML = rows.map((r:any) => `<div style="display:flex;justify-content:space-between;gap:8px;align-items:center;border-bottom:1px solid #374151;padding:6px 0"><div><strong>${r.code}</strong> — ${r.amount_off??0}c, ${r.percent_off??0}% (uses: ${r.remaining_uses??0})</div><button data-del="${r.code}" style="background:#b91c1c;color:#fff;border:none;padding:6px 10px;border-radius:8px">Delete</button></div>`).join('');
+    host.querySelectorAll('button[data-del]')?.forEach((b)=>{
+      b.addEventListener('click', async (e:any)=>{
+        const code = e.currentTarget.getAttribute('data-del');
+        if (!code) return;
+        await fetch(`${API_BASE}/admin/coupons/${encodeURIComponent(code)}`, { method:'DELETE', headers: token ? { Authorization: `Bearer ${token}` } : {} });
+        renderCoupons();
+      });
+    });
+  };
+  (overlay.querySelector('#cp-add') as HTMLButtonElement)?.addEventListener('click', async () => {
+    const code = (overlay.querySelector('#cp-code') as HTMLInputElement).value.trim();
+    const amount = Number((overlay.querySelector('#cp-amount') as HTMLInputElement).value||'0');
+    const percent = Number((overlay.querySelector('#cp-percent') as HTMLInputElement).value||'0');
+    const uses = Number((overlay.querySelector('#cp-uses') as HTMLInputElement).value||'0');
+    if (!code) return;
+    await fetch(`${API_BASE}/admin/coupons`, { method:'POST', headers: { 'Content-Type':'application/json', ...(token?{ Authorization:`Bearer ${token}`}:{}) }, body: JSON.stringify({ code, amount_off: amount||undefined, percent_off: percent||undefined, remaining_uses: uses||0 }) });
+    renderCoupons();
+  });
+  renderCoupons();
+
+  // Users manager
+  const renderUsers = async () => {
+    const res4 = await fetch(`${API_BASE}/admin/query?table=users&limit=200`, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
+    const rows = await res4.json();
+    const host = overlay.querySelector('#us-list') as HTMLElement;
+    if (!Array.isArray(rows) || rows.length === 0) { host.innerHTML = '<div style="color:#9ca3af">No users</div>'; return; }
+    host.innerHTML = rows.map((r:any) => `<div style="display:flex;justify-content:space-between;gap:8px;align-items:center;border-bottom:1px solid #374151;padding:6px 0"><div><strong>${r.email}</strong> — role: ${r.role||'customer'}</div></div>`).join('');
+  };
+  (overlay.querySelector('#us-set') as HTMLButtonElement)?.addEventListener('click', async () => {
+    const email = (overlay.querySelector('#us-email') as HTMLInputElement).value.trim();
+    const role = (overlay.querySelector('#us-role') as HTMLSelectElement).value;
+    if (!email) return;
+    // fetch user id
+    const ures = await fetch(`${API_BASE}/admin/query?table=users&limit=1`, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
+    // fallback to generic update via delete+insert: not ideal but simple for demo
+    await fetch(`${API_BASE}/admin/delete`, { method:'POST', headers: { 'Content-Type':'application/json', ...(token?{ Authorization:`Bearer ${token}`}:{}) }, body: JSON.stringify({ table:'users', key:'email', value: email }) });
+    await fetch(`${API_BASE}/admin/insert`, { method:'POST', headers: { 'Content-Type':'application/json', ...(token?{ Authorization:`Bearer ${token}`}:{}) }, body: JSON.stringify({ table:'users', values: { email, role, password_hash: '' } }) });
+    renderUsers();
+  });
+  (overlay.querySelector('#us-del') as HTMLButtonElement)?.addEventListener('click', async () => {
+    const email = (overlay.querySelector('#us-email') as HTMLInputElement).value.trim();
+    if (!email) return;
+    await fetch(`${API_BASE}/admin/delete`, { method:'POST', headers: { 'Content-Type':'application/json', ...(token?{ Authorization:`Bearer ${token}`}:{}) }, body: JSON.stringify({ table:'users', key:'email', value: email }) });
+    renderUsers();
+  });
+  renderUsers();
 }
 
 // Show generic thank-you if on /thank-you without a code
@@ -429,7 +520,7 @@ async function buyGiftCoupon() {
   if (!input) return;
   const eur = Number(input.value);
   if (!eur || eur < 10) return;
-  if (!getToken()) { showAuthModal(); return; }
+  if (!getToken()) { localStorage.setItem('post_auth_action','buy_gift'); localStorage.setItem('post_auth_gift_amount', String(eur)); showAuthModal(); return; }
   const email = getEmail() || decodeJwtEmail(getToken());
   const res = await fetch(`${API_BASE}/gift-coupons/buy`, {
     method: 'POST',

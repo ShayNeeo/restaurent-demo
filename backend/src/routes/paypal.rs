@@ -37,12 +37,14 @@ async fn paypal_return(Extension(state): Extension<Arc<AppState>>, Query(params)
                         // parse items
                         let parsed: serde_json::Value = serde_json::from_str(&items_json).unwrap_or(serde_json::json!({}));
                         let coupon_code = parsed.get("coupon_code").and_then(|v| v.as_str()).map(|s| s.to_string());
+                        let user_id = parsed.get("user_id").and_then(|v| v.as_str()).map(|s| s.to_string());
                         let items = parsed.get("cart").and_then(|v| v.as_array()).cloned().unwrap_or_default();
 
                         // Create order record
                         let order_db_id = Uuid::new_v4().to_string();
-                        let _ = sqlx::query(r#"INSERT INTO orders (id, email, total_cents, coupon_code) VALUES (?, ?, ?, ?)"#)
+                        let _ = sqlx::query(r#"INSERT INTO orders (id, user_id, email, total_cents, coupon_code) VALUES (?, ?, ?, ?, ?)"#)
                             .bind(&order_db_id)
+                            .bind(user_id.as_deref())
                             .bind(&email)
                             .bind(amount_cents)
                             .bind(coupon_code.as_deref())
@@ -64,17 +66,47 @@ async fn paypal_return(Extension(state): Extension<Arc<AppState>>, Query(params)
                                 .await;
                         }
 
-                        // Decrement coupon remaining uses if applied
-                        if let Some(code) = coupon_code {
+                        // Decrement coupon remaining uses or gift balance
+                        if let Some(code) = coupon_code.clone() {
+                            // Try as regular coupon
                             let _ = sqlx::query(r#"UPDATE coupons SET remaining_uses = MAX(remaining_uses - 1, 0) WHERE code = ?"#)
                                 .bind(&code)
                                 .execute(&state.pool)
                                 .await;
                         }
+                        // If it's a gift code: decrement remaining_cents by applied discount (if present)
+                        if let Some(code) = coupon_code {
+                            if let Some(disc) = parsed.get("discount_cents").and_then(|v| v.as_i64()) {
+                                let _ = sqlx::query(r#"UPDATE gift_codes SET remaining_cents = MAX(remaining_cents - ?, 0) WHERE code = ?"#)
+                                    .bind(disc)
+                                    .bind(&code)
+                                    .execute(&state.pool)
+                                    .await;
+                                // Optional: delete if zero
+                                let _ = sqlx::query(r#"DELETE FROM gift_codes WHERE code = ? AND remaining_cents <= 0"#)
+                                    .bind(&code)
+                                    .execute(&state.pool)
+                                    .await;
+                            }
+                        }
 
                         // Send basic invoice email if configured
                         if !email.is_empty() {
-                            let _ = send_email(&state, &email, "Your Order Confirmation", &format!("Thank you for your order! Total: €{:.2}", amount_cents as f64 / 100.0)).await;
+                            // build itemized lines
+                            let mut lines = String::new();
+                            for it in &items {
+                                let name = it.get("name").and_then(|v| v.as_str()).unwrap_or("");
+                                let qty = it.get("quantity").and_then(|v| v.as_i64()).unwrap_or(1);
+                                let unit = it.get("unit_amount").and_then(|v| v.as_i64()).unwrap_or(0);
+                                lines.push_str(&format!("- {} x{} @ €{:.2}\n", name, qty, unit as f64 / 100.0));
+                            }
+                            let body = format!(
+                                "Thank you for your order!\n\nItems:\n{}\nTotal paid: €{:.2}\n\nOrder ID: {}",
+                                lines,
+                                amount_cents as f64 / 100.0,
+                                order_db_id
+                            );
+                            let _ = send_email(&state, &email, "Your Order Confirmation", &body).await;
                         }
 
                         // cleanup pending
@@ -133,4 +165,5 @@ async fn paypal_gift_return(Extension(state): Extension<Arc<AppState>>, Query(pa
     }
     Redirect::to("/thank-you")
 }
+
 
