@@ -1,7 +1,7 @@
 use axum::{routing::post, Json, Router, Extension};
 use serde::{Deserialize, Serialize};
-use sqlx::Row;
 use std::sync::Arc;
+use sqlx::Row;
 
 use crate::{state::AppState, payments::{create_paypal_order, find_approval_url}};
 
@@ -31,11 +31,13 @@ async fn start(Extension(state): Extension<Arc<AppState>>, Json(payload): Json<C
             .fetch_optional(&state.pool)
             .await
         {
-            let remaining: i64 = row.try_get::<i64, _>("remaining_uses").unwrap_or(0);
+            let remaining: i64 = row.get::<i64, _>("remaining_uses");
             if remaining > 0 {
-                if let Ok(amount) = row.try_get::<i64, _>("amount_off") { discount_cents = amount; }
+                let amount_off: Option<i64> = row.try_get("amount_off").ok();
+                if let Some(amount) = amount_off { discount_cents = amount; }
                 if discount_cents == 0 {
-                    if let Ok(percent) = row.try_get::<i64, _>("percent_off") {
+                    let percent_off: Option<i64> = row.try_get("percent_off").ok();
+                    if let Some(percent) = percent_off {
                         if percent > 0 { discount_cents = ((percent as f64 / 100.0) * subtotal_cents as f64).round() as i64; }
                     }
                 }
