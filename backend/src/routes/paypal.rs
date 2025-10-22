@@ -6,10 +6,11 @@ use sqlx::Row;
 use crate::{state::AppState, payments::capture_paypal_order};
 use crate::email::send_email;
 use axum::http::header::HeaderMap;
-use jsonwebtoken::{decode, DecodingKey, Validation, TokenData, Header, Claims};
+use jsonwebtoken::{decode, DecodingKey, Validation};
 
 #[derive(Deserialize)]
-struct ReturnParams { token: Option<String> }
+#[allow(dead_code)]
+struct Claims { sub: String, email: String, exp: usize }
 // cleaned duplicate imports
 
 pub fn router() -> Router {
