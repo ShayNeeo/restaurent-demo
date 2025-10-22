@@ -34,6 +34,74 @@ function decodeJwtEmail(token: string | null): string | null {
   } catch { return null; }
 }
 
+function showAuthModal() {
+  if (document.getElementById('auth-overlay')) return;
+  const overlay = document.createElement('div');
+  overlay.id = 'auth-overlay';
+  overlay.style.position = 'fixed';
+  overlay.style.top = '0';
+  overlay.style.left = '0';
+  overlay.style.right = '0';
+  overlay.style.bottom = '0';
+  overlay.style.background = 'rgba(0,0,0,.6)';
+  overlay.style.zIndex = '1400';
+  overlay.innerHTML = `
+    <div style="max-width:480px;margin:8% auto;background:var(--smoky-black-2,#111827);color:var(--white,#fff);border-radius:12px;padding:20px;box-shadow:0 10px 30px rgba(0,0,0,.35)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <div style="font-weight:700;font-size:18px">Sign in</div>
+        <button id="auth-close" style="background:transparent;color:var(--white,#fff);border:1px solid var(--white-alpha-20,#374151);padding:6px 10px;border-radius:8px">Close</button>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:12px">
+        <button id="auth-tab-login" style="flex:1;background:var(--gold-crayola,#ef4444);color:var(--smoky-black-1,#000);border:none;padding:8px 12px;border-radius:8px;font-weight:700">Login</button>
+        <button id="auth-tab-signup" style="flex:1;background:transparent;color:var(--white,#fff);border:1px solid var(--white-alpha-20,#374151);padding:8px 12px;border-radius:8px">Sign up</button>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <input id="auth-email" type="email" placeholder="Email" style="padding:10px;border:1px solid var(--white-alpha-20,#374151);background:var(--eerie-black-2,#1f2937);color:var(--white,#fff);border-radius:8px" />
+        <input id="auth-password" type="password" placeholder="Password" style="padding:10px;border:1px solid var(--white-alpha-20,#374151);background:var(--eerie-black-2,#1f2937);color:var(--white,#fff);border-radius:8px" />
+        <button id="auth-submit" style="background:var(--gold-crayola,#ef4444);color:var(--smoky-black-1,#000);border:none;padding:10px;border-radius:8px;font-weight:800">Continue</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+  const close = () => overlay.remove();
+  overlay.querySelector('#auth-close')?.addEventListener('click', close);
+  const tabLogin = overlay.querySelector('#auth-tab-login') as HTMLButtonElement;
+  const tabSignup = overlay.querySelector('#auth-tab-signup') as HTMLButtonElement;
+  let mode: 'login' | 'signup' = 'login';
+  const setMode = (m: 'login' | 'signup') => {
+    mode = m;
+    if (m === 'login') {
+      tabLogin.style.background = 'var(--gold-crayola,#ef4444)';
+      tabLogin.style.color = 'var(--smoky-black-1,#000)';
+      tabSignup.style.background = 'transparent';
+      tabSignup.style.color = 'var(--white,#fff)';
+      tabSignup.style.border = '1px solid var(--white-alpha-20,#374151)';
+    } else {
+      tabSignup.style.background = 'var(--gold-crayola,#ef4444)';
+      tabSignup.style.color = 'var(--smoky-black-1,#000)';
+      tabLogin.style.background = 'transparent';
+      tabLogin.style.color = 'var(--white,#fff)';
+      tabLogin.style.border = '1px solid var(--white-alpha-20,#374151)';
+    }
+  };
+  tabLogin.addEventListener('click', () => setMode('login'));
+  tabSignup.addEventListener('click', () => setMode('signup'));
+  overlay.querySelector('#auth-submit')?.addEventListener('click', async () => {
+    const email = (overlay.querySelector('#auth-email') as HTMLInputElement).value.trim();
+    const password = (overlay.querySelector('#auth-password') as HTMLInputElement).value;
+    if (!email || !password) return;
+    const path = mode === 'login' ? '/auth/login' : '/auth/signup';
+    const res = await fetch(`${API_BASE}${path}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password }) });
+    const data = await res.json();
+    if (data?.token) {
+      setToken(data.token);
+      setEmail(email);
+      close();
+      if (location.pathname === '/admin') { initAdmin(); }
+    }
+  });
+}
+
 function loadCart(): CartItem[] {
   try {
     const raw = localStorage.getItem(storageKey);
@@ -72,15 +140,15 @@ function ensureUI() {
   if (document.getElementById('cart-fab')) return;
   const style = document.createElement('style');
   style.textContent = `
-  #cart-fab{position:fixed;right:16px;bottom:16px;background:#ef4444;color:#fff;border-radius:9999px;padding:12px 16px;font-weight:700;cursor:pointer;z-index:1000;box-shadow:0 4px 10px rgba(0,0,0,.2)}
-  #cart-fab .badge{background:#111827;color:#fff;border-radius:9999px;padding:2px 6px;margin-left:8px;font-size:12px}
-  #cart-panel{position:fixed;right:16px;bottom:72px;max-width:420px;width:92vw;background:#111827;color:#fff;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.3);padding:16px;display:none;z-index:1000}
+  #cart-fab{position:fixed;right:16px;bottom:16px;background:var(--gold-crayola);color:var(--smoky-black-1);border-radius:9999px;padding:12px 16px;font-weight:700;cursor:pointer;z-index:1000;box-shadow:0 4px 10px rgba(0,0,0,.2)}
+  #cart-fab .badge{background:var(--eerie-black-3);color:var(--white);border-radius:9999px;padding:2px 6px;margin-left:8px;font-size:12px}
+  #cart-panel{position:fixed;right:16px;bottom:72px;max-width:420px;width:92vw;background:var(--smoky-black-2);color:var(--white);border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.3);padding:16px;display:none;z-index:1000;border:1px solid var(--white-alpha-10)}
   #cart-panel.open{display:block}
   #cart-panel input, #cart-panel button{border-radius:8px}
   #cart-items{max-height:280px;overflow:auto;margin:8px 0}
-  .qty-btn{background:#374151;border:none;color:#fff;width:28px;height:28px;border-radius:6px;cursor:pointer}
-  .del-btn{background:#ef4444;border:none;color:#fff;width:28px;height:28px;border-radius:6px;cursor:pointer}
-  .auth-link{cursor:pointer;color:#60a5fa}
+  .qty-btn{background:var(--eerie-black-3);border:1px solid var(--white-alpha-10);color:var(--white);width:28px;height:28px;border-radius:6px;cursor:pointer}
+  .del-btn{background:#b91c1c;border:none;color:#fff;width:28px;height:28px;border-radius:6px;cursor:pointer}
+  .auth-link{cursor:pointer;color:var(--gold-crayola)}
   `;
   document.head.appendChild(style);
 
@@ -99,20 +167,20 @@ function ensureUI() {
       <div style="font-weight:700;font-size:16px">Your Cart</div>
       <div>
         <span id="account-link" class="auth-link" style="margin-right:8px"></span>
-        <button id="cart-close" style="background:#374151;color:#fff;border:none;padding:6px 10px">Close</button>
+        <button id="cart-close" style="background:transparent;color:var(--white);border:1px solid var(--white-alpha-20);padding:6px 10px;border-radius:8px">Close</button>
       </div>
     </div>
     <div id="cart-items"></div>
     <div style="display:flex;gap:8px;margin:8px 0">
-      <input id="coupon-input" placeholder="Coupon code" style="flex:1;padding:8px;border:1px solid #374151;background:#1f2937;color:#fff" />
-      <button id="coupon-apply" style="background:#10b981;border:none;color:#fff;padding:8px 12px">Apply</button>
+      <input id="coupon-input" placeholder="Coupon code" style="flex:1;padding:8px;border:1px solid var(--white-alpha-20);background:var(--eerie-black-2);color:var(--white)" />
+      <button id="coupon-apply" style="background:var(--gold-crayola);border:none;color:var(--smoky-black-1);padding:8px 12px">Apply</button>
     </div>
     <div id="cart-summary" style="display:flex;justify-content:space-between;margin:8px 0"></div>
     <div style="display:flex;gap:8px;margin:8px 0">
-      <input id="gift-amount" type="number" min="10" step="5" placeholder="Buy gift coupon (EUR)" style="flex:1;padding:8px;border:1px solid #374151;background:#1f2937;color:#fff" />
-      <button id="gift-buy" style="background:#6366f1;border:none;color:#fff;padding:8px 12px">Buy</button>
+      <input id="panel-gift-amount" type="number" min="10" step="5" placeholder="Buy gift coupon (EUR)" style="flex:1;padding:8px;border:1px solid var(--white-alpha-20);background:var(--eerie-black-2);color:var(--white)" />
+      <button id="panel-gift-buy" style="background:var(--gold-crayola);border:none;color:var(--smoky-black-1);padding:8px 12px">Buy</button>
     </div>
-    <button id="checkout" style="width:100%;background:#ef4444;border:none;color:#fff;padding:10px 12px;font-weight:700">Checkout</button>
+    <button id="checkout" style="width:100%;background:var(--gold-crayola);border:none;color:var(--smoky-black-1);padding:10px 12px;font-weight:700">Checkout</button>
   `;
   document.body.appendChild(fab);
   document.body.appendChild(panel);
@@ -120,7 +188,7 @@ function ensureUI() {
   document.getElementById('cart-close')?.addEventListener('click', () => panel.classList.remove('open'));
   document.getElementById('coupon-apply')?.addEventListener('click', applyCoupon);
   document.getElementById('checkout')?.addEventListener('click', checkout);
-  document.getElementById('gift-buy')?.addEventListener('click', buyGiftCoupon);
+  document.getElementById('panel-gift-buy')?.addEventListener('click', buyGiftCoupon);
 }
 
 function renderBadge() {
@@ -229,10 +297,11 @@ async function checkout() {
   if (cart.length === 0) return;
   const code = (document.getElementById('coupon-input') as HTMLInputElement | null)?.value?.trim();
   if (!getToken()) { showAuthModal(); return; }
+  const email = getEmail() || decodeJwtEmail(getToken());
   const res = await fetch(`${API_BASE}/checkout`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ cart, coupon: code || undefined })
+    body: JSON.stringify({ cart, coupon: code || undefined, email })
   });
   const data = await res.json();
   if (data?.url) {
@@ -339,7 +408,7 @@ if (location.pathname === '/thank-you' && !giftCode) {
 }
 
 async function buyGiftCoupon() {
-  const input = document.getElementById('gift-amount') as HTMLInputElement | null;
+  const input = (document.getElementById('panel-gift-amount') as HTMLInputElement | null) || (document.getElementById('gift-amount') as HTMLInputElement | null);
   if (!input) return;
   const eur = Number(input.value);
   if (!eur || eur < 10) return;
@@ -353,5 +422,8 @@ async function buyGiftCoupon() {
   const data = await res.json();
   if (data?.url) window.location.href = data.url;
 }
+
+// Bind page-level gift buy button if present (on /coupon)
+document.getElementById('gift-buy')?.addEventListener('click', buyGiftCoupon);
 
 

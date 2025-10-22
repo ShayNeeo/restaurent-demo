@@ -24,6 +24,12 @@ const staticDir = path.resolve(projectRoot, 'Restaurent');
 app.use('/assets', express.static(path.join(staticDir, 'assets')));
 app.use('/favicon.svg', express.static(path.join(staticDir, 'favicon.svg')));
 
+// Dedicated pages
+app.get('/menu', (_req: any, res: any) => res.sendFile(path.join(staticDir, 'menu.html')));
+app.get('/coupon', (_req: any, res: any) => res.sendFile(path.join(staticDir, 'coupon.html')));
+app.get('/admin', (_req: any, res: any) => res.sendFile(path.join(staticDir, 'index.html')));
+app.get('/thank-you', (_req: any, res: any) => res.sendFile(path.join(staticDir, 'index.html')));
+
 // Proxy API to Rust backend
 app.use('/api', createProxyMiddleware({
   target: BACKEND_URL,
