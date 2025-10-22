@@ -1,4 +1,4 @@
-use axum::{routing::get, extract::Query, Json, Router, http::HeaderMap, Extension};
+use axum::{routing::{get, post, delete}, extract::{Query, Path}, Json, Router, http::HeaderMap, Extension};
 use serde::Serialize;
 use serde::Deserialize;
 use jsonwebtoken::{DecodingKey, Validation, decode};
@@ -33,6 +33,8 @@ pub fn router() -> Router {
     Router::new()
         .route("/api/admin/tables", get(list_tables))
         .route("/api/admin/query", get(query_table))
+        .route("/api/admin/coupons", post(add_coupon))
+        .route("/api/admin/coupons/:code", delete(delete_coupon))
 }
 
 async fn list_tables(Extension(state): Extension<Arc<AppState>>, headers: HeaderMap) -> Result<Json<Tables>, axum::http::StatusCode> {
@@ -62,6 +64,32 @@ async fn query_table(Extension(state): Extension<Arc<AppState>>, headers: Header
         out.push(serde_json::Value::Object(obj));
     }
     Ok(Json(serde_json::Value::Array(out)))
+}
+
+#[derive(Deserialize)]
+struct AddCouponPayload { code: String, percent_off: Option<i64>, amount_off: Option<i64>, remaining_uses: i64 }
+
+async fn add_coupon(Extension(state): Extension<Arc<AppState>>, headers: HeaderMap, Json(payload): Json<AddCouponPayload>) -> Result<Json<serde_json::Value>, axum::http::StatusCode> {
+    if !require_admin(&headers, &state) { return Err(axum::http::StatusCode::UNAUTHORIZED); }
+    let _ = sqlx::query(r#"INSERT OR REPLACE INTO coupons (code, percent_off, amount_off, remaining_uses) VALUES (?, ?, ?, ?)"#)
+        .bind(payload.code.trim().to_uppercase())
+        .bind(payload.percent_off)
+        .bind(payload.amount_off)
+        .bind(payload.remaining_uses.max(0))
+        .execute(&state.pool)
+        .await
+        .map_err(|_| axum::http::StatusCode::BAD_REQUEST)?;
+    Ok(Json(serde_json::json!({"ok": true})))
+}
+
+async fn delete_coupon(Extension(state): Extension<Arc<AppState>>, headers: HeaderMap, Path(code): Path<String>) -> Result<Json<serde_json::Value>, axum::http::StatusCode> {
+    if !require_admin(&headers, &state) { return Err(axum::http::StatusCode::UNAUTHORIZED); }
+    let _ = sqlx::query(r#"DELETE FROM coupons WHERE code = ?"#)
+        .bind(code.trim().to_uppercase())
+        .execute(&state.pool)
+        .await
+        .map_err(|_| axum::http::StatusCode::BAD_REQUEST)?;
+    Ok(Json(serde_json::json!({"ok": true})))
 }
 
 

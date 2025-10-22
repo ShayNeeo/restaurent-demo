@@ -23,8 +23,14 @@
         <div class="container" style="max-width:640px;margin:0 auto;">
           <h2 class="headline-1 section-title text-center">Buy Gift Coupon</h2>
           <p class="text-center">Pay €50, receive €55 value (10% bonus). Choose any amount.</p>
-          <div class="input-wrapper" style="margin-top:20px;">
-            <input id="gift-amount" type="number" min="10" step="5" placeholder="Amount in EUR" class="input-field" />
+          <div class="grid-list" style="grid-template-columns: repeat(4, minmax(0,1fr)); gap:12px; margin: 16px 0;">
+            <button class="btn btn-secondary" data-quick-amount="10"><span class="text text-1">€10</span><span class="text text-2" aria-hidden="true">€10</span></button>
+            <button class="btn btn-secondary" data-quick-amount="20"><span class="text text-1">€20</span><span class="text text-2" aria-hidden="true">€20</span></button>
+            <button class="btn btn-secondary" data-quick-amount="50"><span class="text text-1">€50</span><span class="text text-2" aria-hidden="true">€50</span></button>
+            <button class="btn btn-secondary" data-quick-amount="100"><span class="text text-1">€100</span><span class="text text-2" aria-hidden="true">€100</span></button>
+          </div>
+          <div class="input-wrapper" style="margin-top:12px;">
+            <input id="gift-amount" type="number" min="10" step="5" placeholder="Custom amount (min €10)" class="input-field" />
           </div>
           <button id="gift-buy" class="btn btn-secondary" style="width:100%">
             <span class="text text-1">Buy Now</span>
@@ -36,6 +42,17 @@
   </main>
   <script src="./assets/js/script.js"></script>
   <script src="./assets/js/app.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function(){
+      document.querySelectorAll('[data-quick-amount]')?.forEach(function(b){
+        b.addEventListener('click', function(){
+          var v = this.getAttribute('data-quick-amount');
+          var input = document.getElementById('gift-amount');
+          if (input) input.value = v;
+        });
+      });
+    });
+  </script>
   <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
   <script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
 </body>

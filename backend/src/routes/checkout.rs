@@ -1,4 +1,4 @@
-use axum::{routing::post, Json, Router, Extension};
+use axum::{routing::post, Json, Router, Extension, http::HeaderMap};
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 use sqlx::Row;
@@ -18,7 +18,7 @@ pub fn router() -> Router {
     Router::new().route("/api/checkout", post(start))
 }
 
-async fn start(Extension(state): Extension<Arc<AppState>>, Json(payload): Json<CheckoutRequest>) -> Json<CheckoutResponse> {
+async fn start(Extension(state): Extension<Arc<AppState>>, _headers: HeaderMap, Json(payload): Json<CheckoutRequest>) -> Json<CheckoutResponse> {
     // compute subtotal
     let subtotal_cents: i64 = payload.cart.iter().map(|i| i.unit_amount * i.quantity).sum();
 

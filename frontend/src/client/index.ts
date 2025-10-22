@@ -152,6 +152,23 @@ function ensureUI() {
   `;
   document.head.appendChild(style);
 
+  // Top bar auth button
+  const header = document.querySelector('.header .container');
+  if (header) {
+    const authBtn = document.createElement('a');
+    authBtn.id = 'topbar-auth';
+    authBtn.className = 'btn btn-secondary';
+    const email = decodeJwtEmail(getToken());
+    if (email) {
+      authBtn.innerHTML = '<span class="text text-1">Sign out</span><span class="text text-2" aria-hidden="true">Sign out</span>';
+      authBtn.addEventListener('click', (e) => { e.preventDefault(); localStorage.removeItem(tokenKey); localStorage.removeItem(emailKey); location.reload(); });
+    } else {
+      authBtn.innerHTML = '<span class="text text-1">Sign in</span><span class="text text-2" aria-hidden="true">Sign in</span>';
+      authBtn.addEventListener('click', (e) => { e.preventDefault(); showAuthModal(); });
+    }
+    header.appendChild(authBtn);
+  }
+
   const fab = document.createElement('button');
   fab.id = 'cart-fab';
   fab.innerHTML = `Cart <span class="badge">0</span>`;
@@ -300,7 +317,7 @@ async function checkout() {
   const email = getEmail() || decodeJwtEmail(getToken());
   const res = await fetch(`${API_BASE}/checkout`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...(getToken() ? { Authorization: `Bearer ${getToken()}` } : {}) },
     body: JSON.stringify({ cart, coupon: code || undefined, email })
   });
   const data = await res.json();

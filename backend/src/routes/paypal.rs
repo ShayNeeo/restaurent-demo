@@ -37,6 +37,7 @@ async fn paypal_return(Extension(state): Extension<Arc<AppState>>, Query(params)
                         // parse items
                         let parsed: serde_json::Value = serde_json::from_str(&items_json).unwrap_or(serde_json::json!({}));
                         let coupon_code = parsed.get("coupon_code").and_then(|v| v.as_str()).map(|s| s.to_string());
+                        let items = parsed.get("cart").and_then(|v| v.as_array()).cloned().unwrap_or_default();
 
                         // Create order record
                         let order_db_id = Uuid::new_v4().to_string();
@@ -47,6 +48,21 @@ async fn paypal_return(Extension(state): Extension<Arc<AppState>>, Query(params)
                             .bind(coupon_code.as_deref())
                             .execute(&state.pool)
                             .await;
+
+                        // Insert order items
+                        for it in items {
+                            let pid = it.get("product_id").and_then(|v| v.as_str()).unwrap_or("");
+                            let qty = it.get("quantity").and_then(|v| v.as_i64()).unwrap_or(1);
+                            let unit = it.get("unit_amount").and_then(|v| v.as_i64()).unwrap_or(0);
+                            let _ = sqlx::query(r#"INSERT INTO order_items (id, order_id, product_id, quantity, unit_amount) VALUES (?, ?, ?, ?, ?)"#)
+                                .bind(Uuid::new_v4().to_string())
+                                .bind(&order_db_id)
+                                .bind(pid)
+                                .bind(qty)
+                                .bind(unit)
+                                .execute(&state.pool)
+                                .await;
+                        }
 
                         // Decrement coupon remaining uses if applied
                         if let Some(code) = coupon_code {
