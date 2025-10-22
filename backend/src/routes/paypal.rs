@@ -9,6 +9,9 @@ use axum::http::header::HeaderMap;
 use jsonwebtoken::{decode, DecodingKey, Validation};
 
 #[derive(Deserialize)]
+struct ReturnParams { token: Option<String> }
+
+#[derive(Deserialize)]
 #[allow(dead_code)]
 struct Claims { sub: String, email: String, exp: usize }
 // cleaned duplicate imports
