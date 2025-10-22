@@ -174,10 +174,11 @@ async fn paypal_gift_return(Extension(state): Extension<Arc<AppState>>, Query(pa
                 let bonus = ((base_amount as f64) * 0.10).round() as i64;
                 let total_value = base_amount + bonus;
                 let code = Uuid::new_v4().to_string().replace('-', "");
-                let _ = sqlx::query(r#"INSERT INTO gift_codes (code, value_cents, remaining_cents) VALUES (?, ?, ?)"#)
+                let _ = sqlx::query(r#"INSERT INTO gift_codes (code, value_cents, remaining_cents, purchaser_email) VALUES (?, ?, ?, ?)"#)
                     .bind(&code)
                     .bind(total_value)
                     .bind(total_value)
+                    .bind(&email)
                     .execute(&state.pool)
                     .await;
                 // if we stored a pending email, send confirmation
@@ -189,42 +190,39 @@ async fn paypal_gift_return(Extension(state): Extension<Arc<AppState>>, Query(pa
                     if let Some(r) = row {
                         if let Ok(email) = r.try_get::<String, _>("email") {
                             if !email.is_empty() {
-                                // Send gift coupon email with better error handling
-                                if !email.is_empty() {
-                                    let body = format!(
-                                        "Thank you for your gift coupon purchase!\n\nYour gift coupon code: {}\nValue: €{:.2}\n\nYou can use this code at checkout to get €{:.2} off your order.\n\nView your purchase: {}/thank-you?code={}",
-                                        code,
-                                        total_value as f64 / 100.0,
-                                        total_value as f64 / 100.0,
-                                        state.app_url,
-                                        code
-                                    );
-                                    
-                                    match send_email(&state, &email, "Your Gift Coupon", &body).await {
-                                        Ok(_) => {
-                                            tracing::info!("Gift coupon email sent successfully to {}", email);
-                                        }
-                                        Err(e) => {
-                                            tracing::error!("Failed to send gift coupon email to {}: {:?}", email, e);
-                                            // Log the specific error details for debugging
-                                            if e.to_string().contains("authentication") {
-                                                tracing::error!("SMTP authentication error - check SMTP credentials");
-                                            } else if e.to_string().contains("connection") {
-                                                tracing::error!("SMTP connection error - check SMTP host/port");
-                                            }
+                                let body = format!(
+                                    "Thank you for your gift coupon purchase!\n\nYour gift coupon code: {}\nValue: €{:.2}\n\nYou can use this code at checkout to get €{:.2} off your order.\n\nView your purchase: {}/thank-you?code={}",
+                                    code,
+                                    total_value as f64 / 100.0,
+                                    total_value as f64 / 100.0,
+                                    state.app_url,
+                                    code
+                                );
+
+                                match send_email(&state, &email, "Your Gift Coupon", &body).await {
+                                    Ok(_) => {
+                                        tracing::info!("Gift coupon email sent successfully to {}", email);
+                                    }
+                                    Err(e) => {
+                                        tracing::error!("Failed to send gift coupon email to {}: {:?}", email, e);
+                                        // Log the specific error details for debugging
+                                        if e.to_string().contains("authentication") {
+                                            tracing::error!("SMTP authentication error - check SMTP credentials");
+                                        } else if e.to_string().contains("connection") {
+                                            tracing::error!("SMTP connection error - check SMTP host/port");
                                         }
                                     }
                                 }
-                                // cleanup pending
-                                let _ = sqlx::query(r#"DELETE FROM pending_gifts WHERE order_id = ?"#)
-                                    .bind(&order_id)
-                                    .execute(&state.pool)
-                                    .await;
-                                return Redirect::to(&format!("/thank-you?code={}", code));
                             }
                         }
                     }
                 }
+
+                // cleanup pending regardless of email sending success
+                let _ = sqlx::query(r#"DELETE FROM pending_gifts WHERE order_id = ?"#)
+                    .bind(&order_id)
+                    .execute(&state.pool)
+                    .await;
             }
         }
     }

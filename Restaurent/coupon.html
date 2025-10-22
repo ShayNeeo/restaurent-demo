@@ -21,8 +21,11 @@
     <article>
       <section class="section" aria-label="coupon">
         <div class="container" style="max-width:640px;margin:0 auto;">
-          <h2 class="headline-1 section-title text-center">Buy Gift Coupon</h2>
-          <p class="text-center">Pay €50, receive €55 value (10% bonus). Choose any amount.</p>
+          <div class="special-dish-content bg-black-10" style="padding:40px;border-radius:12px">
+            <div style="text-align:center;margin-bottom:30px">
+              <h2 class="headline-1 section-title" style="color:var(--gold-crayola);margin-bottom:10px">Buy Gift Coupon</h2>
+              <p class="section-text">Pay €50, receive €55 value (10% bonus). Choose any amount.</p>
+            </div>
           <div class="grid-list" style="grid-template-columns: repeat(4, minmax(0,1fr)); gap:12px; margin: 16px 0;">
             <button class="btn btn-secondary" data-quick-amount="10"><span class="text text-1">€10</span><span class="text text-2" aria-hidden="true">€10</span></button>
             <button class="btn btn-secondary" data-quick-amount="20"><span class="text text-1">€20</span><span class="text text-2" aria-hidden="true">€20</span></button>
@@ -32,10 +35,11 @@
           <div class="input-wrapper" style="margin-top:12px;">
             <input id="gift-amount" type="number" min="10" step="5" placeholder="Custom amount (min €10)" class="input-field" />
           </div>
-          <button id="gift-buy" class="btn btn-secondary" style="width:100%">
-            <span class="text text-1">Buy Now</span>
-            <span class="text text-2" aria-hidden="true">Buy Now</span>
-          </button>
+            <button id="gift-buy" class="btn btn-primary" style="width:100%;margin-top:16px">
+              <span class="text text-1">Buy Now</span>
+              <span class="text text-2" aria-hidden="true">Buy Now</span>
+            </button>
+          </div>
         </div>
       </section>
     </article>

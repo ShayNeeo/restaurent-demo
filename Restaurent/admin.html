@@ -15,14 +15,34 @@
       <a href="/" class="logo">
         <img src="./assets/images/logo.svg" width="160" height="50" alt="Demo - Home">
       </a>
-      <h1 class="headline-2" style="margin-left:auto">Admin</h1>
+      <nav class="navbar" data-navbar style="margin-left:auto">
+        <div class="navbar-top">
+          <a href="/" class="logo">
+            <img src="./assets/images/logo.svg" width="160" height="50" alt="Demo - Home">
+          </a>
+          <button class="nav-close-btn" data-nav-close-btn aria-label="Close Menu">
+            <ion-icon name="close-outline"></ion-icon>
+          </button>
+        </div>
+        <div class="navbar-bottom">
+          <h1 class="headline-2" style="color:var(--gold-crayola);margin-bottom:16px">Admin Panel</h1>
+          <p style="color:var(--quick-silver);margin-bottom:20px">Manage your restaurant database</p>
+          <div id="admin-root"></div>
+        </div>
+      </nav>
     </div>
   </header>
   <main>
     <article>
       <section class="section" aria-label="admin">
         <div class="container" style="max-width:980px;margin:0 auto;">
-          <div id="admin-root"></div>
+          <div class="special-dish-content bg-black-10" style="padding:40px;border-radius:12px">
+            <div style="text-align:center;margin-bottom:30px">
+              <h2 class="headline-1 section-title" style="color:var(--gold-crayola);margin-bottom:10px">Database Management</h2>
+              <p class="section-text">Manage users, coupons, and view database tables</p>
+            </div>
+            <div id="admin-root"></div>
+          </div>
         </div>
       </section>
     </article>

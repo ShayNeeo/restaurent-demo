@@ -18,18 +18,29 @@ async fn buy(Extension(state): Extension<Arc<AppState>>, Json(payload): Json<Buy
     let amount_cents = payload.amount_eur * 100;
     let bonus_cents = (amount_cents as f64 * 0.10).round() as i64;
     let _total_value = amount_cents + bonus_cents;
+
     if state.paypal_client_id.is_some() && state.paypal_secret.is_some() {
         if let Ok(order) = create_paypal_order(&state, amount_cents, "/api/paypal/gift/return", "/api/paypal/gift/cancel", Some(format!("Gift coupon {} cents (+{} bonus)", amount_cents, bonus_cents))).await {
             // Save pending gift mapping for email delivery after capture
+            // Ensure we have a valid email - use provided email or fallback to empty string
+            let email = payload.email.as_deref().unwrap_or("").trim();
+            tracing::info!("Creating pending gift for order {} with email: '{}'", order.id, email);
+
             let _ = sqlx::query(r#"INSERT OR REPLACE INTO pending_gifts (order_id, email, amount_cents) VALUES (?, ?, ?)"#)
                 .bind(&order.id)
-                .bind(payload.email.as_deref().unwrap_or(""))
+                .bind(email)
                 .bind(amount_cents)
                 .execute(&state.pool)
                 .await;
-            if let Some(approval) = find_approval_url(&order) { return Json(BuyGiftResponse { url: approval }); }
+
+            if let Some(approval) = find_approval_url(&order) {
+                tracing::info!("PayPal order created successfully: {}", order.id);
+                return Json(BuyGiftResponse { url: approval });
+            }
         }
     }
+
+    tracing::warn!("Failed to create PayPal order for gift coupon");
     Json(BuyGiftResponse { url: format!("{}/thank-you", state.app_url) })
 }
 

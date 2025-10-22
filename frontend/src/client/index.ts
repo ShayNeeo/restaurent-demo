@@ -89,27 +89,40 @@ function showAuthModal() {
   overlay.querySelector('#auth-submit')?.addEventListener('click', async () => {
     const email = (overlay.querySelector('#auth-email') as HTMLInputElement).value.trim();
     const password = (overlay.querySelector('#auth-password') as HTMLInputElement).value;
-    if (!email || !password) return;
+    if (!email || !password) {
+      alert('Please enter both email and password');
+      return;
+    }
     const path = mode === 'login' ? '/auth/login' : '/auth/signup';
     const res = await fetch(`${API_BASE}${path}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password }) });
-    const data = await res.json();
-    if (data?.token) {
-      setToken(data.token);
-      setEmail(email);
-      close();
-      if (location.pathname === '/admin') { initAdmin(); }
-      // resume action after auth
-      const action = localStorage.getItem('post_auth_action');
-      if (action === 'checkout') {
-        localStorage.removeItem('post_auth_action');
-        setTimeout(() => checkout(), 0);
-      } else if (action === 'buy_gift') {
-        const amt = localStorage.getItem('post_auth_gift_amount');
-        localStorage.removeItem('post_auth_action');
-        localStorage.removeItem('post_auth_gift_amount');
-        const input = (document.getElementById('panel-gift-amount') as HTMLInputElement | null) || (document.getElementById('gift-amount') as HTMLInputElement | null);
-        if (input && amt) input.value = amt;
-        setTimeout(() => buyGiftCoupon(), 0);
+    if (res.ok) {
+      const data = await res.json();
+      if (data?.token) {
+        setToken(data.token);
+        setEmail(email);
+        close();
+        if (location.pathname === '/admin') { initAdmin(); }
+        // resume action after auth
+        const action = localStorage.getItem('post_auth_action');
+        if (action === 'checkout') {
+          localStorage.removeItem('post_auth_action');
+          setTimeout(() => checkout(), 0);
+        } else if (action === 'buy_gift') {
+          const amt = localStorage.getItem('post_auth_gift_amount');
+          localStorage.removeItem('post_auth_action');
+          localStorage.removeItem('post_auth_gift_amount');
+          const input = (document.getElementById('panel-gift-amount') as HTMLInputElement | null) || (document.getElementById('gift-amount') as HTMLInputElement | null);
+          if (input && amt) input.value = amt;
+          setTimeout(() => buyGiftCoupon(), 0);
+        }
+      }
+    } else {
+      if (res.status === 409) {
+        alert('An account with this email already exists. Please use a different email or try logging in instead.');
+      } else if (res.status === 401) {
+        alert('Invalid email or password. Please check your credentials and try again.');
+      } else {
+        alert('Authentication failed. Please try again later.');
       }
     }
   });
@@ -287,11 +300,15 @@ async function fetchProduct() {
 async function injectAddToCart() {
   const product = await fetchProduct();
   if (!product) return;
-  const targets = document.querySelectorAll('.special-dish .btn.btn-primary, .menu .menu-card .btn, .menu .menu-card a.card-title');
+  const targets = document.querySelectorAll('.special-dish .btn.btn-primary, .menu .menu-card .btn, .menu .menu-card a.card-title, .menu-card .card-title');
   if (targets.length === 0) return;
+
+  console.log('Found add to cart targets:', targets.length);
+
   targets.forEach((el) => {
     (el as HTMLAnchorElement).addEventListener('click', (e) => {
       e.preventDefault();
+      console.log('Adding to cart:', product);
       addToCart({
         productId: product.id,
         name: product.name,
@@ -324,10 +341,27 @@ async function applyCoupon() {
 
 async function checkout() {
   const cart = loadCart();
-  if (cart.length === 0) return;
+  if (cart.length === 0) {
+    alert('Your cart is empty');
+    return;
+  }
   const code = (document.getElementById('coupon-input') as HTMLInputElement | null)?.value?.trim();
-  if (!getToken()) { localStorage.setItem('post_auth_action','checkout'); showAuthModal(); return; }
+  if (!getToken()) {
+    localStorage.setItem('post_auth_action','checkout');
+    showAuthModal();
+    return;
+  }
   const email = getEmail() || decodeJwtEmail(getToken());
+  if (!email) {
+    alert('Email address is required. Please sign in again.');
+    localStorage.removeItem(tokenKey);
+    localStorage.removeItem(emailKey);
+    showAuthModal();
+    return;
+  }
+
+  console.log('Checking out:', { cart, coupon: code, email });
+
   const res = await fetch(`${API_BASE}/checkout`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...(getToken() ? { Authorization: `Bearer ${getToken()}` } : {}) },
@@ -336,6 +370,8 @@ async function checkout() {
   const data = await res.json();
   if (data?.url) {
     window.location.href = data.url;
+  } else {
+    alert('Failed to create PayPal order. Please try again.');
   }
 }
 
@@ -475,13 +511,31 @@ async function initAdmin() {
   (overlay.querySelector('#us-set') as HTMLButtonElement)?.addEventListener('click', async () => {
     const email = (overlay.querySelector('#us-email') as HTMLInputElement).value.trim();
     const role = (overlay.querySelector('#us-role') as HTMLSelectElement).value;
-    if (!email) return;
-    // fetch user id
-    const ures = await fetch(`${API_BASE}/admin/query?table=users&limit=1`, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
-    // fallback to generic update via delete+insert: not ideal but simple for demo
-    await fetch(`${API_BASE}/admin/delete`, { method:'POST', headers: { 'Content-Type':'application/json', ...(token?{ Authorization:`Bearer ${token}`}:{}) }, body: JSON.stringify({ table:'users', key:'email', value: email }) });
-    await fetch(`${API_BASE}/admin/insert`, { method:'POST', headers: { 'Content-Type':'application/json', ...(token?{ Authorization:`Bearer ${token}`}:{}) }, body: JSON.stringify({ table:'users', values: { email, role, password_hash: '' } }) });
-    renderUsers();
+    if (!email) {
+      alert('Please enter an email address');
+      return;
+    }
+
+    try {
+      // Update user role using a more efficient approach
+      const res = await fetch(`${API_BASE}/admin/users/${encodeURIComponent(email)}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify({ role })
+      });
+
+      if (res.ok) {
+        alert('User role updated successfully');
+        renderUsers();
+      } else {
+        alert('Failed to update user role. Please try again.');
+      }
+    } catch (error) {
+      alert('Error updating user role. Please try again.');
+    }
   });
   (overlay.querySelector('#us-del') as HTMLButtonElement)?.addEventListener('click', async () => {
     const email = (overlay.querySelector('#us-email') as HTMLInputElement).value.trim();
@@ -496,7 +550,7 @@ async function initAdmin() {
 async function initThankYou() {
   const pathParts = location.pathname.split('/');
   if (pathParts[1] !== 'thank-you') return;
-  
+
   const orderId = pathParts[2];
   const thankYouContent = document.getElementById('thank-you-content');
   if (!thankYouContent) return;
@@ -514,11 +568,31 @@ async function initThankYou() {
     return;
   }
 
+  // Show loading state
+  thankYouContent.innerHTML = `
+    <h2 class="headline-1 section-title text-center">Loading your order...</h2>
+    <div style="text-align:center;margin-top:16px">
+      <div style="display:inline-block;width:20px;height:20px;border:2px solid var(--gold-crayola);border-radius:50%;border-top-color:transparent;animation:spin 1s linear infinite;"></div>
+    </div>
+    <style>
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
+    </style>
+  `;
+
   // Fetch order details
   try {
+    console.log('Fetching order details for:', orderId);
     const res = await fetch(`${API_BASE}/orders/${orderId}`);
-    if (!res.ok) throw new Error('Order not found');
+    if (!res.ok) {
+      if (res.status === 404) {
+        throw new Error('Order not found');
+      }
+      throw new Error(`Failed to fetch order: ${res.status}`);
+    }
     const order = await res.json();
+    console.log('Order details received:', order);
     
     let itemsHtml = '';
     let subtotal = 0;
@@ -586,10 +660,19 @@ async function initThankYou() {
       </div>
     `;
   } catch (err) {
+    console.error('Error loading order details:', err);
+    const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
     thankYouContent.innerHTML = `
-      <h2 class="headline-1 section-title text-center">Order Not Found</h2>
-      <p class="text-center">We couldn't find this order. Please contact support if you need assistance.</p>
+      <h2 class="headline-1 section-title text-center">Unable to Load Order</h2>
+      <p class="text-center">We couldn't load your order details. This might be because:</p>
+      <ul style="text-align:left;margin:16px auto;max-width:400px;color:var(--quick-silver)">
+        <li>The order doesn't exist</li>
+        <li>The order is still being processed</li>
+        <li>There was a temporary connection issue</li>
+      </ul>
+      <p class="text-center">If you just completed a purchase, please wait a few minutes and try refreshing the page.</p>
       <div style="text-align:center;margin-top:16px">
+        <button onclick="location.reload()" class="btn btn-secondary" style="margin-right:8px">Try Again</button>
         <a href="/" class="btn btn-primary"><span class="text text-1">Back to Home</span><span class="text text-2" aria-hidden="true">Back to Home</span></a>
       </div>
     `;
@@ -602,16 +685,38 @@ async function buyGiftCoupon() {
   const input = (document.getElementById('panel-gift-amount') as HTMLInputElement | null) || (document.getElementById('gift-amount') as HTMLInputElement | null);
   if (!input) return;
   const eur = Number(input.value);
-  if (!eur || eur < 10) return;
-  if (!getToken()) { localStorage.setItem('post_auth_action','buy_gift'); localStorage.setItem('post_auth_gift_amount', String(eur)); showAuthModal(); return; }
+  if (!eur || eur < 10) {
+    alert('Please enter a valid amount (minimum €10)');
+    return;
+  }
+  if (!getToken()) {
+    localStorage.setItem('post_auth_action','buy_gift');
+    localStorage.setItem('post_auth_gift_amount', String(eur));
+    showAuthModal();
+    return;
+  }
   const email = getEmail() || decodeJwtEmail(getToken());
+  if (!email) {
+    alert('Email address is required. Please sign in again.');
+    localStorage.removeItem(tokenKey);
+    localStorage.removeItem(emailKey);
+    showAuthModal();
+    return;
+  }
+
+  console.log('Buying gift coupon:', { amount_eur: eur, email });
+
   const res = await fetch(`${API_BASE}/gift-coupons/buy`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ amount_eur: eur, email })
   });
   const data = await res.json();
-  if (data?.url) window.location.href = data.url;
+  if (data?.url) {
+    window.location.href = data.url;
+  } else {
+    alert('Failed to create PayPal order. Please try again.');
+  }
 }
 
 // Bind page-level gift buy button if present (on /coupon)

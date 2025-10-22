@@ -1,4 +1,4 @@
-use axum::{routing::{get, post, delete}, extract::{Query, Path}, Json, Router, http::HeaderMap, Extension};
+use axum::{routing::{get, post, delete, patch}, extract::{Query, Path}, Json, Router, http::HeaderMap, Extension};
 use serde::Serialize;
 use serde::Deserialize;
 use jsonwebtoken::{DecodingKey, Validation, decode};
@@ -39,6 +39,7 @@ pub fn router() -> Router {
         .route("/api/admin/columns", get(columns_for_table))
         .route("/api/admin/insert", post(generic_insert))
         .route("/api/admin/delete", post(generic_delete))
+        .route("/api/admin/users/:email", patch(update_user_role))
 }
 
 async fn list_tables(Extension(state): Extension<Arc<AppState>>, headers: HeaderMap) -> Result<Json<Tables>, axum::http::StatusCode> {
@@ -167,6 +168,32 @@ async fn generic_delete(Extension(state): Extension<Arc<AppState>>, headers: Hea
         _ => { q = q.bind(payload.value.to_string()); }
     }
     q.execute(&state.pool).await.map_err(|_| axum::http::StatusCode::BAD_REQUEST)?;
+    Ok(Json(serde_json::json!({"ok": true})))
+}
+
+#[derive(Deserialize)]
+struct UpdateUserRequest { role: Option<String> }
+
+async fn update_user_role(
+    Extension(state): Extension<Arc<AppState>>,
+    headers: HeaderMap,
+    Path(email): Path<String>,
+    Json(payload): Json<UpdateUserRequest>
+) -> Result<Json<serde_json::Value>, axum::http::StatusCode> {
+    if !require_admin(&headers, &state) {
+        return Err(axum::http::StatusCode::UNAUTHORIZED);
+    }
+
+    // Update user role, defaulting to 'customer' if no role provided
+    let role = payload.role.as_deref().unwrap_or("customer");
+
+    sqlx::query(r#"UPDATE users SET role = ? WHERE email = ?"#)
+        .bind(role)
+        .bind(&email)
+        .execute(&state.pool)
+        .await
+        .map_err(|_| axum::http::StatusCode::BAD_REQUEST)?;
+
     Ok(Json(serde_json::json!({"ok": true})))
 }
 
