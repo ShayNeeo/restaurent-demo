@@ -1,10 +1,11 @@
 use axum::{routing::post, Json, Router, Extension};
 use serde::{Deserialize, Serialize};
+use sqlx::Row;
 use std::sync::Arc;
 
 use crate::{state::AppState, payments::{create_paypal_order, find_approval_url}};
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Serialize)]
 pub struct CartItem { pub product_id: String, pub name: String, pub unit_amount: i64, pub quantity: i64, pub currency: String }
 
 #[derive(Deserialize)]
