@@ -457,6 +457,15 @@ async function initAdmin() {
         </div>
         <div id="us-list" style="margin-top:10px"></div>
       </div>
+      <div style="margin-top:12px; padding:12px; border:1px solid #374151; border-radius:8px;">
+        <div style="font-weight:700;margin-bottom:8px">Password Reset</div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center">
+          <input id="reset-email" placeholder="admin email" style="flex:1;min-width:200px;padding:8px;border:1px solid #374151;background:#1f2937;color:#fff;border-radius:8px" />
+          <input id="reset-password" type="password" placeholder="new password" style="flex:1;min-width:200px;padding:8px;border:1px solid #374151;background:#1f2937;color:#fff;border-radius:8px" />
+          <button id="reset-btn" style="background:#f59e0b;border:none;color:#fff;padding:8px 12px;border-radius:8px">Reset Password</button>
+        </div>
+        <div style="margin-top:8px;color:#9ca3af;font-size:12px">Note: Only admin email can be reset through this interface</div>
+      </div>
       <div id="admin-data" style="margin-top:12px;max-height:480px;overflow:auto"></div>
     </div>`;
   document.body.appendChild(overlay);
@@ -543,6 +552,48 @@ async function initAdmin() {
     await fetch(`${API_BASE}/admin/delete`, { method:'POST', headers: { 'Content-Type':'application/json', ...(token?{ Authorization:`Bearer ${token}`}:{}) }, body: JSON.stringify({ table:'users', key:'email', value: email }) });
     renderUsers();
   });
+
+  // Password reset functionality
+  (overlay.querySelector('#reset-btn') as HTMLButtonElement)?.addEventListener('click', async () => {
+    const email = (overlay.querySelector('#reset-email') as HTMLInputElement).value.trim();
+    const newPassword = (overlay.querySelector('#reset-password') as HTMLInputElement).value;
+
+    if (!email || !newPassword) {
+      alert('Please enter both email and new password');
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_BASE}/auth/reset-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, new_password: newPassword })
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data?.token) {
+          alert('Password reset successfully! You are now logged in.');
+          setToken(data.token);
+          setEmail(email);
+          // Close admin panel and redirect or refresh
+          overlay.remove();
+          if (location.pathname === '/admin') {
+            location.reload();
+          }
+        }
+      } else if (res.status === 403) {
+        alert('Only admin email can be reset through this interface');
+      } else if (res.status === 404) {
+        alert('User not found');
+      } else {
+        alert('Failed to reset password. Please try again.');
+      }
+    } catch (error) {
+      alert('Error resetting password. Please try again.');
+    }
+  });
+
   renderUsers();
 }
 

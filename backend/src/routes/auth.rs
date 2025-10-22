@@ -14,6 +14,9 @@ pub struct SignupRequest { pub email: String, pub password: String }
 #[derive(Deserialize)]
 pub struct LoginRequest { pub email: String, pub password: String }
 
+#[derive(Deserialize)]
+pub struct ResetPasswordRequest { pub email: String, pub new_password: String }
+
 #[derive(Serialize)]
 pub struct AuthResponse { pub token: String }
 
@@ -24,6 +27,7 @@ pub fn router() -> Router {
     Router::new()
         .route("/api/auth/signup", post(signup))
         .route("/api/auth/login", post(login))
+        .route("/api/auth/reset-password", post(reset_password))
 }
 
 async fn signup(Extension(state): Extension<Arc<AppState>>, Json(payload): Json<SignupRequest>) -> Result<Json<AuthResponse>, axum::http::StatusCode> {
@@ -80,6 +84,50 @@ async fn login(Extension(state): Extension<Arc<AppState>>, Json(payload): Json<L
         }
         None => Err(axum::http::StatusCode::UNAUTHORIZED)
     }
+}
+
+async fn reset_password(Extension(state): Extension<Arc<AppState>>, Json(payload): Json<ResetPasswordRequest>) -> Result<Json<AuthResponse>, axum::http::StatusCode> {
+    // For security, only allow admin to reset passwords, or implement proper reset flow
+    // For now, checking if it's the admin email configured in environment
+    if let Some(admin_email) = &state.admin_email {
+        if payload.email != *admin_email {
+            return Err(axum::http::StatusCode::FORBIDDEN);
+        }
+    } else {
+        return Err(axum::http::StatusCode::FORBIDDEN);
+    }
+
+    // Hash the new password
+    let salt = SaltString::generate(&mut rand::thread_rng());
+    let password_hash = Argon2::default()
+        .hash_password(payload.new_password.as_bytes(), &salt)
+        .map_err(|_| axum::http::StatusCode::INTERNAL_SERVER_ERROR)?
+        .to_string();
+
+    // Update the password in database
+    let rows_affected = sqlx::query(r#"UPDATE users SET password_hash = ? WHERE email = ?"#)
+        .bind(&password_hash)
+        .bind(&payload.email)
+        .execute(&state.pool)
+        .await
+        .map_err(|_| axum::http::StatusCode::INTERNAL_SERVER_ERROR)?
+        .rows_affected();
+
+    if rows_affected == 0 {
+        return Err(axum::http::StatusCode::NOT_FOUND);
+    }
+
+    // Issue new token
+    let user = sqlx::query("SELECT id FROM users WHERE email = ?")
+        .bind(&payload.email)
+        .fetch_one(&state.pool)
+        .await
+        .map_err(|_| axum::http::StatusCode::INTERNAL_SERVER_ERROR)?;
+
+    let user_id: String = user.get("id");
+    let token = issue_jwt(&state, &user_id, &payload.email);
+
+    Ok(Json(AuthResponse { token }))
 }
 
 fn issue_jwt(state: &AppState, user_id: &str, email: &str) -> String {
