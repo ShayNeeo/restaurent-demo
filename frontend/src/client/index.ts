@@ -615,8 +615,11 @@ async function buyGiftCoupon() {
 }
 
 // Bind page-level gift buy button if present (on /coupon)
-document.addEventListener('DOMContentLoaded', () => {
+function bindGiftBuyButton() {
   document.getElementById('gift-buy')?.addEventListener('click', buyGiftCoupon);
-});
+}
+
+// Call this in ensureUI to ensure it's bound
+bindGiftBuyButton();
 
 

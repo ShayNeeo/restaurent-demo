@@ -43,7 +43,7 @@ pub async fn create_paypal_order(state: &AppState, value_eur: i64, return_path: 
     let body = PayPalOrderCreate {
         intent: "CAPTURE".into(),
         purchase_units: vec![PayPalPurchaseUnit {
-            amount: PayPalOrderAmount { currency_code: "EUR".into(), value: format!("{}.{:02}", value_eur / 100, value_eur % 100) },
+            amount: PayPalOrderAmount { currency_code: "EUR".into(), value: format!("{:.2}", value_eur as f64 / 100.0) },
             description,
         }],
         application_context: PayPalAppCtx {

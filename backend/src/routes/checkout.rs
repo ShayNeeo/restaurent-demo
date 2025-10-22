@@ -40,13 +40,22 @@ async fn start(Extension(state): Extension<Arc<AppState>>, headers: HeaderMap, J
             let remaining: i64 = row.get::<i64, _>("remaining_uses");
             if remaining > 0 {
                 let amount_off: Option<i64> = row.try_get("amount_off").ok();
-                if let Some(amount) = amount_off { discount_cents = amount; }
+                let percent_off: Option<i64> = row.try_get("percent_off").ok();
+                
+                // Apply fixed amount discount if available
+                if let Some(amount) = amount_off {
+                    discount_cents = amount;
+                }
+                
+                // Apply percentage discount if available (and no fixed amount was applied)
                 if discount_cents == 0 {
-                    let percent_off: Option<i64> = row.try_get("percent_off").ok();
                     if let Some(percent) = percent_off {
-                        if percent > 0 { discount_cents = ((percent as f64 / 100.0) * subtotal_cents as f64).round() as i64; }
+                        if percent > 0 {
+                            discount_cents = ((percent as f64 / 100.0) * subtotal_cents as f64).round() as i64;
+                        }
                     }
                 }
+                
                 applied_coupon = Some(code);
             }
         }
