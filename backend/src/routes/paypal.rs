@@ -165,11 +165,15 @@ async fn paypal_gift_return(Extension(state): Extension<Arc<AppState>>, Query(pa
             if captured.status == "COMPLETED" {
                 // determine purchased amount and grant +10% bonus
                 let mut base_amount: i64 = 0;
+                let mut email: String = String::new();
                 if let Ok(row) = sqlx::query(r#"SELECT email, amount_cents FROM pending_gifts WHERE order_id = ?"#)
                     .bind(&order_id)
                     .fetch_optional(&state.pool)
                     .await {
-                    if let Some(r) = row { base_amount = r.try_get::<i64, _>("amount_cents").unwrap_or(0); }
+                    if let Some(r) = row {
+                        base_amount = r.try_get::<i64, _>("amount_cents").unwrap_or(0);
+                        email = r.try_get::<String, _>("email").unwrap_or_default();
+                    }
                 }
                 let bonus = ((base_amount as f64) * 0.10).round() as i64;
                 let total_value = base_amount + bonus;
