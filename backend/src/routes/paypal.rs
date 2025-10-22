@@ -39,6 +39,7 @@ async fn paypal_return(Extension(state): Extension<Arc<AppState>>, Query(params)
                         let coupon_code = parsed.get("coupon_code").and_then(|v| v.as_str()).map(|s| s.to_string());
                         let user_id = parsed.get("user_id").and_then(|v| v.as_str()).map(|s| s.to_string());
                         let items = parsed.get("cart").and_then(|v| v.as_array()).cloned().unwrap_or_default();
+                        let items_for_email = items.clone();  // Clone for email loop
 
                         // Create order record
                         let order_db_id = Uuid::new_v4().to_string();
@@ -94,7 +95,7 @@ async fn paypal_return(Extension(state): Extension<Arc<AppState>>, Query(params)
                         if !email.is_empty() {
                             // build itemized lines
                             let mut lines = String::new();
-                            for it in &items {
+                            for it in items_for_email {  // Use the cloned items
                                 let name = it.get("name").and_then(|v| v.as_str()).unwrap_or("");
                                 let qty = it.get("quantity").and_then(|v| v.as_i64()).unwrap_or(1);
                                 let unit = it.get("unit_amount").and_then(|v| v.as_i64()).unwrap_or(0);

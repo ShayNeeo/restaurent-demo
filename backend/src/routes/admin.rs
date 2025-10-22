@@ -141,7 +141,7 @@ async fn generic_insert(Extension(state): Extension<Arc<AppState>>, headers: Hea
                 else if let Some(f) = n.as_f64() { q = q.bind(f); }
                 else { q = q.bind(n.to_string()); }
             }
-            serde_json::Value::Bool(b) => { q = q.bind((*b as i64)); }
+            serde_json::Value::Bool(b) => { q = q.bind(*b as i64); }
             serde_json::Value::String(s) => { q = q.bind(s); }
             _ => { q = q.bind(v.to_string()); }
         }
@@ -161,7 +161,7 @@ async fn generic_delete(Extension(state): Extension<Arc<AppState>>, headers: Hea
     let mut q = sqlx::query(&sql);
     match payload.value {
         serde_json::Value::Number(n) => { if let Some(i) = n.as_i64() { q = q.bind(i); } else { q = q.bind(n.to_string()); } }
-        serde_json::Value::Bool(b) => { q = q.bind((b as i64)); }
+        serde_json::Value::Bool(b) => { q = q.bind(b as i64); }
         serde_json::Value::String(ref s) => { q = q.bind(s); }
         _ => { q = q.bind(payload.value.to_string()); }
     }
