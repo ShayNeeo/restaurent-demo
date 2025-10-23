@@ -47,6 +47,17 @@ async fn send_test_email(
         });
     }
 
+    // Check if SMTP is configured
+    if state.smtp_host.is_none() || state.smtp_username.is_none() || state.smtp_password.is_none() || state.smtp_from.is_none() {
+        tracing::error!("SMTP configuration incomplete");
+        return Json(TestEmailResponse {
+            success: false,
+            message: "SMTP configuration incomplete. Please check environment variables: SMTP_HOST, SMTP_USERNAME, SMTP_PASSWORD, SMTP_FROM".to_string(),
+        });
+    }
+
+    tracing::info!("Attempting to send test email to: {} (subject: {})", payload.to, payload.subject);
+
     // Send the email
     match send_email(&state, &payload.to, &payload.subject, &payload.body).await {
         Ok(_) => {
@@ -58,9 +69,10 @@ async fn send_test_email(
         }
         Err(e) => {
             tracing::error!("Failed to send test email to {}: {:?}", payload.to, e);
+            // The error message from the email module should now be more descriptive
             Json(TestEmailResponse {
                 success: false,
-                message: format!("Failed to send email: {:?}", e),
+                message: format!("Failed to send email: {}", e),
             })
         }
     }

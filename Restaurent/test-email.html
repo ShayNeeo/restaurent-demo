@@ -56,6 +56,10 @@
                 <span class="text text-1">Send Test Email</span>
                 <span class="text text-2" aria-hidden="true">Send Test Email</span>
               </button>
+              <button id="check-status" class="btn btn-secondary" style="margin-right:12px;">
+                <span class="text text-1">Check Status</span>
+                <span class="text text-2" aria-hidden="true">Check Status</span>
+              </button>
               <a href="/" class="btn btn-secondary">
                 <span class="text text-1">Back to Home</span>
                 <span class="text text-2" aria-hidden="true">Back to Home</span>
@@ -63,6 +67,34 @@
             </div>
 
             <div id="test-email-result" style="margin-top:20px;padding:16px;border-radius:8px;display:none;"></div>
+
+            <!-- Troubleshooting Help -->
+            <div style="margin-top:30px;padding:20px;border:1px solid var(--white-alpha-20);border-radius:8px;background:var(--eerie-black-2);">
+              <h3 style="margin:0 0 12px;color:var(--gold-crayola);">🔧 Troubleshooting</h3>
+              <div style="color:var(--quick-silver);font-size:14px;">
+                <p><strong>If you see a 502 Bad Gateway error:</strong></p>
+                <ul style="margin:8px 0;">
+                  <li>Check that the backend server is running</li>
+                  <li>Verify SMTP credentials in your environment variables</li>
+                  <li>Check server logs for error messages</li>
+                  <li>Ensure all required environment variables are set: SMTP_HOST, SMTP_USERNAME, SMTP_PASSWORD, SMTP_FROM</li>
+                </ul>
+                <p><strong>Common SMTP Issues:</strong></p>
+                <ul style="margin:8px 0;">
+                  <li>Authentication failed: Check username/password</li>
+                  <li>Connection failed: Check host/port and firewall</li>
+                  <li>TLS/SSL issues: Verify security settings</li>
+                </ul>
+                <p><strong>Test with these SMTP settings:</strong></p>
+                <div style="background:var(--smoky-black-1);padding:8px;border-radius:4px;font-family:monospace;font-size:12px;">
+                  SMTP_HOST=smtp-relay.brevo.com<br>
+                  SMTP_PORT=587<br>
+                  SMTP_USERNAME=your-brevo-username<br>
+                  SMTP_PASSWORD=your-brevo-api-key<br>
+                  SMTP_FROM=no-reply@yourdomain.com
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -74,7 +106,74 @@
   <script>
     document.addEventListener('DOMContentLoaded', function(){
       const sendBtn = document.getElementById('test-email-send');
+      const statusBtn = document.getElementById('check-status');
       const resultDiv = document.getElementById('test-email-result');
+
+      statusBtn?.addEventListener('click', async function() {
+        try {
+          statusBtn.disabled = true;
+          statusBtn.innerHTML = '<span class="text text-1">Checking...</span><span class="text text-2" aria-hidden="true">Checking...</span>';
+
+          // Check backend health
+          const healthResponse = await fetch('/api/health');
+          const healthData = await healthResponse.json();
+
+          // Check SMTP configuration
+          let smtpStatus = 'Not configured';
+          let smtpDetails = '';
+
+          try {
+            // This will test if the backend is responding to API calls
+            const response = await fetch('/api/test-email', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                to: 'test@example.com',
+                subject: 'Status Check',
+                body: 'This is a status check - you can ignore this email'
+              })
+            });
+
+            if (response.status === 400) {
+              // This is expected if validation fails
+              const errorData = await response.json();
+              if (errorData.message && errorData.message.includes('SMTP configuration')) {
+                smtpStatus = 'Configuration incomplete';
+                smtpDetails = errorData.message;
+              }
+            } else if (response.ok) {
+              smtpStatus = 'Ready to send';
+            } else {
+              smtpStatus = 'Error: ' + response.status;
+            }
+          } catch (error) {
+            if (error.message.includes('502') || error.message.includes('Bad Gateway')) {
+              smtpStatus = 'Backend server error (502)';
+              smtpDetails = 'The backend server is not responding properly. This may indicate SMTP configuration issues or server crash.';
+            } else {
+              smtpStatus = 'Backend not responding';
+              smtpDetails = error.message;
+            }
+          }
+
+          const statusInfo = `
+            <div style="background:var(--smoky-black-2);padding:16px;border-radius:8px;border:1px solid var(--white-alpha-20);">
+              <h4 style="margin:0 0 12px;color:var(--gold-crayola);">System Status</h4>
+              <div style="margin-bottom:8px;"><strong>Backend Health:</strong> ${healthData?.ok ? '✅ OK' : '❌ Failed'}</div>
+              <div style="margin-bottom:8px;"><strong>SMTP Status:</strong> ${smtpStatus}</div>
+              ${smtpDetails ? `<div style="margin-bottom:8px;"><strong>Details:</strong> ${smtpDetails}</div>` : ''}
+              <div style="margin-bottom:8px;"><strong>Current Time:</strong> ${new Date().toLocaleString()}</div>
+            </div>
+          `;
+
+          showResult(statusInfo, 'info');
+        } catch (error) {
+          showResult(`Status check failed: ${error.message}`, 'error');
+        } finally {
+          statusBtn.disabled = false;
+          statusBtn.innerHTML = '<span class="text text-1">Check Status</span><span class="text text-2" aria-hidden="true">Check Status</span>';
+        }
+      });
 
       sendBtn?.addEventListener('click', async function() {
         const to = document.getElementById('test-email-to').value.trim();
