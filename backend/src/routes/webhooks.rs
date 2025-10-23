@@ -88,7 +88,7 @@ async fn paypal_webhook(
                         .await;
 
                     // Insert order items
-                    for item in items {
+                    for item in &items {
                         if let (Some(product_id), Some(quantity), Some(unit_amount)) = (
                             item.get("product_id").and_then(|v| v.as_str()),
                             item.get("quantity").and_then(|v| v.as_i64()),
@@ -108,7 +108,7 @@ async fn paypal_webhook(
                     // Send confirmation email (similar logic as in paypal.rs)
                     if !email.is_empty() {
                         let mut lines = String::new();
-                        for item in items {
+                        for item in &items {
                             if let (Some(name), Some(qty), Some(unit)) = (
                                 item.get("name").and_then(|v| v.as_str()),
                                 item.get("quantity").and_then(|v| v.as_i64()),
