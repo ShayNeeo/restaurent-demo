@@ -855,7 +855,17 @@ async function buyGiftCoupon() {
 
 // Bind page-level gift buy button if present (on /coupon)
 function bindGiftBuyButton() {
-  document.getElementById('gift-buy')?.addEventListener('click', buyGiftCoupon);
+  // Skip binding if the coupon page has its own implementation
+  if ((window as any).skipGiftBuyBinding) {
+    console.log('Skipping app.js gift buy binding (coupon page has its own implementation)');
+    return;
+  }
+  
+  const giftBuyBtn = document.getElementById('gift-buy');
+  if (giftBuyBtn) {
+    console.log('Binding app.js buyGiftCoupon to #gift-buy');
+    giftBuyBtn.addEventListener('click', buyGiftCoupon);
+  }
 }
 
 // Call this in ensureUI to ensure it's bound
