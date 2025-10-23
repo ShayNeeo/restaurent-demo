@@ -19,6 +19,17 @@ const storageKey = 'restaurant_cart_v1';
 const tokenKey = 'restaurant_jwt_v1';
 const emailKey = 'restaurant_email_v1';
 
+// Helper: Convert CartItem to API format (snake_case)
+function cartItemToAPI(item: CartItem) {
+  return {
+    product_id: item.productId,
+    name: item.name,
+    unit_amount: item.unitAmount,
+    quantity: item.quantity,
+    currency: item.currency
+  };
+}
+
 function getToken(): string | null { return localStorage.getItem(tokenKey); }
 function setToken(token: string) { localStorage.setItem(tokenKey, token); }
 function setEmail(email: string) { localStorage.setItem(emailKey, email); }
@@ -326,19 +337,35 @@ async function applyCoupon() {
   const input = document.getElementById('coupon-input') as HTMLInputElement | null;
   if (!input || !input.value) return;
   const code = input.value.trim();
-  const res = await fetch(`${API_BASE}/coupons/apply`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ code, cart: loadCart() })
-  });
-  const data: CouponApplyResponse = await res.json();
-  let discount = 0;
-  const cartTotal = subtotal(loadCart());
-  if (data.valid) {
-    if (data.amountOff) discount = data.amountOff;
-    else if (data.percentOff) discount = Math.round((data.percentOff / 100) * cartTotal);
+  
+  try {
+    const cart = loadCart();
+    const res = await fetch(`${API_BASE}/coupons/apply`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code, cart: cart.map(cartItemToAPI) })
+    });
+    
+    if (!res.ok) {
+      console.error(`Coupon apply failed with status ${res.status}:`, res.statusText);
+      const text = await res.text();
+      console.error('Response body:', text);
+      alert(`Failed to apply coupon (${res.status})`);
+      return;
+    }
+    
+    const data: CouponApplyResponse = await res.json();
+    let discount = 0;
+    const cartTotal = subtotal(loadCart());
+    if (data.valid) {
+      if (data.amountOff) discount = data.amountOff;
+      else if (data.percentOff) discount = Math.round((data.percentOff / 100) * cartTotal);
+    }
+    refreshPanel(discount);
+  } catch (error) {
+    console.error('Coupon apply error:', error);
+    alert('Error applying coupon: ' + (error as Error).message);
   }
-  refreshPanel(discount);
 }
 
 async function checkout() {
@@ -367,7 +394,7 @@ async function checkout() {
   const res = await fetch(`${API_BASE}/checkout`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...(getToken() ? { Authorization: `Bearer ${getToken()}` } : {}) },
-    body: JSON.stringify({ cart, coupon: code || undefined, email })
+    body: JSON.stringify({ cart: cart.map(cartItemToAPI), coupon: code || undefined, email })
   });
   const data = await res.json();
   if (data?.url) {

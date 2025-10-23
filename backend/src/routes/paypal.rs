@@ -4,7 +4,7 @@ use std::sync::Arc;
 use uuid::Uuid;
 use sqlx::Row;
 use crate::{state::AppState, payments::capture_paypal_order};
-use crate::email::send_email;
+use crate::email::{send_email, send_html_email, gift_coupon_html, order_confirmation_html};
 use axum::http::header::HeaderMap;
 
 #[derive(Deserialize)]
@@ -110,29 +110,40 @@ async fn paypal_return(Extension(state): Extension<Arc<AppState>>, _headers: Hea
                                     }
                                 }
 
-                                // Send basic invoice email if configured
+                                // Send HTML invoice email if configured
                                 if !email.is_empty() {
-                                    // build itemized lines using the parsed items
-                                    let mut lines = String::new();
+                                    // Build HTML table rows for items
+                                    let mut items_html = String::new();
+                                    let mut subtotal: i64 = 0;
                                     for it in &items {
                                         let name = it.get("name").and_then(|v| v.as_str()).unwrap_or("Product");
                                         let qty = it.get("quantity").and_then(|v| v.as_i64()).unwrap_or(1);
                                         let unit = it.get("unit_amount").and_then(|v| v.as_i64()).unwrap_or(0);
-                                        lines.push_str(&format!("- {} x{} @ €{:.2}\n", name, qty, unit as f64 / 100.0));
+                                        let item_total = unit * qty;
+                                        subtotal += item_total;
+                                        items_html.push_str(&format!(
+                                            "<tr><td>{}</td><td>{}</td><td>€{:.2}</td><td>€{:.2}</td></tr>",
+                                            name, qty, unit as f64 / 100.0, item_total as f64 / 100.0
+                                        ));
                                     }
-                                    let body = format!(
-                                        "Thank you for your order!\n\nItems:\n{}\nTotal paid: €{:.2}\n\nOrder ID: {}\n\nYou can view your invoice at: {}/thank-you/{}",
-                                        lines,
-                                        amount_cents as f64 / 100.0,
-                                        order_db_id,
-                                        state.app_url,
-                                        order_db_id
+                                    
+                                    let discount = std::cmp::max(0, subtotal - amount_cents);
+                                    let total = amount_cents as f64 / 100.0;
+                                    
+                                    let html_body = order_confirmation_html(
+                                        &order_db_id,
+                                        &email,
+                                        &items_html,
+                                        subtotal as f64 / 100.0,
+                                        discount as f64 / 100.0,
+                                        total,
+                                        &state.app_url
                                     );
                                     
-                                    // Send email with better error reporting
-                                    match send_email(&state, &email, "Your Order Confirmation", &body).await {
+                                    // Send HTML email
+                                    match send_html_email(&state, &email, "Your Order Confirmation", &html_body).await {
                                         Ok(_) => {
-                                            tracing::info!("Order confirmation email sent successfully to {}", email);
+                                            tracing::info!("Order confirmation email (HTML) sent successfully to {}", email);
                                         }
                                         Err(e) => {
                                             tracing::error!("Failed to send order confirmation email to {}: {:?}", email, e);
@@ -244,18 +255,12 @@ async fn paypal_gift_return(Extension(state): Extension<Arc<AppState>>, Query(pa
                     if let Some(r) = row {
                         if let Ok(email) = r.try_get::<String, _>("email") {
                             if !email.is_empty() {
-                                let body = format!(
-                                    "Thank you for your gift coupon purchase!\n\nYour gift coupon code: {}\nValue: €{:.2}\n\nYou can use this code at checkout to get €{:.2} off your order.\n\nView your purchase: {}/thank-you/{}",
-                                    code,
-                                    total_value as f64 / 100.0,
-                                    total_value as f64 / 100.0,
-                                    state.app_url,
-                                    order_db_id
-                                );
+                                let value_display = total_value as f64 / 100.0;
+                                let html_body = gift_coupon_html(&code, value_display, &email, &state.app_url);
 
-                                match send_email(&state, &email, "Your Gift Coupon", &body).await {
+                                match send_html_email(&state, &email, "Your Gift Coupon", &html_body).await {
                                     Ok(_) => {
-                                        tracing::info!("Gift coupon email sent successfully to {}", email);
+                                        tracing::info!("Gift coupon email (HTML) sent successfully to {}", email);
                                     }
                                     Err(e) => {
                                         tracing::error!("Failed to send gift coupon email to {}: {:?}", email, e);
