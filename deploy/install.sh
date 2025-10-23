@@ -197,14 +197,29 @@ if [ -x "$ROOT_DIR/deploy/uninstall.sh" ]; then
   "$ROOT_DIR/deploy/uninstall.sh" || true
 fi
 
+# Ensure data directory exists and has proper permissions
+echo "[install] Creating database directory with proper permissions..."
+DATA_DIR="$ROOT_DIR/backend/data"
+mkdir -p "$DATA_DIR"
+chmod 755 "$DATA_DIR"
+
+# Create database file if it doesn't exist
+touch "$DATA_DIR/app.db"
+chmod 644 "$DATA_DIR/app.db"
+
+# Use absolute path for database URL to avoid any working directory issues
+DB_URL_ABS="sqlite:///$DATA_DIR/app.db"
+
 echo "[install] Starting backend (detached)..."
 (
   cd "$ROOT_DIR/backend"
-  # Ensure DB file exists and pass absolute DATABASE_URL to avoid any CWD issues
-  DB_URL_ABS="sqlite:////$DATA_DIR/app.db"
-  touch "$DATA_DIR/app.db"
+  # Run migrations with absolute database URL
+  echo "[install] Running database migrations..."
+  env DATABASE_URL="$DB_URL_ABS" sqlx migrate run
+  
+  # Start backend with absolute database URL
   nohup env DATABASE_URL="$DB_URL_ABS" ./target/release/restaurent-backend > "$ROOT_DIR/.backend.log" 2>&1 & echo $! > "$ROOT_DIR/.backend.pid"
-) 
+)
 
 echo "[install] Starting frontend (detached)..."
 # Ensure port 5173 is free (kill any processes bound to it)
