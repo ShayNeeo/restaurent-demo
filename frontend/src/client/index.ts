@@ -101,7 +101,7 @@ function showAuthModal() {
         setToken(data.token);
         setEmail(email);
         close();
-        if (location.pathname === '/admin') { initAdmin(); }
+        // No need to call initAdmin() - We use admin.html for the admin panel
         // resume action after auth
         const action = localStorage.getItem('post_auth_action');
         if (action === 'checkout') {
@@ -378,7 +378,7 @@ async function checkout() {
 }
 
 // Initialize admin if on admin page
-initAdmin();
+// initAdmin() - NO LONGER NEEDED - We have admin.html for the full admin panel
 initAdminHealthCheck();
 
 // Boot
@@ -415,189 +415,6 @@ if (giftCode) {
     try { await navigator.clipboard.writeText(giftCode); } catch {}
   });
   document.getElementById('close-gift-overlay')?.addEventListener('click', () => container.remove());
-}
-
-async function initAdmin() {
-  if (location.pathname !== '/admin') return;
-  const token = getToken();
-  const res = await fetch(`${API_BASE}/admin/tables`, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
-  if (!res.ok) {
-    showAuthModal();
-    return;
-  }
-  const data = await res.json();
-  const overlay = document.createElement('div');
-  overlay.style.position = 'fixed'; overlay.style.top = '0'; overlay.style.left = '0'; overlay.style.right = '0'; overlay.style.bottom = '0'; overlay.style.background = 'rgba(0,0,0,.6)'; overlay.style.zIndex = '1300';
-  overlay.innerHTML = `
-    <div style="max-width:840px;margin:5% auto;background:#111827;color:#fff;border-radius:12px;padding:20px;">
-      <div style="display:flex;gap:8px;align-items:center">
-        <select id="admin-table" style="flex:1;padding:8px;border-radius:8px;background:#1f2937;color:#fff;border:1px solid #374151"></select>
-        <input id="admin-limit" type="number" value="50" min="1" max="500" style="width:100px;padding:8px;border-radius:8px;background:#1f2937;color:#fff;border:1px solid #374151" />
-        <button id="admin-load" style="background:#10b981;border:none;color:#fff;padding:8px 12px;border-radius:8px">Load</button>
-        <button id="admin-close" style="background:#374151;border:none;color:#fff;padding:8px 12px;border-radius:8px">Close</button>
-      </div>
-      <div style="margin-top:12px; padding:12px; border:1px solid #374151; border-radius:8px;">
-        <div style="font-weight:700;margin-bottom:8px">Coupons Manager</div>
-        <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center">
-          <input id="cp-code" placeholder="CODE" style="flex:1;min-width:120px;padding:8px;border:1px solid #374151;background:#1f2937;color:#fff;border-radius:8px" />
-          <input id="cp-amount" type="number" placeholder="amount_off (cents)" style="width:180px;padding:8px;border:1px solid #374151;background:#1f2937;color:#fff;border-radius:8px" />
-          <input id="cp-percent" type="number" placeholder="percent_off" style="width:140px;padding:8px;border:1px solid #374151;background:#1f2937;color:#fff;border-radius:8px" />
-          <input id="cp-uses" type="number" placeholder="remaining_uses" style="width:160px;padding:8px;border:1px solid #374151;background:#1f2937;color:#fff;border-radius:8px" />
-          <button id="cp-add" style="background:#10b981;border:none;color:#fff;padding:8px 12px;border-radius:8px">Add/Update</button>
-        </div>
-        <div id="cp-list" style="margin-top:10px"></div>
-      </div>
-      <div style="margin-top:12px; padding:12px; border:1px solid #374151; border-radius:8px;">
-        <div style="font-weight:700;margin-bottom:8px">Users Manager</div>
-        <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center">
-          <input id="us-email" placeholder="email" style="flex:1;min-width:200px;padding:8px;border:1px solid #374151;background:#1f2937;color:#fff;border-radius:8px" />
-          <select id="us-role" style="width:150px;padding:8px;border:1px solid #374151;background:#1f2937;color:#fff;border-radius:8px">
-            <option value="customer">customer</option>
-            <option value="admin">admin</option>
-          </select>
-          <button id="us-set" style="background:#10b981;border:none;color:#fff;padding:8px 12px;border-radius:8px">Set Role</button>
-          <button id="us-del" style="background:#b91c1c;border:none;color:#fff;padding:8px 12px;border-radius:8px">Delete User</button>
-        </div>
-        <div id="us-list" style="margin-top:10px"></div>
-      </div>
-      <div style="margin-top:12px; padding:12px; border:1px solid #374151; border-radius:8px;">
-        <div style="font-weight:700;margin-bottom:8px">Password Reset</div>
-        <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center">
-          <input id="reset-email" placeholder="admin email" style="flex:1;min-width:200px;padding:8px;border:1px solid #374151;background:#1f2937;color:#fff;border-radius:8px" />
-          <input id="reset-password" type="password" placeholder="new password" style="flex:1;min-width:200px;padding:8px;border:1px solid #374151;background:#1f2937;color:#fff;border-radius:8px" />
-          <button id="reset-btn" style="background:#f59e0b;border:none;color:#fff;padding:8px 12px;border-radius:8px">Reset Password</button>
-        </div>
-        <div style="margin-top:8px;color:#9ca3af;font-size:12px">Note: Only admin email can be reset through this interface</div>
-      </div>
-      <div id="admin-data" style="margin-top:12px;max-height:480px;overflow:auto"></div>
-    </div>`;
-  document.body.appendChild(overlay);
-  const sel = overlay.querySelector('#admin-table') as HTMLSelectElement;
-  (data.tables || []).forEach((t: string) => { const o = document.createElement('option'); o.value = t; o.textContent = t; sel.appendChild(o); });
-  overlay.querySelector('#admin-close')?.addEventListener('click', () => overlay.remove());
-  overlay.querySelector('#admin-load')?.addEventListener('click', async () => {
-    const tbl = sel.value; const limit = Number((overlay.querySelector('#admin-limit') as HTMLInputElement).value) || 50;
-    const res2 = await fetch(`${API_BASE}/admin/query?table=${encodeURIComponent(tbl)}&limit=${limit}`, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
-    const rows = await res2.json();
-    const c = overlay.querySelector('#admin-data') as HTMLElement;
-    if (!Array.isArray(rows) || rows.length === 0) { c.innerHTML = '<div style="color:#9ca3af">No rows</div>'; return; }
-    const cols = Object.keys(rows[0]);
-    c.innerHTML = `<table style="width:100%;border-collapse:collapse"><thead><tr>${cols.map(h=>`<th style=\"text-align:left;border-bottom:1px solid #374151;padding:6px\">${h}</th>`).join('')}</tr></thead><tbody>${rows.map((r:any)=>`<tr>${cols.map(k=>`<td style=\"border-bottom:1px solid #374151;padding:6px\">${String(r[k]??'')}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
-  });
-
-  // Coupons manager logic
-  const renderCoupons = async () => {
-    const res3 = await fetch(`${API_BASE}/admin/query?table=coupons&limit=200`, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
-    const rows = await res3.json();
-    const host = overlay.querySelector('#cp-list') as HTMLElement;
-    if (!Array.isArray(rows) || rows.length === 0) { host.innerHTML = '<div style="color:#9ca3af">No coupons</div>'; return; }
-    host.innerHTML = rows.map((r:any) => `<div style="display:flex;justify-content:space-between;gap:8px;align-items:center;border-bottom:1px solid #374151;padding:6px 0"><div><strong>${r.code}</strong> — ${r.amount_off??0}c, ${r.percent_off??0}% (uses: ${r.remaining_uses??0})</div><button data-del="${r.code}" style="background:#b91c1c;color:#fff;border:none;padding:6px 10px;border-radius:8px">Delete</button></div>`).join('');
-    host.querySelectorAll('button[data-del]')?.forEach((b)=>{
-      b.addEventListener('click', async (e:any)=>{
-        const code = e.currentTarget.getAttribute('data-del');
-        if (!code) return;
-        await fetch(`${API_BASE}/admin/coupons/${encodeURIComponent(code)}`, { method:'DELETE', headers: token ? { Authorization: `Bearer ${token}` } : {} });
-        renderCoupons();
-      });
-    });
-  };
-  (overlay.querySelector('#cp-add') as HTMLButtonElement)?.addEventListener('click', async () => {
-    const code = (overlay.querySelector('#cp-code') as HTMLInputElement).value.trim();
-    const amount = Number((overlay.querySelector('#cp-amount') as HTMLInputElement).value||'0');
-    const percent = Number((overlay.querySelector('#cp-percent') as HTMLInputElement).value||'0');
-    const uses = Number((overlay.querySelector('#cp-uses') as HTMLInputElement).value||'0');
-    if (!code) return;
-    await fetch(`${API_BASE}/admin/coupons`, { method:'POST', headers: { 'Content-Type':'application/json', ...(token?{ Authorization:`Bearer ${token}`}:{}) }, body: JSON.stringify({ code, amount_off: amount||undefined, percent_off: percent||undefined, remaining_uses: uses||0 }) });
-    renderCoupons();
-  });
-  renderCoupons();
-
-  // Users manager
-  const renderUsers = async () => {
-    const res4 = await fetch(`${API_BASE}/admin/query?table=users&limit=200`, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
-    const rows = await res4.json();
-    const host = overlay.querySelector('#us-list') as HTMLElement;
-    if (!Array.isArray(rows) || rows.length === 0) { host.innerHTML = '<div style="color:#9ca3af">No users</div>'; return; }
-    host.innerHTML = rows.map((r:any) => `<div style="display:flex;justify-content:space-between;gap:8px;align-items:center;border-bottom:1px solid #374151;padding:6px 0"><div><strong>${r.email}</strong> — role: ${r.role||'customer'}</div></div>`).join('');
-  };
-  (overlay.querySelector('#us-set') as HTMLButtonElement)?.addEventListener('click', async () => {
-    const email = (overlay.querySelector('#us-email') as HTMLInputElement).value.trim();
-    const role = (overlay.querySelector('#us-role') as HTMLSelectElement).value;
-    if (!email) {
-      alert('Please enter an email address');
-      return;
-    }
-
-    try {
-      // Update user role using a more efficient approach
-      const res = await fetch(`${API_BASE}/admin/users/${encodeURIComponent(email)}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {})
-        },
-        body: JSON.stringify({ role })
-      });
-
-      if (res.ok) {
-        alert('User role updated successfully');
-        renderUsers();
-      } else {
-        alert('Failed to update user role. Please try again.');
-      }
-    } catch (error) {
-      alert('Error updating user role. Please try again.');
-    }
-  });
-  (overlay.querySelector('#us-del') as HTMLButtonElement)?.addEventListener('click', async () => {
-    const email = (overlay.querySelector('#us-email') as HTMLInputElement).value.trim();
-    if (!email) return;
-    await fetch(`${API_BASE}/admin/delete`, { method:'POST', headers: { 'Content-Type':'application/json', ...(token?{ Authorization:`Bearer ${token}`}:{}) }, body: JSON.stringify({ table:'users', key:'email', value: email }) });
-    renderUsers();
-  });
-
-  // Password reset functionality
-  (overlay.querySelector('#reset-btn') as HTMLButtonElement)?.addEventListener('click', async () => {
-    const email = (overlay.querySelector('#reset-email') as HTMLInputElement).value.trim();
-    const newPassword = (overlay.querySelector('#reset-password') as HTMLInputElement).value;
-
-    if (!email || !newPassword) {
-      alert('Please enter both email and new password');
-      return;
-    }
-
-    try {
-      const res = await fetch(`${API_BASE}/auth/reset-password`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, new_password: newPassword })
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        if (data?.token) {
-          alert('Password reset successfully! You are now logged in.');
-          setToken(data.token);
-          setEmail(email);
-          // Close admin panel and redirect or refresh
-          overlay.remove();
-          if (location.pathname === '/admin') {
-            location.reload();
-          }
-        }
-      } else if (res.status === 403) {
-        alert('Only admin email can be reset through this interface');
-      } else if (res.status === 404) {
-        alert('User not found');
-      } else {
-        alert('Failed to reset password. Please try again.');
-      }
-    } catch (error) {
-      alert('Error resetting password. Please try again.');
-    }
-  });
-
-  renderUsers();
 }
 
 // Handle admin health check

@@ -63,6 +63,22 @@ async fn query_table(Extension(state): Extension<Arc<AppState>>, headers: Header
         let mut obj = serde_json::Map::new();
         for (idx, col) in row.columns().iter().enumerate() {
             let name = Column::name(col).to_string();
+            
+            // Try to get as integer first
+            if let Ok(val) = row.try_get::<i64, _>(idx) {
+                obj.insert(name, serde_json::Value::Number(val.into()));
+                continue;
+            }
+            
+            // Try to get as float
+            if let Ok(val) = row.try_get::<f64, _>(idx) {
+                if let Some(num) = serde_json::Number::from_f64(val) {
+                    obj.insert(name, serde_json::Value::Number(num));
+                    continue;
+                }
+            }
+            
+            // Fall back to string
             let val: Result<String, _> = row.try_get(idx);
             obj.insert(name, serde_json::Value::String(val.unwrap_or_default()));
         }
