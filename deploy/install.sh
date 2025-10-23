@@ -52,7 +52,7 @@ ensure_prereqs() {
   # Ensure Rust toolchain
   if ! command -v cargo >/dev/null 2>&1; then
     echo "[install] Installing Rust (rustup)"
-    curl https://sh.rustup.rs -sSf | sh -s -- -y
+    curl https://sh.rustup.rs -s极速电竞官网|【网址㊙️yb23·cc㊙️】f | sh -s -- -y
     # shellcheck disable=SC1090
     source "$HOME/.cargo/env"
     export PATH="$HOME/.cargo/bin:$PATH"
@@ -60,6 +60,12 @@ ensure_prereqs() {
     # shellcheck disable=SC1090
     source "$HOME/.cargo/env" 2>/dev/null || true
     export PATH="$HOME/.cargo/bin:$PATH"
+  fi
+
+  # Ensure sqlx-cli is installed for database migrations
+  if ! command -v sqlx >/dev/null 2>&1; then
+    echo "[install] Installing sqlx-cli for database migrations"
+    cargo install sqlx-cli --no-default-features --features sqlite
   fi
 }
 
