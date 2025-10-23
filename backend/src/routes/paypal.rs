@@ -6,7 +6,6 @@ use sqlx::Row;
 use crate::{state::AppState, payments::capture_paypal_order};
 use crate::email::send_email;
 use axum::http::header::HeaderMap;
-use jsonwebtoken::{decode, DecodingKey, Validation};
 
 #[derive(Deserialize)]
 struct ReturnParams { token: Option<String> }
@@ -25,7 +24,7 @@ pub fn router() -> Router {
         .route("/api/paypal/gift/cancel", get(|| async { "CANCEL" }))
 }
 
-async fn paypal_return(Extension(state): Extension<Arc<AppState>>, headers: HeaderMap, Query(params): Query<ReturnParams>) -> Redirect {
+async fn paypal_return(Extension(state): Extension<Arc<AppState>>, _headers: HeaderMap, Query(params): Query<ReturnParams>) -> Redirect {
     if let Some(order_id) = params.token {
         if let Ok(captured) = capture_paypal_order(&state, &order_id).await {
             if captured.status == "COMPLETED" {

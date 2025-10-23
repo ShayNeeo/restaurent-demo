@@ -95,7 +95,7 @@ async fn detailed_handler(Extension(state): Extension<Arc<AppState>>) -> Json<He
     };
 
     // Check if users table exists and has required columns
-    let (users_table_exists, has_role) = match sqlx::query("PRAGMA table_info(users)").fetch_all(&state.pool).await {
+    let (users_table_exists, _has_role) = match sqlx::query("PRAGMA table_info(users)").fetch_all(&state.pool).await {
         Ok(columns) => {
             let has_role = columns.iter().any(|col| {
                 match col.try_get::<String, _>("name") {
