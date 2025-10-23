@@ -334,13 +334,15 @@
 
     async function loadOrders() {
       const orders = await apiCall('GET', '/admin/query?table=orders&limit=50');
+      console.log('Orders response:', orders);
       if (!Array.isArray(orders) || orders.length === 0) {
         document.getElementById('orders-list').innerHTML = '<div class="empty-state">No orders found</div>';
         return;
       }
       let html = `<table class="data-table"><thead><tr><th>Order ID</th><th>Email</th><th>Total</th><th>Coupon</th><th>Created</th></tr></thead><tbody>`;
       orders.forEach(o => {
-        html += `<tr><td>${o.id?.substring(0, 12) || 'N/A'}...</td><td>${o.email || 'N/A'}</td><td>€${(o.total_cents / 100).toFixed(2)}</td><td>${o.coupon_code || '-'}</td><td>${new Date(o.created_at).toLocaleDateString()}</td></tr>`;
+        console.log('Order item:', o, 'total_cents:', o.total_cents, 'type:', typeof o.total_cents);
+        html += `<tr><td>${o.id?.substring(0, 12) || 'N/A'}...</td><td>${o.email || 'N/A'}</td><td>€${((o.total_cents || 0) / 100).toFixed(2)}</td><td>${o.coupon_code || '-'}</td><td>${new Date(o.created_at).toLocaleDateString()}</td></tr>`;
       });
       html += '</tbody></table>';
       document.getElementById('orders-list').innerHTML = html;
@@ -407,14 +409,16 @@
 
     async function loadGiftCodes() {
       const giftCodes = await apiCall('GET', '/admin/query?table=gift_codes&limit=100');
+      console.log('Gift codes response:', giftCodes);
       if (!Array.isArray(giftCodes) || giftCodes.length === 0) {
         document.getElementById('giftcodes-list').innerHTML = '<div class="empty-state">No gift codes found</div>';
         return;
       }
       let html = `<table class="data-table"><thead><tr><th>Code</th><th>Value</th><th>Remaining</th><th>Purchased By</th><th>Created</th></tr></thead><tbody>`;
       giftCodes.forEach(g => {
-        const used = g.value_cents - g.remaining_cents;
-        html += `<tr><td><strong>${g.code?.substring(0, 16)}</strong>...</td><td>€${(g.value_cents / 100).toFixed(2)}</td><td>€${(g.remaining_cents / 100).toFixed(2)}</td><td>${g.purchaser_email || '-'}</td><td>${new Date(g.created_at).toLocaleDateString()}</td></tr>`;
+        console.log('Gift code item:', g, 'value_cents:', g.value_cents, 'type:', typeof g.value_cents);
+        const used = (g.value_cents || 0) - (g.remaining_cents || 0);
+        html += `<tr><td><strong>${g.code?.substring(0, 16)}</strong>...</td><td>€${((g.value_cents || 0) / 100).toFixed(2)}</td><td>€${((g.remaining_cents || 0) / 100).toFixed(2)}</td><td>${g.purchaser_email || '-'}</td><td>${new Date(g.created_at).toLocaleDateString()}</td></tr>`;
       });
       html += '</tbody></table>';
       document.getElementById('giftcodes-list').innerHTML = html;
