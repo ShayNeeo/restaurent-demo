@@ -73,6 +73,8 @@
         <button class="sidebar-btn" data-tab="users">👥 Users</button>
         <button class="sidebar-btn" data-tab="coupons">🎟️ Coupons</button>
         <button class="sidebar-btn" data-tab="products">🍽️ Products</button>
+        <button class="sidebar-btn" data-tab="pending">⏳ Pending Orders</button>
+        <button class="sidebar-btn" data-tab="giftcodes">🎁 Gift Codes</button>
       </div>
 
       <div class="sidebar-section">
@@ -192,7 +194,7 @@
               <input type="number" id="coupon-uses" placeholder="100" min="0" />
             </div>
             <button class="btn-small btn-action" onclick="createCoupon()" style="width: 100%;">Create Coupon</button>
-          </div>
+    </div>
           <div class="card">
             <h3 style="color: var(--gold-crayola); margin: 0 0 12px;">Manage Gift Codes</h3>
             <div class="form-group">
@@ -214,6 +216,22 @@
         <div class="card">
           <h3 style="color: var(--gold-crayola); margin: 0 0 16px;">All Products</h3>
           <div id="products-list" class="loading"><div class="spinner"></div> Loading...</div>
+        </div>
+      </div>
+
+      <!-- Pending Orders Tab -->
+      <div id="pending" class="tab-content">
+        <div class="card">
+          <h3 style="color: var(--gold-crayola); margin: 0 0 16px;">Pending Orders (Awaiting Payment)</h3>
+          <div id="pending-list" class="loading"><div class="spinner"></div> Loading...</div>
+        </div>
+      </div>
+
+      <!-- Gift Codes Tab -->
+      <div id="giftcodes" class="tab-content">
+        <div class="card">
+          <h3 style="color: var(--gold-crayola); margin: 0 0 16px;">Gift Codes (Generated from /coupon)</h3>
+          <div id="giftcodes-list" class="loading"><div class="spinner"></div> Loading...</div>
         </div>
       </div>
 
@@ -241,7 +259,7 @@
           <button class="btn-small btn-action" onclick="resetPassword()" style="width: 100%;">Update Password</button>
         </div>
       </div>
-    </main>
+  </main>
   </div>
 
   <script src="./assets/js/script.js"></script>
@@ -267,6 +285,8 @@
         if (tab === 'users') loadUsers();
         if (tab === 'coupons') loadCoupons();
         if (tab === 'products') loadProducts();
+        if (tab === 'pending') loadPendingOrders();
+        if (tab === 'giftcodes') loadGiftCodes();
       });
     });
 
@@ -371,6 +391,35 @@
       document.getElementById('products-list').innerHTML = html;
     }
 
+    async function loadPendingOrders() {
+      const pending = await apiCall('GET', '/admin/query?table=pending_orders&limit=100');
+      if (!Array.isArray(pending) || pending.length === 0) {
+        document.getElementById('pending-list').innerHTML = '<div class="empty-state">No pending orders</div>';
+        return;
+      }
+      let html = `<table class="data-table"><thead><tr><th>PayPal Order ID</th><th>Email</th><th>Amount</th><th>Created</th><th>Action</th></tr></thead><tbody>`;
+      pending.forEach(p => {
+        html += `<tr><td>${p.order_id?.substring(0, 12) || 'N/A'}...</td><td>${p.email || 'N/A'}</td><td>€${(p.amount_cents / 100).toFixed(2)}</td><td>${new Date(p.created_at).toLocaleDateString()}</td><td><button class="btn-small btn-delete" onclick="deletePendingOrder('${p.order_id}')">Delete</button></td></tr>`;
+      });
+      html += '</tbody></table>';
+      document.getElementById('pending-list').innerHTML = html;
+    }
+
+    async function loadGiftCodes() {
+      const giftCodes = await apiCall('GET', '/admin/query?table=gift_codes&limit=100');
+      if (!Array.isArray(giftCodes) || giftCodes.length === 0) {
+        document.getElementById('giftcodes-list').innerHTML = '<div class="empty-state">No gift codes found</div>';
+        return;
+      }
+      let html = `<table class="data-table"><thead><tr><th>Code</th><th>Value</th><th>Remaining</th><th>Purchased By</th><th>Created</th></tr></thead><tbody>`;
+      giftCodes.forEach(g => {
+        const used = g.value_cents - g.remaining_cents;
+        html += `<tr><td><strong>${g.code?.substring(0, 16)}</strong>...</td><td>€${(g.value_cents / 100).toFixed(2)}</td><td>€${(g.remaining_cents / 100).toFixed(2)}</td><td>${g.purchaser_email || '-'}</td><td>${new Date(g.created_at).toLocaleDateString()}</td></tr>`;
+      });
+      html += '</tbody></table>';
+      document.getElementById('giftcodes-list').innerHTML = html;
+    }
+
     async function createCoupon() {
       const code = document.getElementById('coupon-code').value.trim().toUpperCase();
       const percent = Number(document.getElementById('coupon-percent').value || 0);
@@ -436,6 +485,12 @@
       if (!pwd) return alert('Please enter a password');
       const res = await apiCall('POST', '/auth/reset-password', { email, new_password: pwd });
       if (res?.token) { alert('Password updated! Logging you out...'); localStorage.removeItem('restaurant_jwt_v1'); location.href = '/'; }
+    }
+
+    async function deletePendingOrder(orderId) {
+      if (!confirm('Delete this pending order?')) return;
+      const res = await apiCall('POST', '/admin/delete', { table: 'pending_orders', key: 'order_id', value: orderId });
+      if (res) { alert('Pending order deleted!'); loadPendingOrders(); }
     }
 
     // Load overview on page load

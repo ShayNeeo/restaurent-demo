@@ -182,8 +182,12 @@ async fn paypal_return(Extension(state): Extension<Arc<AppState>>, _headers: Hea
 
 async fn paypal_gift_return(Extension(state): Extension<Arc<AppState>>, Query(params): Query<ReturnParams>) -> Redirect {
     if let Some(order_id) = params.token {
+        tracing::info!("PayPal gift return callback received for order_id: {}", order_id);
+        
         if let Ok(captured) = capture_paypal_order(&state, &order_id).await {
             if captured.status == "COMPLETED" {
+                tracing::info!("PayPal gift order {} captured with status COMPLETED", order_id);
+                
                 // determine purchased amount and grant +10% bonus
                 let mut base_amount: i64 = 0;
                 let mut email: String = String::new();
@@ -196,9 +200,13 @@ async fn paypal_gift_return(Extension(state): Extension<Arc<AppState>>, Query(pa
                         email = r.try_get::<String, _>("email").unwrap_or_default();
                     }
                 }
+                
                 let bonus = ((base_amount as f64) * 0.10).round() as i64;
                 let total_value = base_amount + bonus;
                 let code = Uuid::new_v4().to_string().replace('-', "");
+                
+                tracing::info!("Creating gift code: {}, value: {}¢ (base: {}¢ + bonus: {}¢)", code, total_value, base_amount, bonus);
+                
                 let _ = sqlx::query(r#"INSERT INTO gift_codes (code, value_cents, remaining_cents, purchaser_email) VALUES (?, ?, ?, ?)"#)
                     .bind(&code)
                     .bind(total_value)
@@ -206,6 +214,27 @@ async fn paypal_gift_return(Extension(state): Extension<Arc<AppState>>, Query(pa
                     .bind(&email)
                     .execute(&state.pool)
                     .await;
+                
+                // Create an order record for this gift purchase
+                let order_db_id = Uuid::new_v4().to_string();
+                let gift_json = serde_json::json!({
+                    "type": "gift_coupon",
+                    "code": code,
+                    "base_amount_cents": base_amount,
+                    "bonus_cents": bonus,
+                    "total_value_cents": total_value
+                }).to_string();
+                
+                tracing::info!("Creating order record for gift purchase: {}", order_db_id);
+                
+                let _ = sqlx::query(r#"INSERT INTO orders (id, email, total_cents, currency, items_json) VALUES (?, ?, ?, 'EUR', ?)"#)
+                    .bind(&order_db_id)
+                    .bind(&email)
+                    .bind(total_value)
+                    .bind(&gift_json)
+                    .execute(&state.pool)
+                    .await;
+                
                 // if we stored a pending email, send confirmation
                 if let Ok(row) = sqlx::query(r#"SELECT email FROM pending_gifts WHERE order_id = ?"#)
                     .bind(&order_id)
@@ -216,12 +245,12 @@ async fn paypal_gift_return(Extension(state): Extension<Arc<AppState>>, Query(pa
                         if let Ok(email) = r.try_get::<String, _>("email") {
                             if !email.is_empty() {
                                 let body = format!(
-                                    "Thank you for your gift coupon purchase!\n\nYour gift coupon code: {}\nValue: €{:.2}\n\nYou can use this code at checkout to get €{:.2} off your order.\n\nView your purchase: {}/thank-you?code={}",
+                                    "Thank you for your gift coupon purchase!\n\nYour gift coupon code: {}\nValue: €{:.2}\n\nYou can use this code at checkout to get €{:.2} off your order.\n\nView your purchase: {}/thank-you/{}",
                                     code,
                                     total_value as f64 / 100.0,
                                     total_value as f64 / 100.0,
                                     state.app_url,
-                                    code
+                                    order_db_id
                                 );
 
                                 match send_email(&state, &email, "Your Gift Coupon", &body).await {
@@ -230,12 +259,6 @@ async fn paypal_gift_return(Extension(state): Extension<Arc<AppState>>, Query(pa
                                     }
                                     Err(e) => {
                                         tracing::error!("Failed to send gift coupon email to {}: {:?}", email, e);
-                                        // Log the specific error details for debugging
-                                        if e.to_string().contains("authentication") {
-                                            tracing::error!("SMTP authentication error - check SMTP credentials");
-                                        } else if e.to_string().contains("connection") {
-                                            tracing::error!("SMTP connection error - check SMTP host/port");
-                                        }
                                     }
                                 }
                             }
@@ -243,14 +266,25 @@ async fn paypal_gift_return(Extension(state): Extension<Arc<AppState>>, Query(pa
                     }
                 }
 
-                // cleanup pending regardless of email sending success
+                // cleanup pending gift
                 let _ = sqlx::query(r#"DELETE FROM pending_gifts WHERE order_id = ?"#)
                     .bind(&order_id)
                     .execute(&state.pool)
                     .await;
+
+                tracing::info!("Gift coupon order finalized. Redirecting to /thank-you/{}", order_db_id);
+                return Redirect::to(&format!("/thank-you/{}", order_db_id));
+            } else {
+                tracing::warn!("PayPal gift order {} has status '{}', not COMPLETED", order_id, captured.status);
             }
+        } else {
+            tracing::error!("Failed to capture PayPal gift order {}", order_id);
         }
+    } else {
+        tracing::warn!("PayPal gift return called without order_id token parameter");
     }
+    
+    tracing::info!("PayPal gift return: redirecting to generic /thank-you (order was not finalized)");
     Redirect::to("/thank-you")
 }
 
