@@ -40,12 +40,16 @@ pub async fn send_email(state: &AppState, to: &str, subject: &str, body: &str) -
 
     tracing::info!("Attempting to send email to {} via {}:{} (from: {})", to, host, port, from);
 
-    // Build simple text email
+    // Build email with explicit singlepart body to avoid content type issues
     let email = match Message::builder()
         .from(from.parse()?)
         .to(to.parse()?)
         .subject(subject)
-        .body(body.to_string())
+        .singlepart(
+            lettre::message::SinglePart::builder()
+                .header(lettre::message::header::ContentType::TEXT_PLAIN)
+                .body(body.to_string())
+        )
     {
         Ok(msg) => msg,
         Err(e) => {
