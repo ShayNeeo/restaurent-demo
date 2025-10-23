@@ -25,11 +25,15 @@ app.use('/assets', express.static(path.join(staticDir, 'assets')));
 app.use('/favicon.svg', express.static(path.join(staticDir, 'favicon.svg')));
 
 // Dedicated pages
-app.get('/menus', (_req: any, res: any) => res.sendFile(path.join(staticDir, 'menu.html')));
+app.get('/menu', (_req: any, res: any) => res.sendFile(path.join(staticDir, 'menu.html')));
 app.get('/coupon', (_req: any, res: any) => res.sendFile(path.join(staticDir, 'coupon.html')));
 app.get('/admin', (_req: any, res: any) => res.sendFile(path.join(staticDir, 'admin.html')));
 app.get('/thank-you', (_req: any, res: any) => res.sendFile(path.join(staticDir, 'thank-you.html')));
 app.get('/thank-you/:orderId', (_req: any, res: any) => res.sendFile(path.join(staticDir, 'thank-you.html')));
+
+// Test pages
+app.get('/test-email', (_req: any, res: any) => res.sendFile(path.join(staticDir, 'test-email.html')));
+app.get('/test-paypal', (_req: any, res: any) => res.sendFile(path.join(staticDir, 'test-paypal.html')));
 
 // Proxy API to Rust backend
 app.use('/api', createProxyMiddleware({

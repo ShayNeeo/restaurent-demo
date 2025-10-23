@@ -39,6 +39,7 @@ CREATE TABLE IF NOT EXISTS orders (
   total_cents INTEGER NOT NULL,
   currency TEXT NOT NULL DEFAULT 'EUR',
   coupon_code TEXT,
+  items_json TEXT,
   created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
   FOREIGN KEY(user_id) REFERENCES users(id),
   FOREIGN KEY(coupon_code) REFERENCES coupons(code)

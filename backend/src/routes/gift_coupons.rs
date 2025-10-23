@@ -1,6 +1,7 @@
 use axum::{routing::post, Json, Router, Extension, http::HeaderMap};
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
+use std::time::{SystemTime, UNIX_EPOCH};
 use sqlx::Row;
 use jsonwebtoken::{decode, DecodingKey, Validation};
 
@@ -31,19 +32,35 @@ async fn buy(Extension(state): Extension<Arc<AppState>>, headers: HeaderMap, Jso
             let user_email = if let Some(auth) = headers.get(axum::http::header::AUTHORIZATION).and_then(|v| v.to_str().ok()) {
                 if let Some(token) = auth.strip_prefix("Bearer ") {
                     if let Ok(data) = decode::<Claims>(token, &DecodingKey::from_secret(state.jwt_secret.as_bytes()), &Validation::default()) {
-                        // Try to get email from users table using user_id from JWT
-                        if let Ok(Some(row)) = sqlx::query(r#"SELECT email FROM users WHERE id = ?"#)
-                            .bind(&data.claims.sub)
-                            .fetch_optional(&state.pool)
-                            .await
-                        {
-                            if let Ok(email) = row.try_get::<String, _>("email") {
-                                email
+                        // Check if token is expired (optional validation)
+                        let current_time = SystemTime::now()
+                            .duration_since(UNIX_EPOCH)
+                            .unwrap()
+                            .as_secs() as usize;
+
+                        if data.claims.exp < current_time {
+                            tracing::warn!("JWT token expired for gift coupon purchase");
+                            return Json(BuyGiftResponse { url: format!("{}/?error=expired_token", state.app_url) });
+                        }
+
+                        // Use email from JWT token if available, otherwise query database
+                        if !data.claims.email.is_empty() {
+                            data.claims.email
+                        } else {
+                            // Fallback: Try to get email from users table using user_id from JWT
+                            if let Ok(Some(row)) = sqlx::query(r#"SELECT email FROM users WHERE id = ?"#)
+                                .bind(&data.claims.sub)
+                                .fetch_optional(&state.pool)
+                                .await
+                            {
+                                if let Ok(email) = row.try_get::<String, _>("email") {
+                                    email
+                                } else {
+                                    payload.email.as_deref().unwrap_or("").to_string()
+                                }
                             } else {
                                 payload.email.as_deref().unwrap_or("").to_string()
                             }
-                        } else {
-                            payload.email.as_deref().unwrap_or("").to_string()
                         }
                     } else {
                         payload.email.as_deref().unwrap_or("").to_string()
