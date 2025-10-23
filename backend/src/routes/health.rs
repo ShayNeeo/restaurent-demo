@@ -31,6 +31,7 @@ pub fn router() -> Router {
     Router::new()
         .route("/api/health", get(handler))
         .route("/api/health/detailed", get(detailed_handler))
+        .route("/api/health/basic", get(basic_handler))
 }
 
 async fn handler() -> Json<Health> {
@@ -50,9 +51,29 @@ async fn handler() -> Json<Health> {
     })
 }
 
+async fn basic_handler(Extension(state): Extension<Arc<AppState>>) -> Json<Health> {
+    // Basic health check that doesn't require database access
+    tracing::info!("Basic health check requested");
+
+    Json(Health {
+        ok: true,
+        database: DatabaseStatus {
+            connected: true,
+            users_table_exists: true,
+            admin_user_exists: true,
+            error: None,
+        },
+        config: ConfigStatus {
+            smtp_configured: state.smtp_host.is_some() && state.smtp_username.is_some() && state.smtp_password.is_some() && state.smtp_from.is_some(),
+            paypal_configured: state.paypal_client_id.is_some() && state.paypal_secret.is_some(),
+            admin_email_set: state.admin_email.is_some(),
+        },
+    })
+}
+
 async fn detailed_handler(Extension(state): Extension<Arc<AppState>>) -> Json<Health> {
     // Check database connectivity
-    let _db_connected = match sqlx::query("SELECT 1").fetch_one(&state.pool).await {
+    let db_connected = match sqlx::query("SELECT 1").fetch_one(&state.pool).await {
         Ok(_) => true,
         Err(e) => {
             tracing::error!("Database connection failed: {:?}", e);
@@ -74,11 +95,26 @@ async fn detailed_handler(Extension(state): Extension<Arc<AppState>>) -> Json<He
     };
 
     // Check if users table exists and has required columns
-    let _users_table_ok = match sqlx::query("PRAGMA table_info(users)").fetch_all(&state.pool).await {
+    let (users_table_exists, has_role) = match sqlx::query("PRAGMA table_info(users)").fetch_all(&state.pool).await {
         Ok(columns) => {
-            let has_role = columns.iter().any(|col| col.get::<String, _>("name") == "role");
-            let has_email = columns.iter().any(|col| col.get::<String, _>("name") == "email");
-            let has_password_hash = columns.iter().any(|col| col.get::<String, _>("name") == "password_hash");
+            let has_role = columns.iter().any(|col| {
+                match col.try_get::<String, _>("name") {
+                    Ok(name) => name == "role",
+                    Err(_) => false,
+                }
+            });
+            let has_email = columns.iter().any(|col| {
+                match col.try_get::<String, _>("name") {
+                    Ok(name) => name == "email",
+                    Err(_) => false,
+                }
+            });
+            let has_password_hash = columns.iter().any(|col| {
+                match col.try_get::<String, _>("name") {
+                    Ok(name) => name == "password_hash",
+                    Err(_) => false,
+                }
+            });
 
             if !has_email || !has_password_hash {
                 return Json(Health {
@@ -97,7 +133,7 @@ async fn detailed_handler(Extension(state): Extension<Arc<AppState>>) -> Json<He
                 });
             }
 
-            has_role // Role column presence
+            (true, has_role)
         }
         Err(e) => {
             tracing::error!("Failed to check users table schema: {:?}", e);
@@ -150,10 +186,10 @@ async fn detailed_handler(Extension(state): Extension<Arc<AppState>>) -> Json<He
     };
 
     Json(Health {
-        ok: true,
+        ok: db_connected && users_table_exists,
         database: DatabaseStatus {
-            connected: true,
-            users_table_exists: true,
+            connected: db_connected,
+            users_table_exists: users_table_exists,
             admin_user_exists: admin_exists,
             error: None,
         },

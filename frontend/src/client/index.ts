@@ -611,14 +611,29 @@ async function initAdminHealthCheck() {
         healthBtn.disabled = true;
         healthBtn.textContent = 'Checking...';
 
-        const response = await fetch(`${API_BASE}/health/detailed`);
-        const data = await response.json();
+        // Try basic health check first, then detailed
+        let response;
+        let data;
+
+        try {
+          response = await fetch(`${API_BASE}/health/basic`);
+          data = await response.json();
+        } catch (error) {
+          try {
+            response = await fetch(`${API_BASE}/health/detailed`);
+            data = await response.json();
+          } catch (detailedError) {
+            throw new Error(`Backend health check failed: ${detailedError.message}`);
+          }
+        }
 
         let statusText = '';
+        const healthType = response?.url?.includes('basic') ? 'Basic' : 'Detailed';
+
         if (data.ok) {
-          statusText = `✅ System OK | DB: ${data.database.admin_user_exists ? 'Admin exists' : 'No admin'} | SMTP: ${data.config.smtp_configured ? 'Configured' : 'Not configured'}`;
+          statusText = `✅ System OK (${healthType}) | DB: ${data.database.admin_user_exists ? 'Admin exists' : 'No admin'} | SMTP: ${data.config.smtp_configured ? 'Configured' : 'Not configured'}`;
         } else {
-          statusText = `❌ Issues: ${data.database.error || 'Configuration problems'}`;
+          statusText = `❌ Issues (${healthType}): ${data.database.error || 'Configuration problems'}`;
         }
 
         healthResult.textContent = statusText;

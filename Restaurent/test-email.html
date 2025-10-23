@@ -85,6 +85,11 @@
                   <li>Connection failed: Check host/port and firewall</li>
                   <li>TLS/SSL issues: Verify security settings</li>
                 </ul>
+                <p><strong>Available Health Check Endpoints:</strong></p>
+                <div style="background:var(--smoky-black-1);padding:8px;border-radius:4px;font-family:monospace;font-size:12px;margin-bottom:12px;">
+                  /api/health/basic - Server status (no database required)<br>
+                  /api/health/detailed - Full system check (database required)
+                </div>
                 <p><strong>Test with these SMTP settings:</strong></p>
                 <div style="background:var(--smoky-black-1);padding:8px;border-radius:4px;font-family:monospace;font-size:12px;">
                   SMTP_HOST=smtp-relay.brevo.com<br>
@@ -114,9 +119,23 @@
           statusBtn.disabled = true;
           statusBtn.innerHTML = '<span class="text text-1">Checking...</span><span class="text text-2" aria-hidden="true">Checking...</span>';
 
-          // Check backend health (detailed)
-          const healthResponse = await fetch('/api/health/detailed');
-          const healthData = await healthResponse.json();
+          // Check backend health (try basic first, then detailed)
+          let healthResponse;
+          let healthData;
+
+          try {
+            // Try basic health check first (doesn't require database)
+            healthResponse = await fetch('/api/health/basic');
+            healthData = await healthResponse.json();
+          } catch (error) {
+            // If basic fails, try detailed (requires database)
+            try {
+              healthResponse = await fetch('/api/health/detailed');
+              healthData = await healthResponse.json();
+            } catch (detailedError) {
+              throw new Error(`Backend not responding: ${detailedError.message}`);
+            }
+          }
 
           // Check SMTP configuration
           let smtpStatus = 'Not configured';
@@ -156,9 +175,10 @@
             }
           }
 
+          const healthEndpoint = healthResponse?.url?.includes('basic') ? 'Basic' : 'Detailed';
           const statusInfo = `
             <div style="background:var(--smoky-black-2);padding:16px;border-radius:8px;border:1px solid var(--white-alpha-20);">
-              <h4 style="margin:0 0 12px;color:var(--gold-crayola);">System Status</h4>
+              <h4 style="margin:0 0 12px;color:var(--gold-crayola);">System Status (${healthEndpoint} Check)</h4>
               <div style="margin-bottom:8px;"><strong>Overall Status:</strong> ${healthData?.ok ? '✅ OK' : '❌ Issues Found'}</div>
               <div style="margin-bottom:8px;"><strong>Database Connected:</strong> ${healthData?.database?.connected ? '✅ Yes' : '❌ No'}</div>
               <div style="margin-bottom:8px;"><strong>Admin User Exists:</strong> ${healthData?.database?.admin_user_exists ? '✅ Yes' : '❌ No'}</div>
@@ -175,6 +195,8 @@
                   '• Configure SMTP in environment variables<br>' : ''}
                 ${healthData?.database?.error ?
                   '• Check database migrations and run them<br>' : ''}
+                ${healthEndpoint === 'Basic' && healthData?.ok ?
+                  '• System is running! Database issues may exist but server is responding<br>' : ''}
               </div>
             </div>
           `;
