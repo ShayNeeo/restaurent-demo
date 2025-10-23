@@ -4,7 +4,7 @@ use std::sync::Arc;
 use uuid::Uuid;
 use sqlx::Row;
 use crate::{state::AppState, payments::capture_paypal_order};
-use crate::email::{send_email, send_html_email, gift_coupon_html, order_confirmation_html};
+use crate::email::{send_html_email, gift_coupon_html, order_confirmation_html};
 use axum::http::header::HeaderMap;
 
 #[derive(Deserialize)]
