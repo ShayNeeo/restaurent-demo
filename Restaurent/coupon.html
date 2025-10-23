@@ -56,15 +56,19 @@
   <script src="./assets/js/app.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', function(){
+      // Quick amount buttons
       document.querySelectorAll('[data-quick-amount]')?.forEach(function(b){
-        b.addEventListener('click', function(){
+        b.addEventListener('click', function(e){
+          e.preventDefault();
+          e.stopPropagation();
           var v = this.getAttribute('data-quick-amount');
           var input = document.getElementById('gift-amount');
           if (input) {
             input.value = v;
+            input.dataset.selected = v; // Store value as backup
             input.focus();
             updateBuyButtonText();
-            console.log('Quick amount selected:', v);
+            console.log('Quick amount selected:', v, 'input.value now:', input.value);
           }
         });
       });
@@ -73,49 +77,48 @@
       function updateBuyButtonText() {
         var input = document.getElementById('gift-amount');
         var btn = document.getElementById('gift-buy');
-        if (input && btn && input.value) {
-          var amount = parseFloat(input.value);
+        var amount = input && input.value ? parseFloat(input.value) : null;
+        
+        if (amount && amount >= 10) {
           var bonus = (amount * 0.10).toFixed(2);
           var total = (amount + parseFloat(bonus)).toFixed(2);
           btn.innerHTML = `<span class="text text-1">Buy €${amount} (Get €${total} total)</span><span class="text text-2" aria-hidden="true">Buy €${amount} (Get €${total} total)</span>`;
-        } else if (btn) {
+        } else {
           btn.innerHTML = `<span class="text text-1">Buy Now</span><span class="text text-2" aria-hidden="true">Buy Now</span>`;
         }
       }
 
-      // Also add event listener to the buy button to show current value
-      document.getElementById('gift-buy')?.addEventListener('click', async function() {
+      // Buy button click handler
+      document.getElementById('gift-buy')?.addEventListener('click', async function(e){
+        e.preventDefault();
+        e.stopPropagation();
+        
         var input = document.getElementById('gift-amount');
-        if (!input || !input.value) {
-          alert('Please enter an amount');
+        var eur = 0;
+        
+        // Try to get value from input
+        if (input && input.value) {
+          eur = Number(input.value);
+          console.log('Input value:', input.value, 'parsed as:', eur);
+        } else if (input && input.dataset.selected) {
+          // Fallback to data attribute
+          eur = Number(input.dataset.selected);
+          console.log('Using dataset.selected:', eur);
+        }
+        
+        if (!eur || isNaN(eur) || eur < 10) {
+          var currentVal = input ? input.value || input.dataset.selected || '0' : '0';
+          alert(`Please enter a valid amount (minimum €10). Current value: €${currentVal}`);
           return;
         }
         
-        var eur = Number(input.value.trim());
-        console.log('Buy button clicked, current amount:', eur);
-        
-        if (isNaN(eur) || eur < 10) {
-          alert(`Please enter a valid amount (minimum €10). Current value: ${input.value}`);
-          return;
-        }
+        console.log('Proceeding with purchase: €' + eur);
         
         // Check if logged in
         var token = localStorage.getItem('restaurant_jwt_v1');
         var email = localStorage.getItem('restaurant_email_v1');
         
-        if (!token) {
-          // Try to get email from JWT if available
-          if (token) {
-            try {
-              var parts = token.split('.');
-              if (parts.length === 3) {
-                var payload = JSON.parse(atob(parts[1]));
-                email = payload.email || null;
-              }
-            } catch (e) {}
-          }
-          
-          // Not logged in - show auth modal
+        if (!token || !email) {
           console.log('Not logged in, showing auth modal');
           if (typeof showAuthModal === 'function') {
             localStorage.setItem('post_auth_action', 'buy_gift');
@@ -123,16 +126,6 @@
             showAuthModal();
             return;
           }
-        }
-        
-        if (!email) {
-          alert('Email is required. Please sign in again.');
-          localStorage.removeItem('restaurant_jwt_v1');
-          localStorage.removeItem('restaurant_email_v1');
-          if (typeof showAuthModal === 'function') {
-            showAuthModal();
-          }
-          return;
         }
         
         console.log('Processing gift coupon purchase:', { amount_eur: eur, email });
@@ -148,10 +141,12 @@
           });
           
           const data = await response.json();
+          console.log('API response:', data);
+          
           if (data?.url) {
+            console.log('Redirecting to PayPal:', data.url);
             window.location.href = data.url;
           } else {
-            console.error('API response:', data);
             alert('Failed to create PayPal order. Please try again.');
           }
         } catch (error) {
