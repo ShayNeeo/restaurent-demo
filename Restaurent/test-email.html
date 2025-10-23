@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <base href="/">
+  <title>Test Email - Demo</title>
+  <link rel="shortcut icon" href="./favicon.svg" type="image/svg+xml">
+
+  <!--
+    - google font link
+  -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;700&family=Forum&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="./assets/css/style.css">
+</head>
+<body>
+  <header class="header" data-header>
+    <div class="container">
+      <a href="/" class="logo">
+        <img src="./assets/images/logo.svg" width="160" height="50" alt="Demo - Home">
+      </a>
+    </div>
+  </header>
+
+  <main>
+    <article>
+      <section class="section" aria-label="test-email">
+        <div class="container" style="max-width:640px;margin:0 auto;">
+          <div class="special-dish-content bg-black-10" style="padding:40px;border-radius:12px">
+            <div style="text-align:center;margin-bottom:30px">
+              <h2 class="headline-1 section-title" style="color:var(--gold-crayola);margin-bottom:10px">Test Email</h2>
+              <p class="section-text">Test Brevo SMTP email sending functionality</p>
+            </div>
+
+            <div class="input-wrapper" style="margin-bottom:16px;">
+              <label for="test-email-to" style="display:block;margin-bottom:8px;color:var(--white);font-weight:600;">To Email:</label>
+              <input id="test-email-to" type="email" placeholder="recipient@example.com" class="input-field" style="width:100%;padding:12px;border:1px solid var(--white-alpha-20);background:var(--eerie-black-2);color:var(--white);border-radius:8px;" />
+            </div>
+
+            <div class="input-wrapper" style="margin-bottom:16px;">
+              <label for="test-email-subject" style="display:block;margin-bottom:8px;color:var(--white);font-weight:600;">Subject:</label>
+              <input id="test-email-subject" type="text" placeholder="Test Email Subject" class="input-field" style="width:100%;padding:12px;border:1px solid var(--white-alpha-20);background:var(--eerie-black-2);color:var(--white);border-radius:8px;" />
+            </div>
+
+            <div class="input-wrapper" style="margin-bottom:16px;">
+              <label for="test-email-body" style="display:block;margin-bottom:8px;color:var(--white);font-weight:600;">Message:</label>
+              <textarea id="test-email-body" placeholder="Enter your test message here..." class="input-field" rows="6" style="width:100%;padding:12px;border:1px solid var(--white-alpha-20);background:var(--eerie-black-2);color:var(--white);border-radius:8px;resize:vertical;"></textarea>
+            </div>
+
+            <div style="text-align:center;">
+              <button id="test-email-send" class="btn btn-primary" style="margin-right:12px;">
+                <span class="text text-1">Send Test Email</span>
+                <span class="text text-2" aria-hidden="true">Send Test Email</span>
+              </button>
+              <a href="/" class="btn btn-secondary">
+                <span class="text text-1">Back to Home</span>
+                <span class="text text-2" aria-hidden="true">Back to Home</span>
+              </a>
+            </div>
+
+            <div id="test-email-result" style="margin-top:20px;padding:16px;border-radius:8px;display:none;"></div>
+          </div>
+        </div>
+      </section>
+    </article>
+  </main>
+
+  <script src="./assets/js/script.js"></script>
+  <script src="./assets/js/app.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function(){
+      const sendBtn = document.getElementById('test-email-send');
+      const resultDiv = document.getElementById('test-email-result');
+
+      sendBtn?.addEventListener('click', async function() {
+        const to = document.getElementById('test-email-to').value.trim();
+        const subject = document.getElementById('test-email-subject').value.trim();
+        const body = document.getElementById('test-email-body').value.trim();
+
+        if (!to || !subject || !body) {
+          showResult('Please fill in all fields', 'error');
+          return;
+        }
+
+        if (!isValidEmail(to)) {
+          showResult('Please enter a valid email address', 'error');
+          return;
+        }
+
+        try {
+          sendBtn.disabled = true;
+          sendBtn.innerHTML = '<span class="text text-1">Sending...</span><span class="text text-2" aria-hidden="true">Sending...</span>';
+
+          const response = await fetch('/api/test-email', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ to, subject, body })
+          });
+
+          if (response.ok) {
+            showResult('Email sent successfully!', 'success');
+            // Clear form
+            document.getElementById('test-email-to').value = '';
+            document.getElementById('test-email-subject').value = '';
+            document.getElementById('test-email-body').value = '';
+          } else {
+            const error = await response.text();
+            showResult(`Failed to send email: ${error}`, 'error');
+          }
+        } catch (error) {
+          showResult(`Error: ${error.message}`, 'error');
+        } finally {
+          sendBtn.disabled = false;
+          sendBtn.innerHTML = '<span class="text text-1">Send Test Email</span><span class="text text-2" aria-hidden="true">Send Test Email</span>';
+        }
+      });
+
+      function showResult(message, type) {
+        resultDiv.style.display = 'block';
+        resultDiv.style.background = type === 'success' ? 'var(--gold-crayola)' : '#ef4444';
+        resultDiv.style.color = type === 'success' ? 'var(--smoky-black-1)' : 'white';
+        resultDiv.textContent = message;
+
+        setTimeout(() => {
+          resultDiv.style.display = 'none';
+        }, 5000);
+      }
+
+      function isValidEmail(email) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+      }
+    });
+  </script>
+  <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
+  <script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
+</body>
+</html>

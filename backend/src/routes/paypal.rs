@@ -60,12 +60,13 @@ async fn paypal_return(Extension(state): Extension<Arc<AppState>>, headers: Head
 
                         // Create order record
                         let order_db_id = Uuid::new_v4().to_string();
-                        let _ = sqlx::query(r#"INSERT INTO orders (id, user_id, email, total_cents, coupon_code) VALUES (?, ?, ?, ?, ?)"#)
+                        let _ = sqlx::query(r#"INSERT INTO orders (id, user_id, email, total_cents, coupon_code, items_json) VALUES (?, ?, ?, ?, ?, ?)"#)
                             .bind(&order_db_id)
                             .bind(user_id) // user_id is not available from pending_orders
                             .bind(&email)
                             .bind(amount_cents)
                             .bind(coupon_code.as_deref())
+                            .bind(&items_json)
                             .execute(&state.pool)
                             .await;
 

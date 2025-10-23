@@ -119,41 +119,42 @@
         <img src="./assets/images/logo.svg" width="160" height="50" alt="Demo - Home">
       </a>
 
-      <nav class="navbar" data-navbar>
+      <div class="header-actions">
+        <nav class="navbar" data-navbar>
 
-        <button class="close-btn" aria-label="close menu" data-nav-toggler>
-          <ion-icon name="close-outline" aria-hidden="true"></ion-icon>
-        </button>
+          <button class="close-btn" aria-label="close menu" data-nav-toggler>
+            <ion-icon name="close-outline" aria-hidden="true"></ion-icon>
+          </button>
 
-        <a href="#" class="logo">
-          <img src="./assets/images/logo.svg" width="160" height="50" alt="Demo - Home">
-        </a>
+          <a href="#" class="logo">
+            <img src="./assets/images/logo.svg" width="160" height="50" alt="Demo - Home">
+          </a>
 
-        <ul class="navbar-list">
+          <ul class="navbar-list">
 
-          <li class="navbar-item">
-            <a href="#home" class="navbar-link hover-underline active">
-              <div class="separator"></div>
+            <li class="navbar-item">
+              <a href="#home" class="navbar-link hover-underline active">
+                <div class="separator"></div>
 
-              <span class="span">Home</span>
-            </a>
-          </li>
+                <span class="span">Home</span>
+              </a>
+            </li>
 
-          <li class="navbar-item">
-            <a href="/menu" class="navbar-link hover-underline">
-              <div class="separator"></div>
+            <li class="navbar-item">
+              <a href="/menu" class="navbar-link hover-underline">
+                <div class="separator"></div>
 
-              <span class="span">Menus</span>
-            </a>
-          </li>
+                <span class="span">Menus</span>
+              </a>
+            </li>
 
-          <li class="navbar-item">
-            <a href="/coupon" class="navbar-link hover-underline">
-              <div class="separator"></div>
+            <li class="navbar-item">
+              <a href="/coupon" class="navbar-link hover-underline">
+                <div class="separator"></div>
 
-              <span class="span">Coupons</span>
-            </a>
-          </li>
+                <span class="span">Coupons</span>
+              </a>
+            </li>
 
           <li class="navbar-item">
             <a href="#about" class="navbar-link hover-underline">
@@ -200,23 +201,29 @@
           <a href="tel:+88123123456" class="body-1 contact-number hover-underline">
             +88-123-123456
           </a>
+          </div>
+
+        </nav>
+
+        <div class="header-auth" id="header-auth">
+          <!-- Authentication button will be inserted here by JavaScript -->
         </div>
 
-      </nav>
+        <a href="#" class="btn btn-secondary">
+          <span class="text text-1">Find A Table</span>
 
-      <a href="#" class="btn btn-secondary">
-        <span class="text text-1">Find A Table</span>
+          <span class="text text-2" aria-hidden="true">Find A Table</span>
+        </a>
 
-        <span class="text text-2" aria-hidden="true">Find A Table</span>
-      </a>
+        <button class="nav-open-btn" aria-label="open menu" data-nav-toggler>
+          <span class="line line-1"></span>
+          <span class="line line-2"></span>
+          <span class="line line-3"></span>
+        </button>
 
-      <button class="nav-open-btn" aria-label="open menu" data-nav-toggler>
-        <span class="line line-1"></span>
-        <span class="line line-2"></span>
-        <span class="line line-3"></span>
-      </button>
+        <div class="overlay" data-nav-toggler data-overlay></div>
 
-      <div class="overlay" data-nav-toggler data-overlay></div>
+      </div>
 
     </div>
   </header>

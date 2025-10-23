@@ -171,6 +171,8 @@ function ensureUI() {
   #cart-panel{position:fixed;right:16px;bottom:72px;max-width:420px;width:92vw;background:var(--smoky-black-2);color:var(--white);border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.3);padding:16px;display:none;z-index:1000;border:1px solid var(--white-alpha-10)}
   #cart-panel.open{display:block}
   #cart-panel input, #cart-panel button{border-radius:8px}
+  .header-actions{display:flex;align-items:center;gap:16px}
+  .header-auth{margin-left:auto}
   #cart-items{max-height:280px;overflow:auto;margin:8px 0}
   .qty-btn{background:var(--eerie-black-3);border:1px solid var(--white-alpha-10);color:var(--white);width:28px;height:28px;border-radius:6px;cursor:pointer}
   .del-btn{background:#b91c1c;border:none;color:#fff;width:28px;height:28px;border-radius:6px;cursor:pointer}
@@ -178,9 +180,9 @@ function ensureUI() {
   `;
   document.head.appendChild(style);
 
-  // Top bar auth button
-  const header = document.querySelector('.header .container');
-  if (header) {
+  // Header auth button
+  const headerAuth = document.getElementById('header-auth');
+  if (headerAuth) {
     const authBtn = document.createElement('a');
     authBtn.id = 'topbar-auth';
     authBtn.className = 'btn btn-secondary';
@@ -192,7 +194,7 @@ function ensureUI() {
       authBtn.innerHTML = '<span class="text text-1">Sign in</span><span class="text text-2" aria-hidden="true">Sign in</span>';
       authBtn.addEventListener('click', (e) => { e.preventDefault(); showAuthModal(); });
     }
-    header.appendChild(authBtn);
+    headerAuth.appendChild(authBtn);
   }
 
   const fab = document.createElement('button');
@@ -610,20 +612,26 @@ async function initThankYou() {
     // Generic thank you (no order ID)
     if (giftCode) return; // Gift code overlay will handle it
     thankYouContent.innerHTML = `
-      <h2 class="headline-1 section-title text-center">Thank you!</h2>
-      <p class="text-center">Your purchase was successful. If you bought a gift coupon, your code has been sent to your email.</p>
-      <div style="text-align:center;margin-top:16px">
-        <a href="/" class="btn btn-primary"><span class="text text-1">Back to Home</span><span class="text text-2" aria-hidden="true">Back to Home</span></a>
+      <div class="order-content">
+        <h2 class="headline-1 section-title text-center">Thank you!</h2>
+        <p class="text-center">Your purchase was successful. If you bought a gift coupon, your code has been sent to your email.</p>
+        <div style="text-align:center;margin-top:16px">
+          <a href="/" class="btn btn-primary"><span class="text text-1">Back to Home</span><span class="text text-2" aria-hidden="true">Back to Home</span></a>
+        </div>
       </div>
     `;
+
+    // Hide loading state and show content
+    thankYouContent.className = 'content-loaded';
     return;
   }
 
   // Show loading state
   thankYouContent.innerHTML = `
-    <h2 class="headline-1 section-title text-center">Loading your order...</h2>
-    <div style="text-align:center;margin-top:16px">
-      <div style="display:inline-block;width:20px;height:20px;border:2px solid var(--gold-crayola);border-radius:50%;border-top-color:transparent;animation:spin 1s linear infinite;"></div>
+    <div class="loading-state" style="text-align:center;">
+      <h2 class="headline-1 section-title" style="color:var(--gold-crayola);margin-bottom:10px">Thank You</h2>
+      <p class="section-text">Loading your order details...</p>
+      <div style="display:inline-block;width:20px;height:20px;border:2px solid var(--gold-crayola);border-radius:50%;border-top-color:transparent;animation:spin 1s linear infinite;margin-top:10px;"></div>
     </div>
     <style>
       @keyframes spin {
@@ -664,8 +672,9 @@ async function initThankYou() {
     const discount = subtotal - order.total_cents;
     
     thankYouContent.innerHTML = `
-      <h2 class="headline-1 section-title text-center">Thank You!</h2>
-      <p class="text-center">Your order has been confirmed.</p>
+      <div class="order-content">
+        <h2 class="headline-1 section-title text-center">Thank You!</h2>
+        <p class="text-center">Your order has been confirmed.</p>
       
       <div style="background:var(--smoky-black-2);padding:20px;border-radius:12px;margin-top:20px;border:1px solid var(--white-alpha-10)">
         <h3 style="margin:0 0 12px;font-size:18px">Order Invoice</h3>
@@ -705,28 +714,37 @@ async function initThankYou() {
         </div>
       </div>
       
-      <div style="text-align:center;margin-top:20px">
-        <p style="color:var(--quick-silver)">A confirmation email has been sent to <strong>${order.email}</strong></p>
-        <a href="/" class="btn btn-primary" style="margin-top:12px"><span class="text text-1">Back to Home</span><span class="text text-2" aria-hidden="true">Back to Home</span></a>
+        <div style="text-align:center;margin-top:20px">
+          <p style="color:var(--quick-silver)">A confirmation email has been sent to <strong>${order.email}</strong></p>
+          <a href="/" class="btn btn-primary" style="margin-top:12px"><span class="text text-1">Back to Home</span><span class="text text-2" aria-hidden="true">Back to Home</span></a>
+        </div>
       </div>
     `;
+
+    // Hide loading state and show content
+    thankYouContent.className = 'content-loaded';
   } catch (err) {
     console.error('Error loading order details:', err);
     const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
     thankYouContent.innerHTML = `
-      <h2 class="headline-1 section-title text-center">Unable to Load Order</h2>
-      <p class="text-center">We couldn't load your order details. This might be because:</p>
+      <div class="order-content">
+        <h2 class="headline-1 section-title text-center">Unable to Load Order</h2>
+        <p class="text-center">We couldn't load your order details. This might be because:</p>
       <ul style="text-align:left;margin:16px auto;max-width:400px;color:var(--quick-silver)">
         <li>The order doesn't exist</li>
         <li>The order is still being processed</li>
         <li>There was a temporary connection issue</li>
       </ul>
       <p class="text-center">If you just completed a purchase, please wait a few minutes and try refreshing the page.</p>
-      <div style="text-align:center;margin-top:16px">
-        <button onclick="location.reload()" class="btn btn-secondary" style="margin-right:8px">Try Again</button>
-        <a href="/" class="btn btn-primary"><span class="text text-1">Back to Home</span><span class="text text-2" aria-hidden="true">Back to Home</span></a>
+        <div style="text-align:center;margin-top:16px">
+          <button onclick="location.reload()" class="btn btn-secondary" style="margin-right:8px">Try Again</button>
+          <a href="/" class="btn btn-primary"><span class="text text-1">Back to Home</span><span class="text text-2" aria-hidden="true">Back to Home</span></a>
+        </div>
       </div>
     `;
+
+    // Hide loading state and show content
+    thankYouContent.className = 'content-loaded';
   }
 }
 
@@ -734,10 +752,17 @@ initThankYou();
 
 async function buyGiftCoupon() {
   const input = (document.getElementById('panel-gift-amount') as HTMLInputElement | null) || (document.getElementById('gift-amount') as HTMLInputElement | null);
-  if (!input) return;
-  const eur = Number(input.value);
-  if (!eur || eur < 10) {
-    alert('Please enter a valid amount (minimum €10)');
+  if (!input) {
+    console.error('Gift amount input not found');
+    alert('Error: Could not find amount input field');
+    return;
+  }
+
+  const eur = Number(input.value.trim());
+  console.log('Gift amount input value:', input.value, 'parsed as:', eur);
+
+  if (isNaN(eur) || eur < 10) {
+    alert(`Please enter a valid amount (minimum €10). Current value: ${input.value}`);
     return;
   }
   if (!getToken()) {
@@ -759,7 +784,7 @@ async function buyGiftCoupon() {
 
   const res = await fetch(`${API_BASE}/gift-coupons/buy`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...(getToken() ? { Authorization: `Bearer ${getToken()}` } : {}) },
     body: JSON.stringify({ amount_eur: eur, email })
   });
   const data = await res.json();

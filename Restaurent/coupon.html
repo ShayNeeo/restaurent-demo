@@ -7,6 +7,14 @@
   <base href="/">
   <title>Buy Coupon - Demo</title>
   <link rel="shortcut icon" href="./favicon.svg" type="image/svg+xml">
+
+  <!--
+    - google font link
+  -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;700&family=Forum&display=swap" rel="stylesheet">
+
   <link rel="stylesheet" href="./assets/css/style.css">
 </head>
 <body>
@@ -52,8 +60,20 @@
         b.addEventListener('click', function(){
           var v = this.getAttribute('data-quick-amount');
           var input = document.getElementById('gift-amount');
-          if (input) input.value = v;
+          if (input) {
+            input.value = v;
+            input.focus();
+            console.log('Quick amount selected:', v);
+          }
         });
+      });
+
+      // Also add event listener to the buy button to show current value
+      document.getElementById('gift-buy')?.addEventListener('click', function() {
+        var input = document.getElementById('gift-amount');
+        if (input) {
+          console.log('Buy button clicked, current amount:', input.value);
+        }
       });
     });
   </script>

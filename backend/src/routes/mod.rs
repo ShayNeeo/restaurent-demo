@@ -13,6 +13,7 @@ pub mod webhooks;
 pub mod paypal;
 pub mod admin;
 pub mod orders;
+pub mod test_email;
 
 pub fn build_router(state: Arc<AppState>) -> Router {
     Router::new()
@@ -26,6 +27,7 @@ pub fn build_router(state: Arc<AppState>) -> Router {
         .merge(paypal::router())
         .merge(admin::router())
         .merge(orders::router())
+        .merge(test_email::router())
         .layer(Extension(state))
 }
 

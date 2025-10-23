@@ -77,10 +77,25 @@ async fn start(Extension(state): Extension<Arc<AppState>>, headers: HeaderMap, J
     if state.paypal_client_id.is_some() && state.paypal_secret.is_some() {
         if let Ok(order) = create_paypal_order(&state, total_cents, "/api/paypal/return", "/api/paypal/cancel", Some("Cart checkout".into())).await {
             // Store pending order mapping for finalization on return
+            // Always prefer the authenticated user's email from JWT over any provided email
+            let user_email = if let Some(uid) = user_id.as_ref() {
+                // Try to get email from users table if user_id exists
+                sqlx::query(r#"SELECT email FROM users WHERE id = ?"#)
+                    .bind(uid)
+                    .fetch_optional(&state.pool)
+                    .await
+                    .ok()
+                    .flatten()
+                    .and_then(|r| r.try_get::<String, _>("email").ok())
+                    .unwrap_or_else(|| payload.email.as_deref().unwrap_or("").to_string())
+            } else {
+                payload.email.as_deref().unwrap_or("").to_string()
+            };
+
             let _ = sqlx::query(r#"INSERT OR REPLACE INTO pending_orders (order_id, user_id, email, amount_cents, items_json) VALUES (?, ?, ?, ?, ?)"#)
                 .bind(&order.id)
                 .bind(user_id.as_deref())
-                .bind(payload.email.as_deref().unwrap_or(""))
+                .bind(&user_email)
                 .bind(total_cents)
                 .bind(serde_json::json!({
                     "cart": payload.cart,

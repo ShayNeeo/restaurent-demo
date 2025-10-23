@@ -7,6 +7,14 @@
   <base href="/">
   <title>Thank You - Demo</title>
   <link rel="shortcut icon" href="./favicon.svg" type="image/svg+xml">
+
+  <!--
+    - google font link
+  -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;700&family=Forum&display=swap" rel="stylesheet">
+
   <link rel="stylesheet" href="./assets/css/style.css">
 </head>
 <body>
@@ -22,13 +30,21 @@
       <section class="section" aria-label="thank-you">
         <div class="container" style="max-width:640px;margin:0 auto;">
           <div class="special-dish-content bg-black-10" style="padding:40px;border-radius:12px">
-            <div style="text-align:center;margin-bottom:30px">
-              <h2 class="headline-1 section-title" style="color:var(--gold-crayola);margin-bottom:10px">Thank You</h2>
-              <p class="section-text">Processing your order...</p>
-            </div>
             <div id="thank-you-content">
-              <h2 class="headline-1 section-title text-center">Loading...</h2>
+              <div class="loading-state" style="text-align:center;">
+                <h2 class="headline-1 section-title" style="color:var(--gold-crayola);margin-bottom:10px">Thank You</h2>
+                <p class="section-text">Loading your order details...</p>
+                <div style="display:inline-block;width:20px;height:20px;border:2px solid var(--gold-crayola);border-radius:50%;border-top-color:transparent;animation:spin 1s linear infinite;margin-top:10px;"></div>
+              </div>
             </div>
+
+            <style>
+              @keyframes spin {
+                to { transform: rotate(360deg); }
+              }
+              .loading-state { display: block; }
+              .content-loaded .loading-state { display: none; }
+            </style>
           </div>
         </div>
       </section>
