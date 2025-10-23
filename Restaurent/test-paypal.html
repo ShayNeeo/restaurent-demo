@@ -103,6 +103,11 @@
           simulateBtn.disabled = true;
           simulateBtn.innerHTML = '<span class="text text-1">Processing...</span><span class="text text-2" aria-hidden="true">Processing...</span>';
 
+          // First check if there's a pending order with this ID
+          const checkRes = await fetch(`/api/admin/query?table=pending_orders&limit=100`);
+          const pendingOrders = await checkRes.json();
+          const hasPendingOrder = Array.isArray(pendingOrders) && pendingOrders.some(o => o.order_id === orderId);
+
           // Simulate a PayPal webhook by calling the webhook endpoint
           const response = await fetch(`/api/webhooks/paypal`, {
             method: 'POST',
@@ -119,15 +124,28 @@
             })
           });
 
-          const data = await response.text();
+          const data = await response.json();
 
-          if (response.ok) {
-            showResult(`Payment processed successfully!\n\nOrder ID: ${orderId}\n\nResponse: ${data}`, 'success');
+          let resultMessage = `Payment Processing Result:\n\nOrder ID: ${orderId}\n`;
+          resultMessage += `Status: ${data.status}\n`;
+          
+          if (hasPendingOrder) {
+            resultMessage += `Pending Order: Found (should be processed)\n`;
           } else {
-            showResult(`Failed to process payment: ${data}`, 'error');
+            resultMessage += `Pending Order: NOT FOUND (webhook returns "failed" because no pending order exists)\n`;
+          }
+          
+          resultMessage += `Response: ${JSON.stringify(data, null, 2)}\n\n`;
+
+          if (data.status === 'processed' || data.status === 'already_processed') {
+            showResult(resultMessage + '✅ Payment processed successfully!', 'success');
+          } else if (data.status === 'ignored' || data.status === 'failed') {
+            showResult(resultMessage + `⚠️ Payment not processed. Reason: ${data.reason || 'No pending order found. Did you complete a full checkout first?'}`, 'error');
+          } else {
+            showResult(resultMessage, 'info');
           }
         } catch (error) {
-          showResult(`Error: ${error.message}`, 'error');
+          showResult(`Error: ${error.message}\n\nNote: Make sure you've completed a full checkout flow first to create a pending order.`, 'error');
         } finally {
           simulateBtn.disabled = false;
           simulateBtn.innerHTML = '<span class="text text-1">Simulate Payment</span><span class="text text-2" aria-hidden="true">Simulate Payment</span>';

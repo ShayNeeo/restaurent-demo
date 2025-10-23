@@ -63,10 +63,25 @@
           if (input) {
             input.value = v;
             input.focus();
+            updateBuyButtonText();
             console.log('Quick amount selected:', v);
           }
         });
       });
+
+      // Update button text when input changes
+      function updateBuyButtonText() {
+        var input = document.getElementById('gift-amount');
+        var btn = document.getElementById('gift-buy');
+        if (input && btn && input.value) {
+          var amount = parseFloat(input.value);
+          var bonus = (amount * 0.10).toFixed(2);
+          var total = (amount + parseFloat(bonus)).toFixed(2);
+          btn.innerHTML = `<span class="text text-1">Buy €${amount} (Get €${total} total)</span><span class="text text-2" aria-hidden="true">Buy €${amount} (Get €${total} total)</span>`;
+        } else if (btn) {
+          btn.innerHTML = `<span class="text text-1">Buy Now</span><span class="text text-2" aria-hidden="true">Buy Now</span>`;
+        }
+      }
 
       // Also add event listener to the buy button to show current value
       document.getElementById('gift-buy')?.addEventListener('click', function() {
@@ -75,8 +90,16 @@
           console.log('Buy button clicked, current amount:', input.value);
         }
         // Call the buyGiftCoupon function to actually process the purchase
-        buyGiftCoupon();
+        if (typeof buyGiftCoupon === 'function') {
+          buyGiftCoupon();
+        } else {
+          console.error('buyGiftCoupon function not found');
+        }
       });
+
+      // Listen to input changes
+      document.getElementById('gift-amount')?.addEventListener('input', updateBuyButtonText);
+      document.getElementById('gift-amount')?.addEventListener('change', updateBuyButtonText);
     });
   </script>
   <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
