@@ -109,13 +109,7 @@ async fn reset_password(Extension(state): Extension<Arc<AppState>>, Json(payload
     }
 
     // Hash the new password
-    let salt = match SaltString::generate(&mut rand::thread_rng()) {
-        Ok(s) => s,
-        Err(e) => {
-            tracing::error!("Failed to generate salt: {:?}", e);
-            return Err(axum::http::StatusCode::INTERNAL_SERVER_ERROR);
-        }
-    };
+    let salt = SaltString::generate(&mut rand::thread_rng());
 
     let password_hash = match Argon2::default()
         .hash_password(payload.new_password.as_bytes(), &salt)
@@ -235,13 +229,7 @@ async fn setup_admin(Extension(state): Extension<Arc<AppState>>, Json(payload): 
 
     // Create admin user
     let id = Uuid::new_v4().to_string();
-    let salt = match SaltString::generate(&mut rand::thread_rng()) {
-        Ok(s) => s,
-        Err(e) => {
-            tracing::error!("Failed to generate salt: {:?}", e);
-            return Err(axum::http::StatusCode::INTERNAL_SERVER_ERROR);
-        }
-    };
+    let salt = SaltString::generate(&mut rand::thread_rng());
 
     let password_hash = match Argon2::default()
         .hash_password(payload.password.as_bytes(), &salt)

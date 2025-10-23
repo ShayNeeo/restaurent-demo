@@ -52,7 +52,7 @@ async fn handler() -> Json<Health> {
 
 async fn detailed_handler(Extension(state): Extension<Arc<AppState>>) -> Json<Health> {
     // Check database connectivity
-    let db_connected = match sqlx::query("SELECT 1").fetch_one(&state.pool).await {
+    let _db_connected = match sqlx::query("SELECT 1").fetch_one(&state.pool).await {
         Ok(_) => true,
         Err(e) => {
             tracing::error!("Database connection failed: {:?}", e);
@@ -74,7 +74,7 @@ async fn detailed_handler(Extension(state): Extension<Arc<AppState>>) -> Json<He
     };
 
     // Check if users table exists and has required columns
-    let users_table_ok = match sqlx::query("PRAGMA table_info(users)").fetch_all(&state.pool).await {
+    let _users_table_ok = match sqlx::query("PRAGMA table_info(users)").fetch_all(&state.pool).await {
         Ok(columns) => {
             let has_role = columns.iter().any(|col| col.get::<String, _>("name") == "role");
             let has_email = columns.iter().any(|col| col.get::<String, _>("name") == "email");
