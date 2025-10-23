@@ -2,6 +2,7 @@ use crate::state::AppState;
 use anyhow::Result;
 use lettre::{Message, SmtpTransport, Transport};
 use lettre::transport::smtp::authentication::Credentials;
+use chrono::Local;
 
 pub async fn send_email(state: &AppState, to: &str, subject: &str, body: &str) -> Result<()> {
     send_email_with_html(state, to, subject, body, false).await
@@ -121,23 +122,150 @@ pub fn order_confirmation_html(order_id: &str, email: &str, items_html: &str, su
 <html>
 <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        body {{ font-family: 'DM Sans', Arial, sans-serif; background: #111827; color: #fff; margin: 0; padding: 20px; }}
-        .container {{ max-width: 600px; margin: 0 auto; background: #1f2937; border-radius: 12px; overflow: hidden; border: 1px solid #374151; }}
-        .header {{ background: linear-gradient(135deg, #ffd700 0%, #f59517 100%); padding: 30px 20px; text-align: center; }}
-        .header h1 {{ margin: 0; color: #000; font-size: 28px; }}
-        .content {{ padding: 30px 20px; }}
-        .order-id {{ background: #111827; padding: 15px; border-radius: 8px; margin: 20px 0; text-align: center; }}
-        .order-id label {{ color: #9ca3af; font-size: 12px; display: block; margin-bottom: 5px; }}
-        .order-id value {{ color: #ffd700; font-size: 18px; font-weight: 700; display: block; }}
-        table {{ width: 100%; border-collapse: collapse; margin: 20px 0; }}
-        th, td {{ padding: 12px; text-align: left; border-bottom: 1px solid #374151; }}
-        th {{ background: #111827; color: #ffd700; font-weight: 700; }}
-        .totals {{ margin: 20px 0; padding: 20px 0; border-top: 2px solid #374151; border-bottom: 2px solid #374151; }}
-        .total-row {{ display: flex; justify-content: space-between; margin: 8px 0; }}
-        .grand-total {{ font-size: 20px; font-weight: 700; color: #ffd700; margin-top: 12px; }}
-        .footer {{ background: #111827; padding: 20px; text-align: center; color: #9ca3af; font-size: 12px; }}
-        .button {{ display: inline-block; background: #ffd700; color: #000; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 700; margin-top: 20px; }}
+        * {{ margin: 0; padding: 0; box-sizing: border-box; }}
+        body {{
+            font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0a0a0a;
+            color: #fff;
+            line-height: 1.6;
+        }}
+        .container {{
+            max-width: 600px;
+            margin: 0 auto;
+            background: linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 100%);
+            border: 1px solid #2a2a2a;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }}
+        .header {{
+            background: linear-gradient(135deg, #c4a747 0%, #d4b757 100%);
+            padding: 40px 20px;
+            text-align: center;
+        }}
+        .header h1 {{
+            margin: 0;
+            color: #000;
+            font-family: 'Forum', cursive;
+            font-size: 32px;
+            font-weight: 700;
+            letter-spacing: 2px;
+        }}
+        .content {{
+            padding: 40px 30px;
+        }}
+        .order-id-box {{
+            background: #1a1a1a;
+            border: 2px solid #c4a747;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+        }}
+        .order-id-label {{
+            color: #999;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 8px;
+            display: block;
+        }}
+        .order-id-value {{
+            color: #c4a747;
+            font-size: 20px;
+            font-weight: 700;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 1px;
+        }}
+        .info-line {{
+            color: #b8b8b8;
+            font-size: 13px;
+            margin: 8px 0;
+            line-height: 1.6;
+        }}
+        .section-title {{
+            color: #c4a747;
+            font-size: 18px;
+            font-weight: 700;
+            margin: 30px 0 15px 0;
+            letter-spacing: 1px;
+        }}
+        table {{
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }}
+        thead {{
+            background: #1a1a1a;
+            border-bottom: 2px solid #c4a747;
+        }}
+        th {{
+            padding: 12px;
+            text-align: left;
+            color: #c4a747;
+            font-weight: 700;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }}
+        td {{
+            padding: 12px;
+            border-bottom: 1px solid #2a2a2a;
+            color: #ddd;
+        }}
+        .totals {{
+            margin: 30px 0;
+            padding: 20px 0;
+            border-top: 2px solid #2a2a2a;
+            border-bottom: 2px solid #2a2a2a;
+        }}
+        .total-row {{
+            display: flex;
+            justify-content: space-between;
+            margin: 12px 0;
+            color: #b8b8b8;
+            font-size: 14px;
+        }}
+        .total-row.grand-total {{
+            font-size: 18px;
+            font-weight: 700;
+            color: #c4a747;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #2a2a2a;
+        }}
+        .total-row.discount {{
+            color: #4ade80;
+        }}
+        .cta-button {{
+            display: inline-block;
+            background: linear-gradient(135deg, #c4a747 0%, #d4b757 100%);
+            color: #000;
+            padding: 14px 32px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 700;
+            letter-spacing: 1px;
+            margin-top: 25px;
+            font-size: 14px;
+            text-transform: uppercase;
+            transition: transform 0.3s ease;
+        }}
+        .cta-button:hover {{
+            transform: scale(1.05);
+        }}
+        .footer {{
+            background: #1a1a1a;
+            padding: 25px;
+            text-align: center;
+            color: #999;
+            font-size: 12px;
+            border-top: 1px solid #2a2a2a;
+        }}
+        .footer p {{ margin: 0; }}
+        .divider {{ height: 1px; background: #2a2a2a; margin: 30px 0; }}
     </style>
 </head>
 <body>
@@ -146,19 +274,19 @@ pub fn order_confirmation_html(order_id: &str, email: &str, items_html: &str, su
             <h1>✓ Order Confirmed</h1>
         </div>
         <div class="content">
-            <p>Thank you for your order!</p>
-            
-            <div class="order-id">
-                <label>ORDER ID</label>
-                <value>{}</value>
-            </div>
-            
-            <p style="color: #9ca3af; font-size: 14px;">
-                <strong>Email:</strong> {}<br>
-                <strong>Date:</strong> {}
+            <p style="color: #c8c8c8; font-size: 15px; margin-bottom: 15px;">
+                Thank you for your order! We're preparing it now.
             </p>
-            
-            <h3 style="color: #ffd700; margin-top: 20px;">Items Ordered:</h3>
+
+            <div class="order-id-box">
+                <span class="order-id-label">Order ID</span>
+                <div class="order-id-value">{}</div>
+            </div>
+
+            <div class="info-line"><strong>Email:</strong> {}</div>
+            <div class="info-line"><strong>Date:</strong> {}</div>
+
+            <h3 class="section-title">Items Ordered</h3>
             <table>
                 <thead>
                     <tr>
@@ -172,7 +300,7 @@ pub fn order_confirmation_html(order_id: &str, email: &str, items_html: &str, su
                     {}
                 </tbody>
             </table>
-            
+
             <div class="totals">
                 <div class="total-row">
                     <span>Subtotal:</span>
@@ -184,30 +312,36 @@ pub fn order_confirmation_html(order_id: &str, email: &str, items_html: &str, su
                     <span>€{:.2}</span>
                 </div>
             </div>
-            
-            <p style="text-align: center; color: #9ca3af; font-size: 14px;">
+
+            <p style="text-align: center; color: #999; font-size: 13px; margin: 20px 0;">
                 A confirmation email has been sent. You can view your complete invoice anytime.
             </p>
-            
+
             <div style="text-align: center;">
-                <a href="{}/thank-you/{}" class="button">View Invoice</a>
+                <a href="{}/thank-you/{}" class="cta-button">View Invoice</a>
             </div>
         </div>
         <div class="footer">
-            <p style="margin: 0;">Thank you for your order!</p>
+            <p style="margin-bottom: 8px;">Thank you for dining with us!</p>
+            <p style="color: #666; font-size: 11px;">© {} - All Rights Reserved</p>
         </div>
     </div>
 </body>
 </html>"#,
         order_id,
         email,
-        chrono::Local::now().format("%B %d, %Y"),
+        chrono::Local::now().format("%B %d, %Y").to_string(),
         items_html,
         subtotal,
-        if discount > 0.01 { format!("<div class=\"total-row\" style=\"color: #ffd700;\"><span>Discount:</span><span>-€{:.2}</span></div>", discount) } else { String::new() },
+        if discount > 0.01 { 
+            format!("<div class=\"total-row discount\"><span>Discount:</span><span>-€{:.2}</span></div>", discount) 
+        } else { 
+            String::new() 
+        },
         total,
         app_url,
-        order_id
+        order_id,
+        chrono::Local::now().format("%Y").to_string()
     )
 }
 
@@ -218,20 +352,150 @@ pub fn gift_coupon_html(code: &str, value: f64, _email: &str, app_url: &str) -> 
 <html>
 <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        body {{ font-family: 'DM Sans', Arial, sans-serif; background: #111827; color: #fff; margin: 0; padding: 20px; }}
-        .container {{ max-width: 600px; margin: 0 auto; background: #1f2937; border-radius: 12px; overflow: hidden; border: 1px solid #374151; }}
-        .header {{ background: linear-gradient(135deg, #ffd700 0%, #f59517 100%); padding: 30px 20px; text-align: center; }}
-        .header h1 {{ margin: 0; color: #000; font-size: 28px; }}
-        .content {{ padding: 30px 20px; }}
-        .coupon-box {{ background: #111827; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: center; border: 2px dashed #ffd700; }}
-        .coupon-label {{ color: #9ca3af; font-size: 12px; text-transform: uppercase; margin-bottom: 10px; }}
-        .coupon-code {{ color: #ffd700; font-size: 24px; font-weight: 700; font-family: monospace; letter-spacing: 2px; margin: 10px 0; }}
-        .coupon-value {{ color: #10b981; font-size: 18px; margin-top: 10px; }}
-        .highlight {{ background: #ffd70022; padding: 15px; border-radius: 8px; margin: 15px 0; border-left: 4px solid #ffd700; }}
-        .button {{ display: inline-block; background: #ffd700; color: #000; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 700; margin-top: 20px; }}
-        .footer {{ background: #111827; padding: 20px; text-align: center; color: #9ca3af; font-size: 12px; }}
-        .bullet {{ margin: 10px 0; padding-left: 20px; }}
+        * {{ margin: 0; padding: 0; box-sizing: border-box; }}
+        body {{
+            font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0a0a0a;
+            color: #fff;
+            line-height: 1.6;
+        }}
+        .container {{
+            max-width: 600px;
+            margin: 0 auto;
+            background: linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 100%);
+            border: 1px solid #2a2a2a;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }}
+        .header {{
+            background: linear-gradient(135deg, #c4a747 0%, #d4b757 100%);
+            padding: 40px 20px;
+            text-align: center;
+        }}
+        .header h1 {{
+            margin: 0;
+            color: #000;
+            font-family: 'Forum', cursive;
+            font-size: 36px;
+            font-weight: 700;
+            letter-spacing: 2px;
+        }}
+        .content {{
+            padding: 40px 30px;
+        }}
+        .coupon-display {{
+            background: #1a1a1a;
+            border: 3px dashed #c4a747;
+            border-radius: 12px;
+            padding: 30px;
+            margin: 30px 0;
+            text-align: center;
+        }}
+        .coupon-label {{
+            color: #999;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 15px;
+            display: block;
+        }}
+        .coupon-code {{
+            color: #c4a747;
+            font-size: 28px;
+            font-weight: 700;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 3px;
+            word-break: break-all;
+            margin: 15px 0;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+        }}
+        .coupon-value {{
+            color: #4ade80;
+            font-size: 24px;
+            font-weight: 700;
+            margin-top: 15px;
+        }}
+        .highlight-box {{
+            background: #1a1a1a;
+            border-left: 4px solid #c4a747;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 25px 0;
+            color: #ddd;
+            font-size: 14px;
+        }}
+        .highlight-box strong {{
+            color: #c4a747;
+        }}
+        .section-title {{
+            color: #c4a747;
+            font-size: 18px;
+            font-weight: 700;
+            margin: 30px 0 15px 0;
+            letter-spacing: 1px;
+        }}
+        .instruction-list {{
+            list-style: none;
+            padding: 0;
+            margin: 15px 0;
+        }}
+        .instruction-list li {{
+            color: #b8b8b8;
+            margin: 12px 0;
+            padding-left: 30px;
+            position: relative;
+            font-size: 14px;
+        }}
+        .instruction-list li:before {{
+            content: "→";
+            position: absolute;
+            left: 0;
+            color: #c4a747;
+            font-weight: 700;
+        }}
+        .info-box {{
+            background: #1a1a1a;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            color: #b8b8b8;
+            font-size: 13px;
+            line-height: 1.8;
+        }}
+        .info-box strong {{
+            color: #ddd;
+        }}
+        .cta-button {{
+            display: inline-block;
+            background: linear-gradient(135deg, #c4a747 0%, #d4b757 100%);
+            color: #000;
+            padding: 14px 32px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 700;
+            letter-spacing: 1px;
+            margin-top: 25px;
+            font-size: 14px;
+            text-transform: uppercase;
+            transition: transform 0.3s ease;
+        }}
+        .cta-button:hover {{
+            transform: scale(1.05);
+        }}
+        .footer {{
+            background: #1a1a1a;
+            padding: 25px;
+            text-align: center;
+            color: #999;
+            font-size: 12px;
+            border-top: 1px solid #2a2a2a;
+        }}
+        .footer p {{ margin: 0; }}
     </style>
 </head>
 <body>
@@ -240,36 +504,44 @@ pub fn gift_coupon_html(code: &str, value: f64, _email: &str, app_url: &str) -> 
             <h1>🎁 Gift Coupon</h1>
         </div>
         <div class="content">
-            <p>Thank you for your gift coupon purchase!</p>
-            
-            <div class="coupon-box">
-                <div class="coupon-label">Your Coupon Code</div>
+            <p style="color: #c8c8c8; font-size: 15px; margin-bottom: 15px;">
+                Thank you for your gift coupon purchase! Here's your exclusive coupon code.
+            </p>
+
+            <div class="coupon-display">
+                <span class="coupon-label">Your Coupon Code</span>
                 <div class="coupon-code">{}</div>
                 <div class="coupon-value">Value: €{:.2}</div>
             </div>
-            
-            <div class="highlight">
+
+            <div class="highlight-box">
                 <strong>✨ 10% Bonus Applied!</strong><br>
-                You purchased €{:.2} and received €{:.2} in coupon value.
+                You purchased €{:.2} and received <strong>€{:.2}</strong> in total coupon value.
             </div>
-            
-            <h3 style="color: #ffd700;">How to Use Your Coupon:</h3>
-            <div class="bullet">1. Add items to your cart on our menu</div>
-            <div class="bullet">2. Enter code <strong style="color: #ffd700;">{}</strong> at checkout</div>
-            <div class="bullet">3. Your coupon value will be applied to your order</div>
-            <div class="bullet">4. If your coupon value is more than your order total, the remaining balance is saved for next time!</div>
-            
-            <p style="color: #9ca3af; font-size: 14px; margin-top: 20px;">
-                <strong>Expires:</strong> No expiration - use anytime!<br>
-                <strong>Transferable:</strong> Share with friends and family
-            </p>
-            
+
+            <h3 class="section-title">How to Use Your Coupon</h3>
+            <ul class="instruction-list">
+                <li>Browse our delicious menu at <strong>{}/menu</strong></li>
+                <li>Add items to your cart</li>
+                <li>At checkout, enter code <strong>{}</strong></li>
+                <li>Your coupon value will be applied to your order</li>
+                <li>If your coupon exceeds your order total, the remaining balance is saved for next time!</li>
+            </ul>
+
+            <div class="info-box">
+                <strong>📌 Important Details:</strong><br>
+                • <strong>Expires:</strong> Never - use anytime you want<br>
+                • <strong>Transferable:</strong> Share with friends and family<br>
+                • <strong>No Restrictions:</strong> Use on any menu items
+            </div>
+
             <div style="text-align: center;">
-                <a href="{}/menu" class="button">Start Shopping</a>
+                <a href="{}/menu" class="cta-button">Start Shopping Now</a>
             </div>
         </div>
         <div class="footer">
-            <p style="margin: 0;">Keep your coupon code safe and secure!</p>
+            <p style="margin-bottom: 8px;">Keep your coupon code safe and secure!</p>
+            <p style="color: #666; font-size: 11px;">© {} - All Rights Reserved</p>
         </div>
     </div>
 </body>
@@ -278,8 +550,10 @@ pub fn gift_coupon_html(code: &str, value: f64, _email: &str, app_url: &str) -> 
         value,
         value / 1.1,  // base amount
         value,
+        app_url,
         code,
-        app_url
+        app_url,
+        chrono::Local::now().format("%Y").to_string()
     )
 }
 
