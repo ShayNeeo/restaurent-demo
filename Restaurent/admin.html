@@ -358,10 +358,10 @@
     }
 
     async function createCoupon() {
-      const code = (document.getElementById('coupon-code') as HTMLInputElement).value.trim().toUpperCase();
-      const percent = Number((document.getElementById('coupon-percent') as HTMLInputElement).value || 0);
-      const amount = Number((document.getElementById('coupon-amount') as HTMLInputElement).value || 0);
-      const uses = Number((document.getElementById('coupon-uses') as HTMLInputElement).value || 0);
+      const code = document.getElementById('coupon-code').value.trim().toUpperCase();
+      const percent = Number(document.getElementById('coupon-percent').value || 0);
+      const amount = Number(document.getElementById('coupon-amount').value || 0);
+      const uses = Number(document.getElementById('coupon-uses').value || 0);
       if (!code) return alert('Please enter a coupon code');
       const res = await apiCall('POST', '/admin/coupons', { code, percent_off: percent || undefined, amount_off: amount || undefined, remaining_uses: uses });
       if (res) { alert('Coupon created!'); document.getElementById('coupon-code').value = ''; document.getElementById('coupon-percent').value = ''; document.getElementById('coupon-amount').value = ''; document.getElementById('coupon-uses').value = ''; loadCoupons(); }
@@ -373,15 +373,15 @@
     }
 
     async function updateUserRole() {
-      const email = (document.getElementById('user-email') as HTMLInputElement).value.trim();
-      const role = (document.getElementById('user-role') as HTMLSelectElement).value;
+      const email = document.getElementById('user-email').value.trim();
+      const role = document.getElementById('user-role').value;
       if (!email) return alert('Please enter an email');
       const res = await apiCall('PATCH', `/admin/users/${encodeURIComponent(email)}`, { role });
       if (res) { alert('User role updated!'); loadUsers(); }
     }
 
     async function deleteUser() {
-      const email = (document.getElementById('user-delete-email') as HTMLInputElement).value.trim();
+      const email = document.getElementById('user-delete-email').value.trim();
       if (!email) return alert('Please enter an email');
       if (!confirm('Are you sure?')) return;
       const res = await apiCall('POST', '/admin/delete', { table: 'users', key: 'email', value: email });
@@ -394,7 +394,7 @@
     }
 
     async function searchGiftCode() {
-      const code = (document.getElementById('giftcode-search') as HTMLInputElement).value.trim();
+      const code = document.getElementById('giftcode-search').value.trim();
       if (!code) return alert('Please enter a gift code');
       const result = document.getElementById('giftcode-result');
       result.textContent = 'Searching...';
@@ -418,7 +418,7 @@
     }
 
     async function resetPassword() {
-      const pwd = (document.getElementById('settings-password') as HTMLInputElement).value;
+      const pwd = document.getElementById('settings-password').value;
       if (!pwd) return alert('Please enter a password');
       const res = await apiCall('POST', '/auth/reset-password', { email, new_password: pwd });
       if (res?.token) { alert('Password updated! Logging you out...'); localStorage.removeItem('restaurant_jwt_v1'); location.href = '/'; }
