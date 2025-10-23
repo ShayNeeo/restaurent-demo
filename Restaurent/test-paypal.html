@@ -66,7 +66,7 @@
             </div>
 
             <div id="test-results" style="background:var(--eerie-black-2);padding:16px;border-radius:8px;border:1px solid var(--white-alpha-10);display:none;">
-              <h3 style="margin:0 0 12px;color:var(--gold-crayola)">Results</h3>
+              <h3 style="margin:0 0 12px;color:var(--gold-crayola);">Results</h3>
               <pre id="results-content" style="color:var(--white);font-size:14px;white-space:pre-wrap;word-wrap:break-word;overflow-x:auto;"></pre>
             </div>
 
@@ -164,7 +164,8 @@
 
       function showResult(message, type) {
         resultsDiv.style.display = 'block';
-
+        resultsDiv.style.border = '1px solid var(--white-alpha-20)';
+        
         let bgColor, textColor;
         switch (type) {
           case 'success':
@@ -173,7 +174,7 @@
             break;
           case 'error':
             bgColor = '#ef4444';
-            textColor = 'white';
+            textColor = 'var(--white)';
             break;
           case 'info':
           default:
@@ -181,7 +182,7 @@
             textColor = 'var(--white)';
             break;
         }
-
+        
         resultsDiv.style.background = bgColor;
         resultsDiv.style.color = textColor;
         resultsContent.textContent = message;

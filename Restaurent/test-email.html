@@ -66,7 +66,7 @@
               </a>
             </div>
 
-            <div id="test-email-result" style="margin-top:20px;padding:16px;border-radius:8px;display:none;"></div>
+            <div id="test-email-result" style="margin-top:20px;padding:16px;border-radius:8px;display:none;border:1px solid var(--white-alpha-20);"></div>
 
             <!-- Troubleshooting Help -->
             <div style="margin-top:30px;padding:20px;border:1px solid var(--white-alpha-20);border-radius:8px;background:var(--eerie-black-2);">
@@ -255,8 +255,19 @@
 
       function showResult(message, type) {
         resultDiv.style.display = 'block';
-        resultDiv.style.background = type === 'success' ? 'var(--gold-crayola)' : '#ef4444';
-        resultDiv.style.color = type === 'success' ? 'var(--smoky-black-1)' : 'white';
+        resultDiv.style.border = '1px solid var(--white-alpha-20)';
+        
+        if (type === 'success') {
+          resultDiv.style.background = 'var(--gold-crayola)';
+          resultDiv.style.color = 'var(--smoky-black-1)';
+        } else if (type === 'error') {
+          resultDiv.style.background = '#ef4444';
+          resultDiv.style.color = 'var(--white)';
+        } else {
+          resultDiv.style.background = 'var(--eerie-black-3)';
+          resultDiv.style.color = 'var(--white)';
+        }
+        
         resultDiv.textContent = message;
 
         setTimeout(() => {
