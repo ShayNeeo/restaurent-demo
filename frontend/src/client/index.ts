@@ -19,17 +19,6 @@ const storageKey = 'restaurant_cart_v1';
 const tokenKey = 'restaurant_jwt_v1';
 const emailKey = 'restaurant_email_v1';
 
-// Helper: Convert CartItem to API format (snake_case)
-function cartItemToAPI(item: CartItem) {
-  return {
-    product_id: item.productId,
-    name: item.name,
-    unit_amount: item.unitAmount,
-    quantity: item.quantity,
-    currency: item.currency
-  };
-}
-
 function getToken(): string | null { return localStorage.getItem(tokenKey); }
 function setToken(token: string) { localStorage.setItem(tokenKey, token); }
 function setEmail(email: string) { localStorage.setItem(emailKey, email); }
@@ -343,7 +332,7 @@ async function applyCoupon() {
     const res = await fetch(`${API_BASE}/coupons/apply`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ code, cart: cart.map(cartItemToAPI) })
+      body: JSON.stringify({ code, cart })
     });
     
     if (!res.ok) {
@@ -394,7 +383,7 @@ async function checkout() {
   const res = await fetch(`${API_BASE}/checkout`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...(getToken() ? { Authorization: `Bearer ${getToken()}` } : {}) },
-    body: JSON.stringify({ cart: cart.map(cartItemToAPI), coupon: code || undefined, email })
+    body: JSON.stringify({ cart, coupon: code || undefined, email })
   });
   const data = await res.json();
   if (data?.url) {
