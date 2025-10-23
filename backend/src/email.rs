@@ -2,7 +2,6 @@ use crate::state::AppState;
 use anyhow::Result;
 use lettre::{Message, SmtpTransport, Transport};
 use lettre::transport::smtp::authentication::Credentials;
-use chrono::Local;
 
 pub async fn send_email(state: &AppState, to: &str, subject: &str, body: &str) -> Result<()> {
     send_email_with_html(state, to, subject, body, false).await
