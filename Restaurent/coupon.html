@@ -84,16 +84,79 @@
       }
 
       // Also add event listener to the buy button to show current value
-      document.getElementById('gift-buy')?.addEventListener('click', function() {
+      document.getElementById('gift-buy')?.addEventListener('click', async function() {
         var input = document.getElementById('gift-amount');
-        if (input) {
-          console.log('Buy button clicked, current amount:', input.value);
+        if (!input || !input.value) {
+          alert('Please enter an amount');
+          return;
         }
-        // Call the buyGiftCoupon function to actually process the purchase
-        if (typeof buyGiftCoupon === 'function') {
-          buyGiftCoupon();
-        } else {
-          console.error('buyGiftCoupon function not found');
+        
+        var eur = Number(input.value.trim());
+        console.log('Buy button clicked, current amount:', eur);
+        
+        if (isNaN(eur) || eur < 10) {
+          alert(`Please enter a valid amount (minimum €10). Current value: ${input.value}`);
+          return;
+        }
+        
+        // Check if logged in
+        var token = localStorage.getItem('restaurant_jwt_v1');
+        var email = localStorage.getItem('restaurant_email_v1');
+        
+        if (!token) {
+          // Try to get email from JWT if available
+          if (token) {
+            try {
+              var parts = token.split('.');
+              if (parts.length === 3) {
+                var payload = JSON.parse(atob(parts[1]));
+                email = payload.email || null;
+              }
+            } catch (e) {}
+          }
+          
+          // Not logged in - show auth modal
+          console.log('Not logged in, showing auth modal');
+          if (typeof showAuthModal === 'function') {
+            localStorage.setItem('post_auth_action', 'buy_gift');
+            localStorage.setItem('post_auth_gift_amount', String(eur));
+            showAuthModal();
+            return;
+          }
+        }
+        
+        if (!email) {
+          alert('Email is required. Please sign in again.');
+          localStorage.removeItem('restaurant_jwt_v1');
+          localStorage.removeItem('restaurant_email_v1');
+          if (typeof showAuthModal === 'function') {
+            showAuthModal();
+          }
+          return;
+        }
+        
+        console.log('Processing gift coupon purchase:', { amount_eur: eur, email });
+        
+        try {
+          const response = await fetch('/api/gift-coupons/buy', {
+            method: 'POST',
+            headers: { 
+              'Content-Type': 'application/json',
+              ...(token ? { Authorization: `Bearer ${token}` } : {})
+            },
+            body: JSON.stringify({ amount_eur: eur, email })
+          });
+          
+          const data = await response.json();
+          if (data?.url) {
+            window.location.href = data.url;
+          } else {
+            console.error('API response:', data);
+            alert('Failed to create PayPal order. Please try again.');
+          }
+        } catch (error) {
+          console.error('Error:', error);
+          alert('Error: ' + error.message);
         }
       });
 
