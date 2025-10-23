@@ -2,12 +2,12 @@ use crate::state::AppState;
 use anyhow::Result;
 use lettre::{Message, SmtpTransport, Transport};
 use lettre::transport::smtp::authentication::Credentials;
-use chrono::Local;
 
 pub async fn send_email(state: &AppState, to: &str, subject: &str, body: &str) -> Result<()> {
     send_email_with_html(state, to, subject, body, false).await
 }
 
+#[allow(dead_code)]
 pub async fn send_html_email(state: &AppState, to: &str, subject: &str, html_body: &str) -> Result<()> {
     send_email_with_html(state, to, subject, html_body, true).await
 }
@@ -114,6 +114,7 @@ async fn send_email_with_html(state: &AppState, to: &str, subject: &str, body: &
 }
 
 // HTML Email Templates
+#[allow(dead_code)]
 pub fn order_confirmation_html(order_id: &str, email: &str, items_html: &str, subtotal: f64, discount: f64, total: f64, app_url: &str) -> String {
     format!(
         r#"<!DOCTYPE html>
@@ -210,7 +211,8 @@ pub fn order_confirmation_html(order_id: &str, email: &str, items_html: &str, su
     )
 }
 
-pub fn gift_coupon_html(code: &str, value: f64, email: &str, app_url: &str) -> String {
+#[allow(dead_code)]
+pub fn gift_coupon_html(code: &str, value: f64, _email: &str, app_url: &str) -> String {
     format!(
         r#"<!DOCTYPE html>
 <html>
