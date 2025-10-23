@@ -39,10 +39,12 @@
           <!-- Quick Test Tools -->
           <div style="margin-bottom:20px;padding:12px;border:1px solid var(--white-alpha-20);border-radius:8px;background:var(--eerie-black-2);">
             <h3 style="margin:0 0 8px;color:var(--gold-crayola);font-size:14px;">Testing Tools</h3>
-            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
               <a href="/test-email" style="color:var(--gold-crayola);text-decoration:none;padding:4px 8px;border:1px solid var(--gold-crayola);border-radius:4px;font-size:12px;">Test Email</a>
               <a href="/test-paypal" style="color:var(--gold-crayola);text-decoration:none;padding:4px 8px;border:1px solid var(--gold-crayola);border-radius:4px;font-size:12px;">Test PayPal</a>
+              <button id="check-health" style="color:var(--gold-crayola);background:transparent;border:1px solid var(--gold-crayola);padding:4px 8px;border-radius:4px;font-size:12px;cursor:pointer;">Check Health</button>
             </div>
+            <div id="health-result" style="margin-top:8px;font-size:12px;color:var(--quick-silver);display:none;"></div>
           </div>
 
           <div id="admin-root"></div>

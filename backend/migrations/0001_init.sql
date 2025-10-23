@@ -3,6 +3,7 @@ CREATE TABLE IF NOT EXISTS users (
   id TEXT PRIMARY KEY,
   email TEXT NOT NULL UNIQUE,
   password_hash TEXT NOT NULL,
+  role TEXT NOT NULL DEFAULT 'customer',
   created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
 );
 

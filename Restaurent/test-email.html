@@ -114,8 +114,8 @@
           statusBtn.disabled = true;
           statusBtn.innerHTML = '<span class="text text-1">Checking...</span><span class="text text-2" aria-hidden="true">Checking...</span>';
 
-          // Check backend health
-          const healthResponse = await fetch('/api/health');
+          // Check backend health (detailed)
+          const healthResponse = await fetch('/api/health/detailed');
           const healthData = await healthResponse.json();
 
           // Check SMTP configuration
@@ -159,10 +159,23 @@
           const statusInfo = `
             <div style="background:var(--smoky-black-2);padding:16px;border-radius:8px;border:1px solid var(--white-alpha-20);">
               <h4 style="margin:0 0 12px;color:var(--gold-crayola);">System Status</h4>
-              <div style="margin-bottom:8px;"><strong>Backend Health:</strong> ${healthData?.ok ? '✅ OK' : '❌ Failed'}</div>
+              <div style="margin-bottom:8px;"><strong>Overall Status:</strong> ${healthData?.ok ? '✅ OK' : '❌ Issues Found'}</div>
+              <div style="margin-bottom:8px;"><strong>Database Connected:</strong> ${healthData?.database?.connected ? '✅ Yes' : '❌ No'}</div>
+              <div style="margin-bottom:8px;"><strong>Admin User Exists:</strong> ${healthData?.database?.admin_user_exists ? '✅ Yes' : '❌ No'}</div>
+              <div style="margin-bottom:8px;"><strong>SMTP Configured:</strong> ${healthData?.config?.smtp_configured ? '✅ Yes' : '❌ No'}</div>
               <div style="margin-bottom:8px;"><strong>SMTP Status:</strong> ${smtpStatus}</div>
+              ${healthData?.database?.error ? `<div style="margin-bottom:8px;color:#ef4444;"><strong>Database Error:</strong> ${healthData.database.error}</div>` : ''}
               ${smtpDetails ? `<div style="margin-bottom:8px;"><strong>Details:</strong> ${smtpDetails}</div>` : ''}
               <div style="margin-bottom:8px;"><strong>Current Time:</strong> ${new Date().toLocaleString()}</div>
+              <div style="margin-top:12px;padding:8px;background:var(--eerie-black-1);border-radius:4px;">
+                <strong>💡 Next Steps:</strong><br>
+                ${!healthData?.database?.admin_user_exists ?
+                  '• Create admin user: POST /api/auth/setup-admin with email/password<br>' : ''}
+                ${!healthData?.config?.smtp_configured ?
+                  '• Configure SMTP in environment variables<br>' : ''}
+                ${healthData?.database?.error ?
+                  '• Check database migrations and run them<br>' : ''}
+              </div>
             </div>
           `;
 

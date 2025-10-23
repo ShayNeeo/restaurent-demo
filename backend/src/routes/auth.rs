@@ -28,6 +28,7 @@ pub fn router() -> Router {
         .route("/api/auth/signup", post(signup))
         .route("/api/auth/login", post(login))
         .route("/api/auth/reset-password", post(reset_password))
+        .route("/api/auth/setup-admin", post(setup_admin))
 }
 
 async fn signup(Extension(state): Extension<Arc<AppState>>, Json(payload): Json<SignupRequest>) -> Result<Json<AuthResponse>, axum::http::StatusCode> {
@@ -87,45 +88,211 @@ async fn login(Extension(state): Extension<Arc<AppState>>, Json(payload): Json<L
 }
 
 async fn reset_password(Extension(state): Extension<Arc<AppState>>, Json(payload): Json<ResetPasswordRequest>) -> Result<Json<AuthResponse>, axum::http::StatusCode> {
+    tracing::info!("Password reset attempt for email: {}", payload.email);
+
     // For security, only allow admin to reset passwords, or implement proper reset flow
     // For now, checking if it's the admin email configured in environment
     if let Some(admin_email) = &state.admin_email {
         if payload.email != *admin_email {
+            tracing::warn!("Password reset denied for non-admin email: {}", payload.email);
             return Err(axum::http::StatusCode::FORBIDDEN);
         }
     } else {
+        tracing::error!("Admin email not configured in environment");
         return Err(axum::http::StatusCode::FORBIDDEN);
     }
 
+    // Validate password strength
+    if payload.new_password.len() < 6 {
+        tracing::warn!("Password reset failed: password too short");
+        return Err(axum::http::StatusCode::BAD_REQUEST);
+    }
+
     // Hash the new password
-    let salt = SaltString::generate(&mut rand::thread_rng());
-    let password_hash = Argon2::default()
+    let salt = match SaltString::generate(&mut rand::thread_rng()) {
+        Ok(s) => s,
+        Err(e) => {
+            tracing::error!("Failed to generate salt: {:?}", e);
+            return Err(axum::http::StatusCode::INTERNAL_SERVER_ERROR);
+        }
+    };
+
+    let password_hash = match Argon2::default()
         .hash_password(payload.new_password.as_bytes(), &salt)
-        .map_err(|_| axum::http::StatusCode::INTERNAL_SERVER_ERROR)?
-        .to_string();
+    {
+        Ok(hash) => hash.to_string(),
+        Err(e) => {
+            tracing::error!("Failed to hash password: {:?}", e);
+            return Err(axum::http::StatusCode::INTERNAL_SERVER_ERROR);
+        }
+    };
 
-    // Update the password in database
-    let rows_affected = sqlx::query(r#"UPDATE users SET password_hash = ? WHERE email = ?"#)
-        .bind(&password_hash)
+    // Check if user exists first
+    let user_exists = sqlx::query("SELECT id FROM users WHERE email = ?")
         .bind(&payload.email)
-        .execute(&state.pool)
+        .fetch_optional(&state.pool)
         .await
-        .map_err(|_| axum::http::StatusCode::INTERNAL_SERVER_ERROR)?
-        .rows_affected();
+        .map_err(|e| {
+            tracing::error!("Database error checking user existence: {:?}", e);
+            axum::http::StatusCode::INTERNAL_SERVER_ERROR
+        })?;
 
-    if rows_affected == 0 {
+    if user_exists.is_none() {
+        tracing::warn!("Password reset attempted for non-existent user: {}", payload.email);
         return Err(axum::http::StatusCode::NOT_FOUND);
     }
 
+    // Update the password in database
+    let result = sqlx::query(r#"UPDATE users SET password_hash = ? WHERE email = ?"#)
+        .bind(&password_hash)
+        .bind(&payload.email)
+        .execute(&state.pool)
+        .await;
+
+    match result {
+        Ok(exec_result) => {
+            let rows_affected = exec_result.rows_affected();
+            tracing::info!("Password update affected {} rows", rows_affected);
+
+            if rows_affected == 0 {
+                tracing::warn!("Password update affected 0 rows for email: {}", payload.email);
+                return Err(axum::http::StatusCode::NOT_FOUND);
+            }
+        }
+        Err(e) => {
+            tracing::error!("Database error updating password: {:?}", e);
+            return Err(axum::http::StatusCode::INTERNAL_SERVER_ERROR);
+        }
+    }
+
     // Issue new token
-    let user = sqlx::query("SELECT id FROM users WHERE email = ?")
+    let user = match sqlx::query("SELECT id FROM users WHERE email = ?")
         .bind(&payload.email)
         .fetch_one(&state.pool)
         .await
-        .map_err(|_| axum::http::StatusCode::INTERNAL_SERVER_ERROR)?;
+    {
+        Ok(u) => u,
+        Err(sqlx::Error::RowNotFound) => {
+            tracing::error!("User not found after password update: {}", payload.email);
+            return Err(axum::http::StatusCode::NOT_FOUND);
+        }
+        Err(e) => {
+            tracing::error!("Database error fetching user after password update: {:?}", e);
+            return Err(axum::http::StatusCode::INTERNAL_SERVER_ERROR);
+        }
+    };
 
-    let user_id: String = user.get("id");
+    let user_id: String = match user.try_get("id") {
+        Ok(id) => id,
+        Err(e) => {
+            tracing::error!("Failed to get user ID from database row: {:?}", e);
+            return Err(axum::http::StatusCode::INTERNAL_SERVER_ERROR);
+        }
+    };
+
     let token = issue_jwt(&state, &user_id, &payload.email);
+    tracing::info!("Password reset successful for user: {}", payload.email);
+
+    Ok(Json(AuthResponse { token }))
+}
+
+async fn setup_admin(Extension(state): Extension<Arc<AppState>>, Json(payload): Json<SignupRequest>) -> Result<Json<AuthResponse>, axum::http::StatusCode> {
+    tracing::info!("Admin setup attempt for email: {}", payload.email);
+
+    // Check if admin email is configured
+    let admin_email = match &state.admin_email {
+        Some(email) => email,
+        None => {
+            tracing::error!("Admin email not configured in environment");
+            return Err(axum::http::StatusCode::FORBIDDEN);
+        }
+    };
+
+    // Only allow setup for the configured admin email
+    if payload.email != *admin_email {
+        tracing::warn!("Admin setup denied for non-admin email: {}", payload.email);
+        return Err(axum::http::StatusCode::FORBIDDEN);
+    }
+
+    // Check if user already exists
+    let existing = sqlx::query("SELECT id FROM users WHERE email = ?")
+        .bind(&payload.email)
+        .fetch_optional(&state.pool)
+        .await
+        .map_err(|e| {
+            tracing::error!("Database error checking user existence: {:?}", e);
+            axum::http::StatusCode::INTERNAL_SERVER_ERROR
+        })?;
+
+    if existing.is_some() {
+        tracing::info!("Admin user already exists, attempting login instead");
+        // User exists, try to login instead
+        return login(Extension(state), Json(LoginRequest {
+            email: payload.email,
+            password: payload.password,
+        })).await;
+    }
+
+    // Create admin user
+    let id = Uuid::new_v4().to_string();
+    let salt = match SaltString::generate(&mut rand::thread_rng()) {
+        Ok(s) => s,
+        Err(e) => {
+            tracing::error!("Failed to generate salt: {:?}", e);
+            return Err(axum::http::StatusCode::INTERNAL_SERVER_ERROR);
+        }
+    };
+
+    let password_hash = match Argon2::default()
+        .hash_password(payload.password.as_bytes(), &salt)
+    {
+        Ok(hash) => hash.to_string(),
+        Err(e) => {
+            tracing::error!("Failed to hash password: {:?}", e);
+            return Err(axum::http::StatusCode::INTERNAL_SERVER_ERROR);
+        }
+    };
+
+    // Insert admin user - try with role first, fallback without if column doesn't exist
+    let insert_result = sqlx::query(r#"INSERT INTO users (id, email, password_hash, role) VALUES (?, ?, ?, ?)"#)
+        .bind(&id)
+        .bind(&payload.email)
+        .bind(&password_hash)
+        .bind("admin")
+        .execute(&state.pool)
+        .await;
+
+    match insert_result {
+        Ok(_) => {
+            tracing::info!("Admin user created successfully: {}", payload.email);
+        }
+        Err(sqlx::Error::ColumnNotFound(_)) => {
+            // Role column doesn't exist, try without it
+            tracing::info!("Role column not found, creating user without role");
+            match sqlx::query(r#"INSERT INTO users (id, email, password_hash) VALUES (?, ?, ?)"#)
+                .bind(&id)
+                .bind(&payload.email)
+                .bind(&password_hash)
+                .execute(&state.pool)
+                .await
+            {
+                Ok(_) => {
+                    tracing::info!("Admin user created successfully (without role): {}", payload.email);
+                }
+                Err(e) => {
+                    tracing::error!("Failed to create admin user (without role): {:?}", e);
+                    return Err(axum::http::StatusCode::INTERNAL_SERVER_ERROR);
+                }
+            }
+        }
+        Err(e) => {
+            tracing::error!("Failed to create admin user: {:?}", e);
+            return Err(axum::http::StatusCode::INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    let token = issue_jwt(&state, &id, &payload.email);
+    tracing::info!("Admin setup successful for user: {}", payload.email);
 
     Ok(Json(AuthResponse { token }))
 }

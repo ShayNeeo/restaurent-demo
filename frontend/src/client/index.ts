@@ -379,6 +379,7 @@ async function checkout() {
 
 // Initialize admin if on admin page
 initAdmin();
+initAdminHealthCheck();
 
 // Boot
 ensureUI();
@@ -597,6 +598,48 @@ async function initAdmin() {
   });
 
   renderUsers();
+}
+
+// Handle admin health check
+async function initAdminHealthCheck() {
+  const healthBtn = document.getElementById('check-health') as HTMLButtonElement | null;
+  const healthResult = document.getElementById('health-result');
+
+  if (healthBtn && healthResult) {
+    healthBtn.addEventListener('click', async () => {
+      try {
+        healthBtn.disabled = true;
+        healthBtn.textContent = 'Checking...';
+
+        const response = await fetch(`${API_BASE}/health/detailed`);
+        const data = await response.json();
+
+        let statusText = '';
+        if (data.ok) {
+          statusText = `✅ System OK | DB: ${data.database.admin_user_exists ? 'Admin exists' : 'No admin'} | SMTP: ${data.config.smtp_configured ? 'Configured' : 'Not configured'}`;
+        } else {
+          statusText = `❌ Issues: ${data.database.error || 'Configuration problems'}`;
+        }
+
+        healthResult.textContent = statusText;
+        healthResult.style.display = 'block';
+        healthResult.style.color = data.ok ? 'var(--gold-crayola)' : '#ef4444';
+
+        // Auto-hide after 10 seconds
+        setTimeout(() => {
+          healthResult.style.display = 'none';
+        }, 10000);
+
+      } catch (error) {
+        healthResult.textContent = `❌ Health check failed: ${error.message}`;
+        healthResult.style.display = 'block';
+        healthResult.style.color = '#ef4444';
+      } finally {
+        healthBtn.disabled = false;
+        healthBtn.textContent = 'Check Health';
+      }
+    });
+  }
 }
 
 // Handle thank-you page
