@@ -71,11 +71,33 @@ pub struct PayPalCaptureResp { pub id: String, pub status: String }
 pub async fn capture_paypal_order(state: &AppState, order_id: &str) -> Result<PayPalCaptureResp> {
     let bearer = get_paypal_access_token(state).await?;
     let url = format!("{}/v2/checkout/orders/{}/capture", state.paypal_api_base, order_id);
+    
+    tracing::info!("Capturing PayPal order {} from URL: {}", order_id, url);
+    
     let resp = reqwest::Client::new()
         .post(url)
         .bearer_auth(bearer.trim_start_matches("Bearer "))
         .send().await?;
-    let body: PayPalCaptureResp = resp.json().await?;
-    Ok(body)
+    
+    let status = resp.status();
+    let text = resp.text().await?;
+    
+    tracing::info!("PayPal capture response status: {}, body: {}", status, text);
+    
+    if !status.is_success() {
+        return Err(anyhow::anyhow!("PayPal capture failed with status {}: {}", status, text));
+    }
+    
+    match serde_json::from_str::<PayPalCaptureResp>(&text) {
+        Ok(body) => {
+            tracing::info!("Successfully parsed PayPal capture response: {:?}", body);
+            Ok(body)
+        }
+        Err(e) => {
+            tracing::error!("Failed to parse PayPal response as PayPalCaptureResp: {}", e);
+            tracing::error!("Response text was: {}", text);
+            Err(anyhow::anyhow!("Failed to parse PayPal response: {} - Response was: {}", e, text))
+        }
+    }
 }
 
