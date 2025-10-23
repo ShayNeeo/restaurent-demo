@@ -64,7 +64,7 @@ pub fn find_approval_url(order: &PayPalOrderResp) -> Option<String> {
     order.links.iter().find(|l| l.rel == "approve").map(|l| l.href.clone())
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Debug)]
 #[allow(dead_code)]
 pub struct PayPalCaptureResp { pub id: String, pub status: String }
 
