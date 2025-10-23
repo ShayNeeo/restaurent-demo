@@ -30,12 +30,13 @@ async fn paypal_return(Extension(state): Extension<Arc<AppState>>, headers: Head
         if let Ok(captured) = capture_paypal_order(&state, &order_id).await {
             if captured.status == "COMPLETED" {
                 // finalize any pending order
-                if let Ok(row) = sqlx::query(r#"SELECT email, amount_cents, items_json FROM pending_orders WHERE order_id = ?"#)
+                if let Ok(row) = sqlx::query(r#"SELECT user_id, email, amount_cents, items_json FROM pending_orders WHERE order_id = ?"#)
                     .bind(&order_id)
                     .fetch_optional(&state.pool)
                     .await
                 {
                     if let Some(r) = row {
+                        let user_id: Option<String> = r.try_get("user_id").ok();
                         let email: String = r.try_get("email").unwrap_or_default();
                         let amount_cents: i64 = r.try_get("amount_cents").unwrap_or(0);
                         let items_json: String = r.try_get("items_json").unwrap_or_default();
@@ -44,25 +45,12 @@ async fn paypal_return(Extension(state): Extension<Arc<AppState>>, headers: Head
                         let parsed: serde_json::Value = serde_json::from_str(&items_json).unwrap_or(serde_json::json!({}));
                         let coupon_code = parsed.get("coupon_code").and_then(|v| v.as_str()).map(|s| s.to_string());
                         let items = parsed.get("cart").and_then(|v| v.as_array()).cloned().unwrap_or_default();
-                        let items_for_email = items.clone();  // Clone for email loop
-
-                        // Extract user_id from JWT if available
-                        let mut user_id: Option<String> = None;
-                        if let Some(auth_header) = headers.get(axum::http::header::AUTHORIZATION) {
-                            if let Ok(auth_str) = auth_header.to_str() {
-                                if let Some(token) = auth_str.strip_prefix("Bearer ") {
-                                    if let Ok(data) = decode::<Claims>(token, &DecodingKey::from_secret(state.jwt_secret.as_bytes()), &Validation::default()) {
-                                        user_id = Some(data.claims.sub);
-                                    }
-                                }
-                            }
-                        }
 
                         // Create order record
                         let order_db_id = Uuid::new_v4().to_string();
                         let _ = sqlx::query(r#"INSERT INTO orders (id, user_id, email, total_cents, coupon_code, items_json) VALUES (?, ?, ?, ?, ?, ?)"#)
                             .bind(&order_db_id)
-                            .bind(user_id) // user_id is not available from pending_orders
+                            .bind(user_id.as_deref())
                             .bind(&email)
                             .bind(amount_cents)
                             .bind(coupon_code.as_deref())
@@ -71,7 +59,7 @@ async fn paypal_return(Extension(state): Extension<Arc<AppState>>, headers: Head
                             .await;
 
                         // Insert order items
-                        for it in items {
+                        for it in &items {
                             let pid = it.get("product_id").and_then(|v| v.as_str()).unwrap_or("");
                             let qty = it.get("quantity").and_then(|v| v.as_i64()).unwrap_or(1);
                             let unit = it.get("unit_amount").and_then(|v| v.as_i64()).unwrap_or(0);
@@ -111,10 +99,10 @@ async fn paypal_return(Extension(state): Extension<Arc<AppState>>, headers: Head
 
                         // Send basic invoice email if configured
                         if !email.is_empty() {
-                            // build itemized lines
+                            // build itemized lines using the parsed items
                             let mut lines = String::new();
-                            for it in items_for_email {  // Use the cloned items
-                                let name = it.get("name").and_then(|v| v.as_str()).unwrap_or("");
+                            for it in &items {
+                                let name = it.get("name").and_then(|v| v.as_str()).unwrap_or("Product");
                                 let qty = it.get("quantity").and_then(|v| v.as_i64()).unwrap_or(1);
                                 let unit = it.get("unit_amount").and_then(|v| v.as_i64()).unwrap_or(0);
                                 lines.push_str(&format!("- {} x{} @ €{:.2}\n", name, qty, unit as f64 / 100.0));

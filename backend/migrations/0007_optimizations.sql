@@ -11,4 +11,8 @@ CREATE INDEX IF NOT EXISTS idx_pending_gifts_created_at ON pending_gifts(created
 -- Drop redundant gift_coupons table (we use gift_codes instead)
 DROP TABLE IF EXISTS gift_coupons;
 
+-- Optimize database performance
+VACUUM;
+ANALYZE;
+
 

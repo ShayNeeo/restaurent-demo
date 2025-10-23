@@ -1,6 +1,7 @@
 use crate::state::AppState;
 use anyhow::Result;
 use lettre::{Message, SmtpTransport, Transport};
+use lettre::transport::smtp::authentication::Credentials;
 
 pub async fn send_email(state: &AppState, to: &str, subject: &str, body: &str) -> Result<()> {
     // Check if SMTP is configured
@@ -53,9 +54,9 @@ pub async fn send_email(state: &AppState, to: &str, subject: &str, body: &str) -
         }
     };
 
-    // Build SMTP transport
+    // Build SMTP transport with proper error handling
     let mailer = match SmtpTransport::relay(host) {
-        Ok(transport) => transport,
+        Ok(transport) => transport.port(port),
         Err(e) => {
             tracing::error!("Failed to create SMTP transport for {}: {:?}", host, e);
             return Err(anyhow::anyhow!("Failed to create SMTP transport: {:?}", e));
@@ -63,8 +64,7 @@ pub async fn send_email(state: &AppState, to: &str, subject: &str, body: &str) -
     };
 
     let mailer = mailer
-        .port(port)
-        .credentials(lettre::transport::smtp::authentication::Credentials::new(username.clone(), password.clone()))
+        .credentials(Credentials::new(username.clone(), password.clone()))
         .build();
 
     // Send email

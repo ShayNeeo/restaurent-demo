@@ -4,6 +4,7 @@ use std::sync::Arc;
 use std::time::{SystemTime, UNIX_EPOCH};
 use sqlx::Row;
 use jsonwebtoken::{decode, DecodingKey, Validation};
+use chrono;
 
 use crate::{state::AppState, payments::{create_paypal_order, find_approval_url}};
 
@@ -32,11 +33,8 @@ async fn buy(Extension(state): Extension<Arc<AppState>>, headers: HeaderMap, Jso
             let user_email = if let Some(auth) = headers.get(axum::http::header::AUTHORIZATION).and_then(|v| v.to_str().ok()) {
                 if let Some(token) = auth.strip_prefix("Bearer ") {
                     if let Ok(data) = decode::<Claims>(token, &DecodingKey::from_secret(state.jwt_secret.as_bytes()), &Validation::default()) {
-                        // Check if token is expired (optional validation)
-                        let current_time = SystemTime::now()
-                            .duration_since(UNIX_EPOCH)
-                            .unwrap()
-                            .as_secs() as usize;
+                        // Check if token is expired (proper implementation)
+                        let current_time = chrono::Utc::now().timestamp() as usize;
 
                         if data.claims.exp < current_time {
                             tracing::warn!("JWT token expired for gift coupon purchase");

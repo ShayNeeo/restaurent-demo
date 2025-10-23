@@ -4,7 +4,6 @@ use sqlx::sqlite::SqlitePool;
 pub struct AppState {
     pub pool: SqlitePool,
     pub jwt_secret: String,
-    pub stripe_secret: Option<String>,
     pub app_url: String,
     pub smtp_host: Option<String>,
     pub smtp_port: Option<u16>,
@@ -14,8 +13,6 @@ pub struct AppState {
     pub paypal_client_id: Option<String>,
     pub paypal_secret: Option<String>,
     pub paypal_api_base: String,
-    #[allow(dead_code)]
-    pub paypal_webhook_id: Option<String>,
     pub admin_email: Option<String>,
 }
 

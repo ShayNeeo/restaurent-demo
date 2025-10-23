@@ -24,7 +24,6 @@ async fn main() {
     let pool = db::init_pool(&database_url).await.expect("db");
     let jwt_secret = std::env::var("JWT_SECRET").unwrap_or_else(|_| "dev_secret".into());
     let app_url = std::env::var("APP_URL").unwrap_or_else(|_| "http://localhost:5173".into());
-    let stripe_secret = std::env::var("STRIPE_SECRET_KEY").ok();
     let smtp_host = std::env::var("SMTP_HOST").ok();
     let smtp_port = std::env::var("SMTP_PORT").ok().and_then(|v| v.parse().ok());
     let smtp_username = std::env::var("SMTP_USERNAME").ok();
@@ -34,7 +33,6 @@ async fn main() {
     let paypal_client_id = std::env::var("PAYPAL_CLIENT_ID").ok();
     let paypal_secret = std::env::var("PAYPAL_SECRET").ok();
     let paypal_api_base = std::env::var("PAYPAL_API_BASE").unwrap_or_else(|_| "https://api-m.sandbox.paypal.com".into());
-    let paypal_webhook_id = std::env::var("PAYPAL_WEBHOOK_ID").ok();
     let admin_email = std::env::var("ADMIN_EMAIL").ok();
 
     // Log configuration status (without exposing sensitive data)
@@ -44,7 +42,7 @@ async fn main() {
     tracing::info!("SMTP configured: {}", smtp_host.is_some() && smtp_username.is_some() && smtp_password.is_some() && smtp_from.is_some());
     tracing::info!("PayPal configured: {}", paypal_client_id.is_some() && paypal_secret.is_some());
 
-    let state = Arc::new(state::AppState { pool, jwt_secret, stripe_secret, app_url, smtp_host, smtp_port, smtp_username, smtp_password, smtp_from, paypal_client_id, paypal_secret, paypal_api_base, paypal_webhook_id, admin_email });
+    let state = Arc::new(state::AppState { pool, jwt_secret, app_url, smtp_host, smtp_port, smtp_username, smtp_password, smtp_from, paypal_client_id, paypal_secret, paypal_api_base, admin_email });
 
     // Spawn background cleanup task
     let cleanup_pool = state.pool.clone();
