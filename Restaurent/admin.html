@@ -280,7 +280,21 @@
       if (body) options.body = JSON.stringify(body);
       const res = await fetch(`${API_BASE}${path}`, options);
       if (res.status === 401) { alert('Unauthorized'); location.href = '/'; return null; }
-      try { return await res.json(); } catch { return await res.text(); }
+      if (!res.ok) {
+        console.error(`API Error: ${res.status} ${res.statusText} for ${path}`);
+        return null;
+      }
+      try { 
+        const contentType = res.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+          return await res.json();
+        } else {
+          return await res.text();
+        }
+      } catch (e) {
+        console.error('Failed to parse response:', e);
+        return null;
+      }
     }
 
     async function loadOverview() {
@@ -344,7 +358,7 @@
     }
 
     async function loadProducts() {
-      const products = await apiCall('GET', '/api/products');
+      const products = await apiCall('GET', '/products');
       if (!products?.products || products.products.length === 0) {
         document.getElementById('products-list').innerHTML = '<div class="empty-state">No products found</div>';
         return;
