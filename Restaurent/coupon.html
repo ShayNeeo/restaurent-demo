@@ -94,25 +94,29 @@
         e.stopPropagation();
         
         var input = document.getElementById('gift-amount');
-        var eur = 0;
+        var eur = null;
         
         // Try to get value from input
         if (input && input.value) {
-          eur = Number(input.value);
+          eur = parseFloat(input.value);
           console.log('Input value:', input.value, 'parsed as:', eur);
         } else if (input && input.dataset.selected) {
           // Fallback to data attribute
-          eur = Number(input.dataset.selected);
+          eur = parseFloat(input.dataset.selected);
           console.log('Using dataset.selected:', eur);
         }
         
-        if (!eur || isNaN(eur) || eur < 10) {
-          var currentVal = input ? input.value || input.dataset.selected || '0' : '0';
-          alert(`Please enter a valid amount (minimum €10). Current value: €${currentVal}`);
-          return;
+        console.log('Validation check - eur:', eur, 'isNaN:', isNaN(eur), 'eur < 10:', eur < 10);
+        
+        // Validate: must have a number >= 10
+        if (eur === null || isNaN(eur) || eur < 10) {
+          var currentVal = input ? (input.value || input.dataset.selected || '0') : '0';
+          console.error('Validation failed! eur:', eur, 'currentVal:', currentVal);
+          alert(`❌ Please enter a valid amount (minimum €10). Current value: €${currentVal}`);
+          return; // STOP HERE - do not proceed
         }
         
-        console.log('Proceeding with purchase: €' + eur);
+        console.log('✅ Validation passed! Proceeding with purchase: €' + eur);
         
         // Check if logged in
         var token = localStorage.getItem('restaurant_jwt_v1');

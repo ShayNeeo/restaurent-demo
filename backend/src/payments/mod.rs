@@ -77,6 +77,7 @@ pub async fn capture_paypal_order(state: &AppState, order_id: &str) -> Result<Pa
     let resp = reqwest::Client::new()
         .post(url)
         .bearer_auth(bearer.trim_start_matches("Bearer "))
+        .header("Content-Type", "application/json")
         .send().await?;
     
     let status = resp.status();
