@@ -55,16 +55,18 @@ async fn get_order(Extension(state): Extension<Arc<AppState>>, Path(id): Path<St
         .unwrap_or_default();
 
     // Create a helper function to find product name from JSON data
-    let find_name_in_json = |product_id: &str, json_data: &str| -> Option<String> {
+    let find_name_in_json = |product_id: &String, json_data: &str| -> Option<String> {
         if let Ok(parsed) = serde_json::from_str::<serde_json::Value>(json_data) {
             if let Some(cart) = parsed.get("cart") {
                 if let Some(cart_array) = cart.as_array() {
                     for item in cart_array {
                         if let Some(pid) = item.get("product_id") {
-                            if pid.as_str().unwrap_or("") == product_id {
-                                if let Some(name) = item.get("name") {
-                                    if let Some(name_str) = name.as_str() {
-                                        return Some(name_str.to_string());
+                            if let Some(pid_str) = pid.as_str() {
+                                if pid_str == product_id {
+                                    if let Some(name) = item.get("name") {
+                                        if let Some(name_str) = name.as_str() {
+                                            return Some(name_str.to_string());
+                                        }
                                     }
                                 }
                             }
@@ -77,7 +79,7 @@ async fn get_order(Extension(state): Extension<Arc<AppState>>, Path(id): Path<St
     };
 
     let items: Vec<OrderItem> = item_rows.into_iter().map(|r| {
-        let product_id = r.try_get("product_id").unwrap_or_default();
+        let product_id: String = r.try_get("product_id").unwrap_or_default();
         let quantity: i64 = r.try_get("quantity").unwrap_or(1);
         let unit_amount: i64 = r.try_get("unit_amount").unwrap_or(0);
         let name_from_db: Result<String, _> = r.try_get("name");

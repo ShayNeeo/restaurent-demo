@@ -1,6 +1,7 @@
 use axum::{routing::post, Json, Router, Extension, http::HeaderMap};
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
+use sqlx::Row;
 use jsonwebtoken::{decode, DecodingKey, Validation};
 
 use crate::{state::AppState, payments::{create_paypal_order, find_approval_url}};

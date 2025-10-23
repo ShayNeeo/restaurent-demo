@@ -1,5 +1,5 @@
 use axum::{routing::post, Json, Router, Extension};
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use std::sync::Arc;
 use sqlx::Row;
 
@@ -62,9 +62,9 @@ async fn paypal_webhook(
                     .await
                 {
                     // Process the order (similar to paypal_return logic)
-                    let email: String = row.try_get("email").unwrap_or_default();
-                    let amount_cents: i64 = row.try_get("amount_cents").unwrap_or(0);
-                    let items_json: String = row.try_get("items_json").unwrap_or_default();
+                    let _email: String = row.try_get("email").unwrap_or_default();
+                    let _amount_cents: i64 = row.try_get("amount_cents").unwrap_or(0);
+                    let _items_json: String = row.try_get("items_json").unwrap_or_default();
 
                     // Create order record and send email (similar logic as in paypal.rs)
                     // For brevity, we'll just mark it as processed
