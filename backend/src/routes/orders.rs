@@ -19,6 +19,7 @@ pub struct OrderDetails {
     pub email: String,
     pub total_cents: i64,
     pub coupon_code: Option<String>,
+    pub discount_cents: i64,
     pub items: Vec<OrderItem>,
     pub created_at: String,
 }
@@ -44,6 +45,15 @@ async fn get_order(Extension(state): Extension<Arc<AppState>>, Path(id): Path<St
     let total_cents: i64 = order_row.try_get("total_cents").unwrap_or(0);
     let coupon_code: Option<String> = order_row.try_get("coupon_code").ok();
     let created_at: String = order_row.try_get("created_at").unwrap_or_default();
+    let items_json: String = order_row.try_get("items_json").unwrap_or_default();
+    
+    // Extract discount_cents from items_json
+    let mut discount_cents: i64 = 0;
+    if let Ok(parsed) = serde_json::from_str::<serde_json::Value>(&items_json) {
+        if let Some(disc) = parsed.get("discount_cents").and_then(|v| v.as_i64()) {
+            discount_cents = disc;
+        }
+    }
 
     // Fetch order items with proper product name joins
     let item_rows = sqlx::query(r#"
@@ -76,6 +86,7 @@ async fn get_order(Extension(state): Extension<Arc<AppState>>, Path(id): Path<St
         email,
         total_cents,
         coupon_code,
+        discount_cents,
         items,
         created_at,
     }))

@@ -571,7 +571,13 @@ async function initThankYou() {
       `;
     }
     
-    const discount = subtotal - order.total_cents;
+    const discount = order.discount_cents || (subtotal - order.total_cents);
+    const discountDisplay = discount > 0 ? `
+      <div style="display:flex;justify-content:space-between;margin-bottom:4px;color:var(--gold-crayola)">
+        <div>Discount${order.coupon_code ? ` (${order.coupon_code})` : ''}:</div>
+        <div>-${formatCents(discount)}</div>
+      </div>
+    ` : '';
     
     thankYouContent.innerHTML = `
       <div class="order-content">
@@ -603,12 +609,7 @@ async function initThankYou() {
             <div>Subtotal:</div>
             <div>${formatCents(subtotal)}</div>
           </div>
-          ${discount > 0 ? `
-            <div style="display:flex;justify-content:space-between;margin-bottom:4px;color:var(--gold-crayola)">
-              <div>Discount${order.coupon_code ? ` (${order.coupon_code})` : ''}:</div>
-              <div>-${formatCents(discount)}</div>
-            </div>
-          ` : ''}
+          ${discountDisplay}
           <div style="display:flex;justify-content:space-between;font-size:20px;font-weight:700;margin-top:8px">
             <div>Total:</div>
             <div>${formatCents(order.total_cents)}</div>
