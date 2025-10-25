@@ -29,6 +29,23 @@
     <article>
       <section class="section" aria-label="coupon">
         <div class="container" style="max-width:640px;margin:0 auto;">
+          <!-- Apply Gift Coupon Section -->
+          <div class="special-dish-content bg-black-10" style="padding:40px;border-radius:12px;margin-bottom:30px">
+            <div style="text-align:center;margin-bottom:20px">
+              <h2 class="headline-1 section-title" style="color:var(--gold-crayola);margin-bottom:10px">Apply Coupon</h2>
+              <p class="section-text">Have a coupon or gift code? Apply it to get a discount on your order.</p>
+            </div>
+            <div class="input-wrapper" style="margin:12px 0;">
+              <input id="apply-gift-code" type="text" placeholder="Enter coupon or gift code" class="input-field" />
+            </div>
+            <button id="apply-gift-btn" class="btn btn-primary" style="width:100%;margin-top:12px">
+              <span class="text text-1">Apply Code</span>
+              <span class="text text-2" aria-hidden="true">Apply Code</span>
+            </button>
+            <div id="apply-gift-result" style="margin-top:12px;text-align:center;color:var(--gold-crayola);display:none;font-size:14px;font-weight:600"></div>
+          </div>
+
+          <!-- Buy Gift Coupon Section -->
           <div class="special-dish-content bg-black-10" style="padding:40px;border-radius:12px">
             <div style="text-align:center;margin-bottom:30px">
               <h2 class="headline-1 section-title" style="color:var(--gold-crayola);margin-bottom:10px">Buy Gift Coupon</h2>
@@ -59,6 +76,65 @@
   </script>
   <script src="./assets/js/app.js"></script>
   <script>
+    // Apply Gift Coupon Handler
+    async function applyGiftCoupon() {
+      const input = document.getElementById('apply-gift-code');
+      const resultDiv = document.getElementById('apply-gift-result');
+      const code = input?.value?.trim();
+      
+      if (!code) {
+        resultDiv.textContent = '❌ Please enter a coupon code';
+        resultDiv.style.display = 'block';
+        resultDiv.style.color = '#ef4444';
+        return;
+      }
+      
+      try {
+        resultDiv.textContent = '⏳ Checking...';
+        resultDiv.style.display = 'block';
+        resultDiv.style.color = 'var(--gold-crayola)';
+        
+        // Get cart from localStorage (using the same key as app.js)
+        const cartJson = localStorage.getItem('restaurant_cart_v1');
+        const cart = cartJson ? JSON.parse(cartJson) : [];
+        
+        const res = await fetch('/api/coupons/apply', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code, cart })
+        });
+        
+        if (!res.ok) {
+          throw new Error(`Request failed with status ${res.status}`);
+        }
+        
+        const data = await res.json();
+        
+        if (data.valid) {
+          // Set coupon code in a way that app.js can use it
+          const couponInput = document.getElementById('coupon-input');
+          if (couponInput) {
+            couponInput.value = code;
+            resultDiv.textContent = `✅ Coupon applied! Use it in your cart.`;
+            resultDiv.style.color = '#10b981';
+          } else {
+            resultDiv.textContent = `✅ Coupon code copied to clipboard!`;
+            resultDiv.style.color = '#10b981';
+            // Copy to clipboard for user
+            await navigator.clipboard.writeText(code).catch(() => {});
+          }
+          input.value = '';
+        } else {
+          resultDiv.textContent = '❌ Invalid or expired coupon code';
+          resultDiv.style.color = '#ef4444';
+        }
+      } catch (error) {
+        console.error('Error applying coupon:', error);
+        resultDiv.textContent = `❌ Error: ${error.message}`;
+        resultDiv.style.color = '#ef4444';
+      }
+    }
+    
     document.addEventListener('DOMContentLoaded', function(){
       // Quick amount buttons
       document.querySelectorAll('[data-quick-amount]')?.forEach(function(b){
@@ -166,6 +242,17 @@
       // Listen to input changes
       document.getElementById('gift-amount')?.addEventListener('input', updateBuyButtonText);
       document.getElementById('gift-amount')?.addEventListener('change', updateBuyButtonText);
+
+      // Apply gift coupon button
+      document.getElementById('apply-gift-btn')?.addEventListener('click', applyGiftCoupon);
+      
+      // Allow Enter key to apply coupon
+      document.getElementById('apply-gift-code')?.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          applyGiftCoupon();
+        }
+      });
 
       // Initialize button text on page load
       updateBuyButtonText();
