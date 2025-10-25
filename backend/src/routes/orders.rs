@@ -71,7 +71,7 @@ async fn get_order(Extension(state): Extension<Arc<AppState>>, Path(id): Path<St
         }
     }
 
-    // Fetch order items with proper product name joins
+    // Try to fetch order items from database first
     let item_rows = sqlx::query(r#"
         SELECT oi.product_id, oi.quantity, oi.unit_amount, p.name
         FROM order_items oi
@@ -83,9 +83,9 @@ async fn get_order(Extension(state): Extension<Arc<AppState>>, Path(id): Path<St
         .await
         .unwrap_or_default();
 
-    tracing::debug!("Found {} items for order {}", item_rows.len(), id);
+    tracing::debug!("Found {} items in order_items table for {}", item_rows.len(), id);
 
-    let items: Vec<OrderItem> = item_rows.into_iter().map(|r| {
+    let mut items: Vec<OrderItem> = item_rows.into_iter().map(|r| {
         let product_id: String = r.try_get("product_id").unwrap_or_default();
         let quantity: i64 = r.try_get("quantity").unwrap_or(1);
         let unit_amount: i64 = r.try_get("unit_amount").unwrap_or(0);
@@ -98,6 +98,35 @@ async fn get_order(Extension(state): Extension<Arc<AppState>>, Path(id): Path<St
             name,
         }
     }).collect();
+
+    // If no items found in order_items table, try parsing from items_json (fallback for migration issues)
+    if items.is_empty() && !items_json.is_empty() {
+        tracing::info!("No items in order_items table, falling back to items_json for order {}", id);
+        if let Ok(parsed) = serde_json::from_str::<serde_json::Value>(&items_json) {
+            if let Some(cart_items) = parsed.get("cart").and_then(|v| v.as_array()) {
+                for it in cart_items {
+                    let product_id: String = it.get("productId")
+                        .and_then(|v| v.as_str())
+                        .unwrap_or("unknown")
+                        .to_string();
+                    let quantity: i64 = it.get("quantity").and_then(|v| v.as_i64()).unwrap_or(1);
+                    let unit_amount: i64 = it.get("unitAmount").and_then(|v| v.as_i64()).unwrap_or(0);
+                    let name: String = it.get("name")
+                        .and_then(|v| v.as_str())
+                        .unwrap_or("Product")
+                        .to_string();
+
+                    items.push(OrderItem {
+                        product_id,
+                        quantity,
+                        unit_amount,
+                        name,
+                    });
+                }
+                tracing::info!("Parsed {} items from items_json", items.len());
+            }
+        }
+    }
 
     Ok(Json(OrderDetails {
         id,
