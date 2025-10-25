@@ -54,8 +54,15 @@ async fn paypal_return(Extension(state): Extension<Arc<AppState>>, _headers: Hea
 
                                 // parse items
                                 let parsed: serde_json::Value = serde_json::from_str(&items_json).unwrap_or(serde_json::json!({}));
+                                tracing::info!("Parsed items_json: {}", serde_json::to_string(&parsed).unwrap_or_default());
+                                
                                 let coupon_code = parsed.get("coupon_code").and_then(|v| v.as_str()).map(|s| s.to_string());
                                 let items = parsed.get("cart").and_then(|v| v.as_array()).cloned().unwrap_or_default();
+                                
+                                tracing::info!("Found {} items in cart", items.len());
+                                for (idx, it) in items.iter().enumerate() {
+                                    tracing::debug!("Item {}: {}", idx, serde_json::to_string(it).unwrap_or_default());
+                                }
 
                                 // Create order record
                                 let order_db_id = Uuid::new_v4().to_string();
@@ -81,10 +88,12 @@ async fn paypal_return(Extension(state): Extension<Arc<AppState>>, _headers: Hea
                                 }
 
                                 // Insert order items
+                                tracing::info!("Inserting {} order items", items.len());
                                 for it in &items {
                                     let pid = it.get("productId").and_then(|v| v.as_str()).unwrap_or("");
                                     let qty = it.get("quantity").and_then(|v| v.as_i64()).unwrap_or(1);
                                     let unit = it.get("unitAmount").and_then(|v| v.as_i64()).unwrap_or(0);
+                                    tracing::debug!("Inserting item - pid: {}, qty: {}, unit: {}", pid, qty, unit);
                                     if let Err(e) = sqlx::query(r#"INSERT INTO order_items (id, order_id, product_id, quantity, unit_amount) VALUES (?, ?, ?, ?, ?)"#)
                                         .bind(Uuid::new_v4().to_string())
                                         .bind(&order_db_id)
@@ -94,7 +103,9 @@ async fn paypal_return(Extension(state): Extension<Arc<AppState>>, _headers: Hea
                                         .execute(&state.pool)
                                         .await
                                     {
-                                        tracing::error!("Failed to insert order item for {}: {:?}", order_db_id, e);
+                                        tracing::error!("Failed to insert order item (pid: {}, qty: {}, unit: {}): {:?}", pid, qty, unit, e);
+                                    } else {
+                                        tracing::info!("Order item inserted successfully");
                                     }
                                 }
 
