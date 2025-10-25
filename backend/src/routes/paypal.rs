@@ -82,9 +82,9 @@ async fn paypal_return(Extension(state): Extension<Arc<AppState>>, _headers: Hea
 
                                 // Insert order items
                                 for it in &items {
-                                    let pid = it.get("product_id").and_then(|v| v.as_str()).unwrap_or("");
+                                    let pid = it.get("productId").and_then(|v| v.as_str()).unwrap_or("");
                                     let qty = it.get("quantity").and_then(|v| v.as_i64()).unwrap_or(1);
-                                    let unit = it.get("unit_amount").and_then(|v| v.as_i64()).unwrap_or(0);
+                                    let unit = it.get("unitAmount").and_then(|v| v.as_i64()).unwrap_or(0);
                                     if let Err(e) = sqlx::query(r#"INSERT INTO order_items (id, order_id, product_id, quantity, unit_amount) VALUES (?, ?, ?, ?, ?)"#)
                                         .bind(Uuid::new_v4().to_string())
                                         .bind(&order_db_id)
@@ -140,7 +140,7 @@ async fn paypal_return(Extension(state): Extension<Arc<AppState>>, _headers: Hea
                                     for it in &items {
                                         let name = it.get("name").and_then(|v| v.as_str()).unwrap_or("Product");
                                         let qty = it.get("quantity").and_then(|v| v.as_i64()).unwrap_or(1);
-                                        let unit = it.get("unit_amount").and_then(|v| v.as_i64()).unwrap_or(0);
+                                        let unit = it.get("unitAmount").and_then(|v| v.as_i64()).unwrap_or(0);
                                         let item_total = unit * qty;
                                         subtotal += item_total;
                                         items_html.push_str(&format!(
@@ -149,7 +149,7 @@ async fn paypal_return(Extension(state): Extension<Arc<AppState>>, _headers: Hea
                                         ));
                                     }
                                     
-                                    let discount = std::cmp::max(0, subtotal - amount_cents);
+                                    let discount = parsed.get("discount_cents").and_then(|v| v.as_i64()).unwrap_or(0);
                                     let total = amount_cents as f64 / 100.0;
                                     
                                     let html_body = order_confirmation_html(
