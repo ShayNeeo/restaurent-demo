@@ -263,13 +263,23 @@ async fn paypal_gift_return(Extension(state): Extension<Arc<AppState>>, Query(pa
                 let order_db_id = Uuid::new_v4().to_string();
                 let gift_json = serde_json::json!({
                     "type": "gift_coupon",
-                    "code": code,
+                    "code": &code,
+                    "cart": [
+                        {
+                            "productId": "gift_coupon",
+                            "name": format!("Gift Coupon - €{:.2}", base_amount as f64 / 100.0),
+                            "unitAmount": base_amount,
+                            "quantity": 1,
+                            "currency": "EUR"
+                        }
+                    ],
                     "base_amount_cents": base_amount,
                     "bonus_cents": bonus,
-                    "total_value_cents": total_value
+                    "total_value_cents": total_value,
+                    "discount_cents": 0
                 }).to_string();
                 
-                tracing::info!("Creating order record for gift purchase: {}", order_db_id);
+                tracing::info!("Creating order record for gift purchase: {} with items_json: {}", order_db_id, gift_json);
                 
                 let _ = sqlx::query(r#"INSERT INTO orders (id, email, total_cents, currency, items_json) VALUES (?, ?, ?, 'EUR', ?)"#)
                     .bind(&order_db_id)
