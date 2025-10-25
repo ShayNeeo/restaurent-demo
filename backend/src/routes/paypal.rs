@@ -61,7 +61,7 @@ async fn paypal_return(Extension(state): Extension<Arc<AppState>>, _headers: Hea
                                 let order_db_id = Uuid::new_v4().to_string();
                                 tracing::info!("Creating order record: {}", order_db_id);
                                 
-                                let _ = sqlx::query(r#"INSERT INTO orders (id, user_id, email, total_cents, coupon_code, items_json) VALUES (?, ?, ?, ?, ?, ?)"#)
+                                match sqlx::query(r#"INSERT INTO orders (id, user_id, email, total_cents, coupon_code, items_json) VALUES (?, ?, ?, ?, ?, ?)"#)
                                     .bind(&order_db_id)
                                     .bind(user_id.as_deref())
                                     .bind(&email)
@@ -69,45 +69,66 @@ async fn paypal_return(Extension(state): Extension<Arc<AppState>>, _headers: Hea
                                     .bind(coupon_code.as_deref())
                                     .bind(&items_json)
                                     .execute(&state.pool)
-                                    .await;
+                                    .await
+                                {
+                                    Ok(_) => {
+                                        tracing::info!("Order record created successfully: {}", order_db_id);
+                                    }
+                                    Err(e) => {
+                                        tracing::error!("Failed to create order record {}: {:?}", order_db_id, e);
+                                        return Redirect::to("/thank-you");
+                                    }
+                                }
 
                                 // Insert order items
                                 for it in &items {
                                     let pid = it.get("product_id").and_then(|v| v.as_str()).unwrap_or("");
                                     let qty = it.get("quantity").and_then(|v| v.as_i64()).unwrap_or(1);
                                     let unit = it.get("unit_amount").and_then(|v| v.as_i64()).unwrap_or(0);
-                                    let _ = sqlx::query(r#"INSERT INTO order_items (id, order_id, product_id, quantity, unit_amount) VALUES (?, ?, ?, ?, ?)"#)
+                                    if let Err(e) = sqlx::query(r#"INSERT INTO order_items (id, order_id, product_id, quantity, unit_amount) VALUES (?, ?, ?, ?, ?)"#)
                                         .bind(Uuid::new_v4().to_string())
                                         .bind(&order_db_id)
                                         .bind(pid)
                                         .bind(qty)
                                         .bind(unit)
                                         .execute(&state.pool)
-                                        .await;
+                                        .await
+                                    {
+                                        tracing::error!("Failed to insert order item for {}: {:?}", order_db_id, e);
+                                    }
                                 }
 
                                 // Decrement coupon remaining uses or gift balance
                                 if let Some(code) = coupon_code.clone() {
                                     // Try as regular coupon (uppercase)
                                     let code_upper = code.to_uppercase();
-                                    let _ = sqlx::query(r#"UPDATE coupons SET remaining_uses = MAX(remaining_uses - 1, 0) WHERE code = ?"#)
+                                    if let Err(e) = sqlx::query(r#"UPDATE coupons SET remaining_uses = MAX(remaining_uses - 1, 0) WHERE code = ?"#)
                                         .bind(&code_upper)
                                         .execute(&state.pool)
-                                        .await;
+                                        .await
+                                    {
+                                        tracing::error!("Failed to decrement coupon {}: {:?}", code_upper, e);
+                                    }
                                 }
                                 // If it's a gift code: decrement remaining_cents by applied discount (if present)
                                 if let Some(code) = coupon_code {
                                     if let Some(disc) = parsed.get("discount_cents").and_then(|v| v.as_i64()) {
-                                        let _ = sqlx::query(r#"UPDATE gift_codes SET remaining_cents = MAX(remaining_cents - ?, 0) WHERE code = ? COLLATE NOCASE"#)
+                                        if let Err(e) = sqlx::query(r#"UPDATE gift_codes SET remaining_cents = MAX(remaining_cents - ?, 0) WHERE code = ? COLLATE NOCASE"#)
                                             .bind(disc)
                                             .bind(&code)
                                             .execute(&state.pool)
-                                            .await;
+                                            .await
+                                        {
+                                            tracing::error!("Failed to decrement gift code {}: {:?}", code, e);
+                                        }
                                         // Optional: delete if zero
-                                        let _ = sqlx::query(r#"DELETE FROM gift_codes WHERE code = ? COLLATE NOCASE AND remaining_cents <= 0"#)
+                                        if let Err(e) = sqlx::query(r#"DELETE FROM gift_codes WHERE code = ? COLLATE NOCASE AND remaining_cents <= 0"#)
                                             .bind(&code)
                                             .execute(&state.pool)
-                                            .await;
+                                            .await
+                                        {
+                                            tracing::error!("Failed to delete expired gift code {}: {:?}", code, e);
+                                        }
                                     }
                                 }
 
