@@ -13,6 +13,23 @@ type CouponApplyResponse = {
   percentOff?: number; // 0-100
 };
 
+type OrderItem = {
+  product_id: string;
+  quantity: number;
+  unit_amount: number;
+  name: string;
+};
+
+type OrderDetails = {
+  id: string;
+  email: string;
+  total_cents: number;
+  coupon_code?: string;
+  discount_cents: number;
+  items: OrderItem[];
+  created_at: string;
+};
+
 const API_BASE = '/api';
 
 const storageKey = 'restaurant_cart_v1';
@@ -545,16 +562,36 @@ async function initThankYou() {
   // Fetch order details
   try {
     console.log('Fetching order details for:', orderId);
-    const res = await fetch(`${API_BASE}/orders/${orderId}`);
-    if (!res.ok) {
-      if (res.status === 404) {
-        throw new Error('Order not found');
-      }
-      throw new Error(`Failed to fetch order: ${res.status}`);
-    }
-    const order = await res.json();
-    console.log('Order details received:', order);
     
+    // Retry logic with exponential backoff - webhook may take a moment to process
+    let order: OrderDetails | null = null;
+    let retries = 0;
+    const maxRetries = 6;
+    const baseDelay = 500; // 500ms
+    
+    while (!order && retries < maxRetries) {
+      const res = await fetch(`${API_BASE}/orders/${orderId}`);
+      console.log(`Fetch attempt ${retries + 1}: status ${res.status}`);
+      
+      if (res.ok) {
+        order = await res.json();
+        console.log('Order details received:', order);
+        break;
+      } else if (res.status === 404 && retries < maxRetries - 1) {
+        // Order not found yet, wait and retry
+        retries++;
+        const delay = baseDelay * Math.pow(2, retries - 1); // exponential backoff
+        console.log(`Order not found, retrying in ${delay}ms... (attempt ${retries}/${maxRetries - 1})`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      } else {
+        throw new Error(`Failed to fetch order: ${res.status}`);
+      }
+    }
+    
+    if (!order) {
+      throw new Error('Order could not be retrieved after multiple retries');
+    }
+
     let itemsHtml = '';
     let subtotal = 0;
     for (const item of order.items) {

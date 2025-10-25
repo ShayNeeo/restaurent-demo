@@ -29,6 +29,8 @@ pub fn router() -> Router {
 }
 
 async fn get_order(Extension(state): Extension<Arc<AppState>>, Path(id): Path<String>) -> Result<Json<OrderDetails>, axum::http::StatusCode> {
+    tracing::info!("Fetching order: {}", id);
+    
     // Fetch order with proper joins to get product names
     let order_row = sqlx::query(r#"
         SELECT o.id, o.email, o.total_cents, o.coupon_code, o.created_at, o.items_json
@@ -38,8 +40,14 @@ async fn get_order(Extension(state): Extension<Arc<AppState>>, Path(id): Path<St
         .bind(&id)
         .fetch_optional(&state.pool)
         .await
-        .map_err(|_| axum::http::StatusCode::INTERNAL_SERVER_ERROR)?
-        .ok_or(axum::http::StatusCode::NOT_FOUND)?;
+        .map_err(|e| {
+            tracing::error!("Database error fetching order {}: {:?}", id, e);
+            axum::http::StatusCode::INTERNAL_SERVER_ERROR
+        })?
+        .ok_or_else(|| {
+            tracing::warn!("Order not found: {}", id);
+            axum::http::StatusCode::NOT_FOUND
+        })?;
 
     let email: String = order_row.try_get("email").unwrap_or_default();
     let total_cents: i64 = order_row.try_get("total_cents").unwrap_or(0);
@@ -47,11 +55,19 @@ async fn get_order(Extension(state): Extension<Arc<AppState>>, Path(id): Path<St
     let created_at: String = order_row.try_get("created_at").unwrap_or_default();
     let items_json: String = order_row.try_get("items_json").unwrap_or_default();
     
+    tracing::debug!("Order found - email: {}, total: {}, coupon: {:?}, items_json: {}", 
+        email, total_cents, coupon_code, items_json);
+    
     // Extract discount_cents from items_json
     let mut discount_cents: i64 = 0;
-    if let Ok(parsed) = serde_json::from_str::<serde_json::Value>(&items_json) {
-        if let Some(disc) = parsed.get("discount_cents").and_then(|v| v.as_i64()) {
-            discount_cents = disc;
+    if !items_json.is_empty() {
+        if let Ok(parsed) = serde_json::from_str::<serde_json::Value>(&items_json) {
+            if let Some(disc) = parsed.get("discount_cents").and_then(|v| v.as_i64()) {
+                discount_cents = disc;
+                tracing::debug!("Extracted discount from items_json: {}", discount_cents);
+            }
+        } else {
+            tracing::warn!("Failed to parse items_json for order {}", id);
         }
     }
 
@@ -66,6 +82,8 @@ async fn get_order(Extension(state): Extension<Arc<AppState>>, Path(id): Path<St
         .fetch_all(&state.pool)
         .await
         .unwrap_or_default();
+
+    tracing::debug!("Found {} items for order {}", item_rows.len(), id);
 
     let items: Vec<OrderItem> = item_rows.into_iter().map(|r| {
         let product_id: String = r.try_get("product_id").unwrap_or_default();
