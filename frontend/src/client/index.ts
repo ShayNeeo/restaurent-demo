@@ -329,6 +329,11 @@ async function applyCoupon() {
   
   try {
     const cart = loadCart();
+    if (cart.length === 0) {
+      alert('Your cart is empty');
+      return;
+    }
+    
     const res = await fetch(`${API_BASE}/coupons/apply`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -349,6 +354,12 @@ async function applyCoupon() {
     if (data.valid) {
       if (data.amountOff) discount = data.amountOff;
       else if (data.percentOff) discount = Math.round((data.percentOff / 100) * cartTotal);
+      
+      // Show success message
+      alert(`✅ Coupon applied! Discount: ${formatCents(discount)}`);
+    } else {
+      alert('❌ Invalid or expired coupon code');
+      input.value = '';
     }
     refreshPanel(discount);
   } catch (error) {
