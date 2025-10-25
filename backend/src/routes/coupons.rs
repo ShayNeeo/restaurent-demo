@@ -22,9 +22,12 @@ pub fn router() -> Router {
 }
 
 async fn apply(Extension(state): Extension<Arc<AppState>>, Json(payload): Json<ApplyCouponRequest>) -> Json<ApplyCouponResponse> {
-    let code = payload.code.trim().to_uppercase();
+    let code = payload.code.trim();
+    let code_upper = code.to_uppercase();
+    
     // Gift code support: if exists in gift_codes with remaining > 0, apply up to cart total
-    if let Ok(Some(g)) = sqlx::query(r#"SELECT remaining_cents FROM gift_codes WHERE code = ?"#)
+    // Use COLLATE NOCASE for case-insensitive matching (gift codes are lowercase UUIDs)
+    if let Ok(Some(g)) = sqlx::query(r#"SELECT remaining_cents FROM gift_codes WHERE code = ? COLLATE NOCASE"#)
         .bind(&code)
         .fetch_optional(&state.pool)
         .await
@@ -38,9 +41,9 @@ async fn apply(Extension(state): Extension<Arc<AppState>>, Json(payload): Json<A
         }
     }
 
-    // Regular coupon
+    // Regular coupon (uppercase)
     if let Ok(Some(r)) = sqlx::query(r#"SELECT percent_off, amount_off, remaining_uses FROM coupons WHERE code = ?"#)
-        .bind(&code)
+        .bind(&code_upper)
         .fetch_optional(&state.pool)
         .await
     {

@@ -88,22 +88,23 @@ async fn paypal_return(Extension(state): Extension<Arc<AppState>>, _headers: Hea
 
                                 // Decrement coupon remaining uses or gift balance
                                 if let Some(code) = coupon_code.clone() {
-                                    // Try as regular coupon
+                                    // Try as regular coupon (uppercase)
+                                    let code_upper = code.to_uppercase();
                                     let _ = sqlx::query(r#"UPDATE coupons SET remaining_uses = MAX(remaining_uses - 1, 0) WHERE code = ?"#)
-                                        .bind(&code)
+                                        .bind(&code_upper)
                                         .execute(&state.pool)
                                         .await;
                                 }
                                 // If it's a gift code: decrement remaining_cents by applied discount (if present)
                                 if let Some(code) = coupon_code {
                                     if let Some(disc) = parsed.get("discount_cents").and_then(|v| v.as_i64()) {
-                                        let _ = sqlx::query(r#"UPDATE gift_codes SET remaining_cents = MAX(remaining_cents - ?, 0) WHERE code = ?"#)
+                                        let _ = sqlx::query(r#"UPDATE gift_codes SET remaining_cents = MAX(remaining_cents - ?, 0) WHERE code = ? COLLATE NOCASE"#)
                                             .bind(disc)
                                             .bind(&code)
                                             .execute(&state.pool)
                                             .await;
                                         // Optional: delete if zero
-                                        let _ = sqlx::query(r#"DELETE FROM gift_codes WHERE code = ? AND remaining_cents <= 0"#)
+                                        let _ = sqlx::query(r#"DELETE FROM gift_codes WHERE code = ? COLLATE NOCASE AND remaining_cents <= 0"#)
                                             .bind(&code)
                                             .execute(&state.pool)
                                             .await;

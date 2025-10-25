@@ -31,20 +31,22 @@ async fn start(Extension(state): Extension<Arc<AppState>>, headers: HeaderMap, J
     // compute discount from coupon (if provided and valid)
     let mut discount_cents: i64 = 0;
     let mut applied_coupon: Option<String> = None;
-    if let Some(code) = payload.coupon.as_ref().map(|s| s.trim().to_uppercase()).filter(|s| !s.is_empty()) {
-        // First check for gift code
-        if let Ok(Some(g)) = sqlx::query(r#"SELECT remaining_cents FROM gift_codes WHERE code = ?"#)
-            .bind(&code)
+    if let Some(raw_code) = payload.coupon.as_ref().map(|s| s.trim()).filter(|s| !s.is_empty()) {
+        let code_upper = raw_code.to_uppercase();
+        
+        // First check for gift code (case-insensitive, stored as lowercase UUID)
+        if let Ok(Some(g)) = sqlx::query(r#"SELECT remaining_cents FROM gift_codes WHERE code = ? COLLATE NOCASE"#)
+            .bind(&raw_code)
             .fetch_optional(&state.pool)
             .await
         {
             let remaining: i64 = g.get::<i64, _>("remaining_cents");
             if remaining > 0 {
                 discount_cents = remaining.min(subtotal_cents);
-                applied_coupon = Some(code);
+                applied_coupon = Some(raw_code.to_string());
             }
         } else if let Ok(Some(row)) = sqlx::query(r#"SELECT percent_off, amount_off, remaining_uses FROM coupons WHERE code = ?"#)
-            .bind(&code)
+            .bind(&code_upper)
             .fetch_optional(&state.pool)
             .await
         {
@@ -67,7 +69,7 @@ async fn start(Extension(state): Extension<Arc<AppState>>, headers: HeaderMap, J
                     }
                 }
                 
-                applied_coupon = Some(code);
+                applied_coupon = Some(code_upper);
             }
         }
     }
