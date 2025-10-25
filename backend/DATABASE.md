@@ -25,6 +25,7 @@ Individual migration files for version control and tracking schema changes:
 | `0006_pending_orders_userid.sql` | Add user_id to pending orders |
 | `0007_optimizations.sql` | Add indexes and drop redundant tables |
 | `0008_remove_coupon_code_fk_constraint.sql` | Fix: Support both coupons and gift codes |
+| `0009_schema_finalization.sql` | Finalize schema with tested, idempotent implementation |
 
 ## Database Tables
 
