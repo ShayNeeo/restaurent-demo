@@ -75,3 +75,29 @@ For Brevo SMTP:
 - `SMTP_PASSWORD=<your_smtp_key>`
 - `SMTP_FROM=Your Restaurant Name <no-reply@yourdomain.com>` (replace with your actual domain)
     
+```mermaid
+graph TD
+    subgraph "Entry Points"
+        A["🏠 Online Customer"]
+        B["🍽️ Walk-in Customer"]
+    end
+    
+    A -->|Buy Gift Code| A1["Get QR Code"]
+    A1 -->|Later| A2["Come to Restaurant"]
+    A2 -->|Show QR| M["Manager<br/>Scan QR"]
+    
+    B -->|At Restaurant| B1["Customer Uses<br/>Phone/Website"]
+    B1 -->|Place Web Order| B2["Manager Gets<br/>Notification"]
+    B2 -->|Ask for QR| M
+    
+    M -->|Scan & Pay| C["Deduct from<br/>Gift Code"]
+    C -->|Create Order| D["Kitchen<br/>Prepares"]
+    D -->|Ready| E["Customer<br/>Picks Up"]
+    
+    style A fill:#1e40af,stroke:#60a5fa
+    style B fill:#047857,stroke:#34d399
+    style M fill:#7c2d12,stroke:#fb923c
+    style C fill:#86198f,stroke:#e879f9
+    style D fill:#7c2d12,stroke:#fb923c
+    style E fill:#047857,stroke:#34d399
+```
