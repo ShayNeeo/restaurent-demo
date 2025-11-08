@@ -10,11 +10,14 @@ export default function AdminSidebar({ activeTab, setActiveTab, onSignOut }: Adm
   const tabs = [
     { id: 'overview', label: 'Overview', icon: '📊' },
     { id: 'orders', label: 'Orders', icon: '📦' },
-    { id: 'users', label: 'Users', icon: '👥' },
-    { id: 'coupons', label: 'Coupons', icon: '🎟️' },
-    { id: 'products', label: 'Products', icon: '🍽️' },
     { id: 'pending', label: 'Pending Orders', icon: '⏳' },
+    { id: 'products', label: 'Products', icon: '🍽️' },
     { id: 'giftcodes', label: 'Gift Coupons', icon: '🎁' },
+  ];
+
+  const managementTabs = [
+    { id: 'users-management', label: 'Manage Users', icon: '👥' },
+    { id: 'coupons-management', label: 'Manage Coupons', icon: '🎟️' },
   ];
 
   const systemTabs = [
@@ -34,6 +37,27 @@ export default function AdminSidebar({ activeTab, setActiveTab, onSignOut }: Adm
         <h3 className="mb-3 text-xs font-bold uppercase tracking-widest text-yellow-500">Dashboard</h3>
         <div className="space-y-2">
           {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`w-full rounded-lg px-3 py-2 text-left text-sm transition ${
+                activeTab === tab.id
+                  ? 'bg-yellow-500 text-gray-950 font-semibold'
+                  : 'border border-gray-700 text-gray-300 hover:border-yellow-500 hover:text-white'
+              }`}
+            >
+              <span className="mr-2">{tab.icon}</span>
+              {tab.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Management Section */}
+      <div className="mb-8 border-t border-gray-700 pt-8">
+        <h3 className="mb-3 text-xs font-bold uppercase tracking-widest text-yellow-500">Management</h3>
+        <div className="space-y-2">
+          {managementTabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}

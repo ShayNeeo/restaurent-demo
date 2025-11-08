@@ -12,6 +12,8 @@ import AdminPendingOrders from '@/components/admin/tabs/AdminPendingOrders';
 import AdminGiftCoupons from '@/components/admin/tabs/AdminGiftCoupons';
 import AdminHealth from '@/components/admin/tabs/AdminHealth';
 import AdminSettings from '@/components/admin/tabs/AdminSettings';
+import AdminUsersManagement from '@/components/admin/tabs/AdminUsersManagement';
+import AdminCouponsManagement from '@/components/admin/tabs/AdminCouponsManagement';
 
 export default function AdminPage() {
   const [activeTab, setActiveTab] = useState('overview');
@@ -69,6 +71,8 @@ export default function AdminPage() {
           {activeTab === 'products' && <AdminProducts />}
           {activeTab === 'pending' && <AdminPendingOrders />}
           {activeTab === 'giftcodes' && <AdminGiftCoupons />}
+          {activeTab === 'users-management' && <AdminUsersManagement />}
+          {activeTab === 'coupons-management' && <AdminCouponsManagement />}
           {activeTab === 'health' && <AdminHealth />}
           {activeTab === 'settings' && <AdminSettings user={user} />}
         </div>

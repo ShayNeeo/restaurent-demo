@@ -53,7 +53,7 @@ export default async function ThankYouPage({
     order.items.reduce(
       (sum, item) => sum + item.unit_amount * Math.max(item.quantity, 0),
       0
-    ) + order.discount_cents;
+    );
 
   return (
     <main className="bg-brand-light/70 pt-24 pb-20">

@@ -11,17 +11,35 @@ use crate::state::AppState;
 #[allow(dead_code)]
 struct Claims { sub: String, email: String, exp: usize }
 
-fn require_admin(headers: &HeaderMap, state: &AppState) -> bool {
+fn extract_email_from_token(headers: &HeaderMap, state: &AppState) -> Option<String> {
     let auth = headers.get(axum::http::header::AUTHORIZATION).and_then(|v| v.to_str().ok());
-    let expected = state.admin_email.as_deref();
-    if let (Some(bearer), Some(admin_email)) = (auth, expected) {
+    if let Some(bearer) = auth {
         if let Some(token) = bearer.strip_prefix("Bearer ") {
             if let Ok(data) = decode::<Claims>(token, &DecodingKey::from_secret(state.jwt_secret.as_bytes()), &Validation::default()) {
-                return data.claims.email.eq_ignore_ascii_case(admin_email);
+                return Some(data.claims.email);
             }
         }
     }
-    false
+    None
+}
+
+async fn is_admin_user(email: &str, state: &AppState) -> bool {
+    let result = sqlx::query("SELECT role FROM users WHERE email = ?")
+        .bind(email)
+        .fetch_optional(&state.pool)
+        .await;
+
+    match result {
+        Ok(Some(row)) => {
+            let role: String = row.get("role");
+            role == "admin"
+        }
+        _ => false,
+    }
+}
+
+fn require_admin(headers: &HeaderMap, state: &AppState) -> bool {
+    extract_email_from_token(headers, state).is_some()
 }
 
 #[derive(Serialize)]
@@ -39,18 +57,19 @@ pub fn router() -> Router {
         .route("/api/admin/columns", get(columns_for_table))
         .route("/api/admin/insert", post(generic_insert))
         .route("/api/admin/delete", post(generic_delete))
-        .route("/api/admin/users/:email", patch(update_user_role))
+        .route("/api/admin/users", get(list_users).post(add_user))
+        .route("/api/admin/users/:email", patch(update_user_role).delete(delete_user))
         // Dashboard endpoints
         .route("/api/admin/stats", get(get_stats))
         .route("/api/admin/orders", get(get_orders))
         .route("/api/admin/pending-orders", get(get_pending_orders))
-        .route("/api/admin/users", get(list_users))
         .route("/api/admin/products", get(list_products))
         .route("/api/admin/gift-coupons", get(list_gift_coupons))
 }
 
 async fn list_tables(Extension(state): Extension<Arc<AppState>>, headers: HeaderMap) -> Result<Json<Tables>, axum::http::StatusCode> {
-    if !require_admin(&headers, &state) { return Err(axum::http::StatusCode::UNAUTHORIZED); }
+    let email = extract_email_from_token(&headers, &state).ok_or(axum::http::StatusCode::UNAUTHORIZED)?;
+    if !is_admin_user(&email, &state).await { return Err(axum::http::StatusCode::FORBIDDEN); }
     let rows = sqlx::query_scalar::<_, String>(
         r#"SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name"#
     )
@@ -61,7 +80,8 @@ async fn list_tables(Extension(state): Extension<Arc<AppState>>, headers: Header
 }
 
 async fn query_table(Extension(state): Extension<Arc<AppState>>, headers: HeaderMap, Query(params): Query<QueryParams>) -> Result<Json<serde_json::Value>, axum::http::StatusCode> {
-    if !require_admin(&headers, &state) { return Err(axum::http::StatusCode::UNAUTHORIZED); }
+    let email = extract_email_from_token(&headers, &state).ok_or(axum::http::StatusCode::UNAUTHORIZED)?;
+    if !is_admin_user(&email, &state).await { return Err(axum::http::StatusCode::FORBIDDEN); }
     let limit = params.limit.unwrap_or(50).max(1).min(500);
     let sql = format!("SELECT * FROM {} LIMIT {}", params.table.replace('"', ""), limit);
     let rows = sqlx::query(&sql).fetch_all(&state.pool).await.map_err(|_| axum::http::StatusCode::BAD_REQUEST)?;
@@ -98,7 +118,8 @@ async fn query_table(Extension(state): Extension<Arc<AppState>>, headers: Header
 struct AddCouponPayload { code: String, percent_off: Option<i64>, amount_off: Option<i64>, remaining_uses: i64 }
 
 async fn add_coupon(Extension(state): Extension<Arc<AppState>>, headers: HeaderMap, Json(payload): Json<AddCouponPayload>) -> Result<Json<serde_json::Value>, axum::http::StatusCode> {
-    if !require_admin(&headers, &state) { return Err(axum::http::StatusCode::UNAUTHORIZED); }
+    let email = extract_email_from_token(&headers, &state).ok_or(axum::http::StatusCode::UNAUTHORIZED)?;
+    if !is_admin_user(&email, &state).await { return Err(axum::http::StatusCode::FORBIDDEN); }
     let _ = sqlx::query(r#"INSERT OR REPLACE INTO coupons (code, percent_off, amount_off, remaining_uses) VALUES (?, ?, ?, ?)"#)
         .bind(payload.code.trim().to_uppercase())
         .bind(payload.percent_off)
@@ -111,7 +132,8 @@ async fn add_coupon(Extension(state): Extension<Arc<AppState>>, headers: HeaderM
 }
 
 async fn delete_coupon(Extension(state): Extension<Arc<AppState>>, headers: HeaderMap, Path(code): Path<String>) -> Result<Json<serde_json::Value>, axum::http::StatusCode> {
-    if !require_admin(&headers, &state) { return Err(axum::http::StatusCode::UNAUTHORIZED); }
+    let email = extract_email_from_token(&headers, &state).ok_or(axum::http::StatusCode::UNAUTHORIZED)?;
+    if !is_admin_user(&email, &state).await { return Err(axum::http::StatusCode::FORBIDDEN); }
     let _ = sqlx::query(r#"DELETE FROM coupons WHERE code = ?"#)
         .bind(code.trim().to_uppercase())
         .execute(&state.pool)
@@ -131,7 +153,8 @@ fn sanitize_table(input: &str) -> String {
 }
 
 async fn columns_for_table(Extension(state): Extension<Arc<AppState>>, headers: HeaderMap, Query(q): Query<ColumnsQuery>) -> Result<Json<Vec<ColumnInfo>>, axum::http::StatusCode> {
-    if !require_admin(&headers, &state) { return Err(axum::http::StatusCode::UNAUTHORIZED); }
+    let email = extract_email_from_token(&headers, &state).ok_or(axum::http::StatusCode::UNAUTHORIZED)?;
+    if !is_admin_user(&email, &state).await { return Err(axum::http::StatusCode::FORBIDDEN); }
     let t = sanitize_table(&q.table);
     let sql = format!("PRAGMA table_info({})", t);
     let rows = sqlx::query(&sql).fetch_all(&state.pool).await.map_err(|_| axum::http::StatusCode::BAD_REQUEST)?;
@@ -151,7 +174,8 @@ async fn columns_for_table(Extension(state): Extension<Arc<AppState>>, headers: 
 struct GenericInsertPayload { table: String, values: serde_json::Map<String, serde_json::Value> }
 
 async fn generic_insert(Extension(state): Extension<Arc<AppState>>, headers: HeaderMap, Json(payload): Json<GenericInsertPayload>) -> Result<Json<serde_json::Value>, axum::http::StatusCode> {
-    if !require_admin(&headers, &state) { return Err(axum::http::StatusCode::UNAUTHORIZED); }
+    let email = extract_email_from_token(&headers, &state).ok_or(axum::http::StatusCode::UNAUTHORIZED)?;
+    if !is_admin_user(&email, &state).await { return Err(axum::http::StatusCode::FORBIDDEN); }
     let t = sanitize_table(&payload.table);
     if payload.values.is_empty() { return Err(axum::http::StatusCode::BAD_REQUEST); }
     let cols: Vec<String> = payload.values.keys().cloned().collect();
@@ -179,7 +203,8 @@ async fn generic_insert(Extension(state): Extension<Arc<AppState>>, headers: Hea
 struct GenericDeletePayload { table: String, key: String, value: serde_json::Value }
 
 async fn generic_delete(Extension(state): Extension<Arc<AppState>>, headers: HeaderMap, Json(payload): Json<GenericDeletePayload>) -> Result<Json<serde_json::Value>, axum::http::StatusCode> {
-    if !require_admin(&headers, &state) { return Err(axum::http::StatusCode::UNAUTHORIZED); }
+    let email = extract_email_from_token(&headers, &state).ok_or(axum::http::StatusCode::UNAUTHORIZED)?;
+    if !is_admin_user(&email, &state).await { return Err(axum::http::StatusCode::FORBIDDEN); }
     let t = sanitize_table(&payload.table);
     let key = sanitize_table(&payload.key);
     let sql = format!("DELETE FROM {} WHERE {} = ?", t, key);
@@ -203,9 +228,8 @@ async fn update_user_role(
     Path(email): Path<String>,
     Json(payload): Json<UpdateUserRequest>
 ) -> Result<Json<serde_json::Value>, axum::http::StatusCode> {
-    if !require_admin(&headers, &state) {
-        return Err(axum::http::StatusCode::UNAUTHORIZED);
-    }
+    let email = extract_email_from_token(&headers, &state).ok_or(axum::http::StatusCode::UNAUTHORIZED)?;
+    if !is_admin_user(&email, &state).await { return Err(axum::http::StatusCode::FORBIDDEN); }
 
     // Update user role, defaulting to 'customer' if no role provided
     let role = payload.role.as_deref().unwrap_or("customer");
@@ -231,7 +255,8 @@ struct Stats {
 }
 
 async fn get_stats(Extension(state): Extension<Arc<AppState>>, headers: HeaderMap) -> Result<Json<Stats>, axum::http::StatusCode> {
-    if !require_admin(&headers, &state) { return Err(axum::http::StatusCode::UNAUTHORIZED); }
+    let email = extract_email_from_token(&headers, &state).ok_or(axum::http::StatusCode::UNAUTHORIZED)?;
+    if !is_admin_user(&email, &state).await { return Err(axum::http::StatusCode::FORBIDDEN); }
     
     let total_orders: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM orders").fetch_one(&state.pool).await.unwrap_or(0);
     let total_revenue: i64 = sqlx::query_scalar("SELECT COALESCE(SUM(total_cents), 0) FROM orders").fetch_one(&state.pool).await.unwrap_or(0);
@@ -268,7 +293,8 @@ struct PendingOrdersResponse {
 }
 
 async fn get_orders(Extension(state): Extension<Arc<AppState>>, headers: HeaderMap) -> Result<Json<OrdersResponse>, axum::http::StatusCode> {
-    if !require_admin(&headers, &state) { return Err(axum::http::StatusCode::UNAUTHORIZED); }
+    let email = extract_email_from_token(&headers, &state).ok_or(axum::http::StatusCode::UNAUTHORIZED)?;
+    if !is_admin_user(&email, &state).await { return Err(axum::http::StatusCode::FORBIDDEN); }
     
     let orders = sqlx::query_as::<_, OrderInfo>("SELECT id, email, total_cents, created_at FROM orders ORDER BY created_at DESC LIMIT 100")
         .fetch_all(&state.pool)
@@ -279,7 +305,8 @@ async fn get_orders(Extension(state): Extension<Arc<AppState>>, headers: HeaderM
 }
 
 async fn get_pending_orders(Extension(state): Extension<Arc<AppState>>, headers: HeaderMap) -> Result<Json<PendingOrdersResponse>, axum::http::StatusCode> {
-    if !require_admin(&headers, &state) { return Err(axum::http::StatusCode::UNAUTHORIZED); }
+    let email = extract_email_from_token(&headers, &state).ok_or(axum::http::StatusCode::UNAUTHORIZED)?;
+    if !is_admin_user(&email, &state).await { return Err(axum::http::StatusCode::FORBIDDEN); }
     
     // Handle case where table might not exist
     let pending_orders = match sqlx::query_as::<_, PendingOrderInfo>("SELECT order_id AS id, email, amount_cents AS total_cents, created_at FROM pending_orders ORDER BY created_at DESC LIMIT 100")
@@ -306,7 +333,8 @@ struct UsersResponse {
 }
 
 async fn list_users(Extension(state): Extension<Arc<AppState>>, headers: HeaderMap) -> Result<Json<UsersResponse>, axum::http::StatusCode> {
-    if !require_admin(&headers, &state) { return Err(axum::http::StatusCode::UNAUTHORIZED); }
+    let email = extract_email_from_token(&headers, &state).ok_or(axum::http::StatusCode::UNAUTHORIZED)?;
+    if !is_admin_user(&email, &state).await { return Err(axum::http::StatusCode::FORBIDDEN); }
     
     let users = sqlx::query_as::<_, UserInfo>("SELECT id, email, role, created_at FROM users ORDER BY created_at DESC LIMIT 100")
         .fetch_all(&state.pool)
@@ -329,7 +357,8 @@ struct ProductsResponse {
 }
 
 async fn list_products(Extension(state): Extension<Arc<AppState>>, headers: HeaderMap) -> Result<Json<ProductsResponse>, axum::http::StatusCode> {
-    if !require_admin(&headers, &state) { return Err(axum::http::StatusCode::UNAUTHORIZED); }
+    let email = extract_email_from_token(&headers, &state).ok_or(axum::http::StatusCode::UNAUTHORIZED)?;
+    if !is_admin_user(&email, &state).await { return Err(axum::http::StatusCode::FORBIDDEN); }
     
     let products = sqlx::query_as::<_, ProductInfo>("SELECT id, name, unit_amount AS price_cents FROM products ORDER BY name COLLATE NOCASE ASC LIMIT 200")
         .fetch_all(&state.pool)
@@ -353,7 +382,8 @@ struct CouponsResponse {
 }
 
 async fn list_coupons(Extension(state): Extension<Arc<AppState>>, headers: HeaderMap) -> Result<Json<CouponsResponse>, axum::http::StatusCode> {
-    if !require_admin(&headers, &state) { return Err(axum::http::StatusCode::UNAUTHORIZED); }
+    let email = extract_email_from_token(&headers, &state).ok_or(axum::http::StatusCode::UNAUTHORIZED)?;
+    if !is_admin_user(&email, &state).await { return Err(axum::http::StatusCode::FORBIDDEN); }
     
     let coupons = sqlx::query_as::<_, CouponInfo>("SELECT code, percent_off, amount_off, remaining_uses FROM coupons ORDER BY code")
         .fetch_all(&state.pool)
@@ -378,7 +408,8 @@ struct GiftCouponsResponse {
 }
 
 async fn list_gift_coupons(Extension(state): Extension<Arc<AppState>>, headers: HeaderMap) -> Result<Json<GiftCouponsResponse>, axum::http::StatusCode> {
-    if !require_admin(&headers, &state) { return Err(axum::http::StatusCode::UNAUTHORIZED); }
+    let email = extract_email_from_token(&headers, &state).ok_or(axum::http::StatusCode::UNAUTHORIZED)?;
+    if !is_admin_user(&email, &state).await { return Err(axum::http::StatusCode::FORBIDDEN); }
     
     // Handle case where table might not exist
     let gift_coupons = match sqlx::query_as::<_, GiftCodeInfo>("SELECT code, value_cents, remaining_cents, purchaser_email, created_at FROM gift_codes ORDER BY created_at DESC LIMIT 200")
@@ -389,6 +420,51 @@ async fn list_gift_coupons(Extension(state): Extension<Arc<AppState>>, headers: 
         };
     
     Ok(Json(GiftCouponsResponse { gift_coupons }))
+}
+
+#[derive(Deserialize)]
+struct AddUserPayload { email: String, password: String, role: Option<String> }
+
+async fn add_user(Extension(state): Extension<Arc<AppState>>, headers: HeaderMap, Json(payload): Json<AddUserPayload>) -> Result<Json<serde_json::Value>, axum::http::StatusCode> {
+    let email = extract_email_from_token(&headers, &state).ok_or(axum::http::StatusCode::UNAUTHORIZED)?;
+    if !is_admin_user(&email, &state).await { return Err(axum::http::StatusCode::FORBIDDEN); }
+    
+    let id = uuid::Uuid::new_v4().to_string();
+    let salt = argon2::password_hash::SaltString::generate(&mut rand::thread_rng());
+    let password_hash = argon2::Argon2::default()
+        .hash_password(payload.password.as_bytes(), &salt)
+        .map_err(|_| axum::http::StatusCode::INTERNAL_SERVER_ERROR)?
+        .to_string();
+    
+    let role = payload.role.unwrap_or_else(|| "customer".to_string());
+    
+    sqlx::query(r#"INSERT INTO users (id, email, password_hash, role) VALUES (?, ?, ?, ?)"#)
+        .bind(&id)
+        .bind(&payload.email)
+        .bind(&password_hash)
+        .bind(&role)
+        .execute(&state.pool)
+        .await
+        .map_err(|_| axum::http::StatusCode::BAD_REQUEST)?;
+    
+    Ok(Json(serde_json::json!({"ok": true, "id": id})))
+}
+
+async fn delete_user(Extension(state): Extension<Arc<AppState>>, headers: HeaderMap, Path(email): Path<String>) -> Result<Json<serde_json::Value>, axum::http::StatusCode> {
+    let email = extract_email_from_token(&headers, &state).ok_or(axum::http::StatusCode::UNAUTHORIZED)?;
+    if !is_admin_user(&email, &state).await { return Err(axum::http::StatusCode::FORBIDDEN); }
+    
+    let result = sqlx::query(r#"DELETE FROM users WHERE email = ?"#)
+        .bind(&email)
+        .execute(&state.pool)
+        .await
+        .map_err(|_| axum::http::StatusCode::BAD_REQUEST)?;
+    
+    if result.rows_affected() == 0 {
+        return Err(axum::http::StatusCode::NOT_FOUND);
+    }
+    
+    Ok(Json(serde_json::json!({"ok": true})))
 }
 
 

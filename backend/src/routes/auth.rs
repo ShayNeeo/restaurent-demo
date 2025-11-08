@@ -90,15 +90,26 @@ async fn login(Extension(state): Extension<Arc<AppState>>, Json(payload): Json<L
 async fn reset_password(Extension(state): Extension<Arc<AppState>>, Json(payload): Json<ResetPasswordRequest>) -> Result<Json<AuthResponse>, axum::http::StatusCode> {
     tracing::info!("Password reset attempt for email: {}", payload.email);
 
-    // For security, only allow admin to reset passwords, or implement proper reset flow
-    // For now, checking if it's the admin email configured in environment
-    if let Some(admin_email) = &state.admin_email {
-        if payload.email != *admin_email {
-            tracing::warn!("Password reset denied for non-admin email: {}", payload.email);
-            return Err(axum::http::StatusCode::FORBIDDEN);
+    // Check if user is admin
+    let user = sqlx::query("SELECT role FROM users WHERE email = ?")
+        .bind(&payload.email)
+        .fetch_optional(&state.pool)
+        .await
+        .map_err(|_| axum::http::StatusCode::INTERNAL_SERVER_ERROR)?;
+
+    let is_admin = match user {
+        Some(u) => {
+            let role: String = u.get("role");
+            role == "admin"
         }
-    } else {
-        tracing::error!("Admin email not configured in environment");
+        None => {
+            tracing::warn!("Password reset attempted for non-existent user: {}", payload.email);
+            return Err(axum::http::StatusCode::NOT_FOUND);
+        }
+    };
+
+    if !is_admin {
+        tracing::warn!("Password reset denied for non-admin user: {}", payload.email);
         return Err(axum::http::StatusCode::FORBIDDEN);
     }
 
@@ -121,20 +132,6 @@ async fn reset_password(Extension(state): Extension<Arc<AppState>>, Json(payload
         }
     };
 
-    // Check if user exists first
-    let user_exists = sqlx::query("SELECT id FROM users WHERE email = ?")
-        .bind(&payload.email)
-        .fetch_optional(&state.pool)
-        .await
-        .map_err(|e| {
-            tracing::error!("Database error checking user existence: {:?}", e);
-            axum::http::StatusCode::INTERNAL_SERVER_ERROR
-        })?;
-
-    if user_exists.is_none() {
-        tracing::warn!("Password reset attempted for non-existent user: {}", payload.email);
-        return Err(axum::http::StatusCode::NOT_FOUND);
-    }
 
     // Update the password in database
     let result = sqlx::query(r#"UPDATE users SET password_hash = ? WHERE email = ?"#)
@@ -193,23 +190,8 @@ async fn reset_password(Extension(state): Extension<Arc<AppState>>, Json(payload
 async fn setup_admin(Extension(state): Extension<Arc<AppState>>, Json(payload): Json<SignupRequest>) -> Result<Json<AuthResponse>, axum::http::StatusCode> {
     tracing::info!("Admin setup attempt for email: {}", payload.email);
 
-    // Check if admin email is configured
-    let admin_email = match &state.admin_email {
-        Some(email) => email,
-        None => {
-            tracing::error!("Admin email not configured in environment");
-            return Err(axum::http::StatusCode::FORBIDDEN);
-        }
-    };
-
-    // Only allow setup for the configured admin email
-    if payload.email != *admin_email {
-        tracing::warn!("Admin setup denied for non-admin email: {}", payload.email);
-        return Err(axum::http::StatusCode::FORBIDDEN);
-    }
-
     // Check if user already exists
-    let existing = sqlx::query("SELECT id FROM users WHERE email = ?")
+    let existing = sqlx::query("SELECT id, role FROM users WHERE email = ?")
         .bind(&payload.email)
         .fetch_optional(&state.pool)
         .await
@@ -218,7 +200,7 @@ async fn setup_admin(Extension(state): Extension<Arc<AppState>>, Json(payload): 
             axum::http::StatusCode::INTERNAL_SERVER_ERROR
         })?;
 
-    if existing.is_some() {
+    if let Some(user) = existing {
         tracing::info!("Admin user already exists, attempting login instead");
         // User exists, try to login instead
         return login(Extension(state), Json(LoginRequest {
