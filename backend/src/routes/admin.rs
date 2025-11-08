@@ -34,12 +34,20 @@ pub fn router() -> Router {
     Router::new()
         .route("/api/admin/tables", get(list_tables))
         .route("/api/admin/query", get(query_table))
-        .route("/api/admin/coupons", post(add_coupon))
+        .route("/api/admin/coupons", get(list_coupons).post(add_coupon))
         .route("/api/admin/coupons/:code", delete(delete_coupon))
         .route("/api/admin/columns", get(columns_for_table))
         .route("/api/admin/insert", post(generic_insert))
         .route("/api/admin/delete", post(generic_delete))
         .route("/api/admin/users/:email", patch(update_user_role))
+        // Dashboard endpoints
+        .route("/api/admin/stats", get(get_stats))
+        .route("/api/admin/orders", get(get_orders))
+        .route("/api/admin/pending-orders", get(get_pending_orders))
+        .route("/api/admin/users", get(list_users))
+        .route("/api/admin/products", get(list_products))
+        .route("/api/admin/gift-coupons", get(list_gift_coupons))
+        .route("/api/health", get(health_check))
 }
 
 async fn list_tables(Extension(state): Extension<Arc<AppState>>, headers: HeaderMap) -> Result<Json<Tables>, axum::http::StatusCode> {
@@ -211,6 +219,137 @@ async fn update_user_role(
         .map_err(|_| axum::http::StatusCode::BAD_REQUEST)?;
 
     Ok(Json(serde_json::json!({"ok": true})))
+}
+
+// Dashboard endpoints
+
+#[derive(Serialize)]
+struct Stats {
+    total_orders: i64,
+    total_revenue: i64,
+    total_users: i64,
+    pending_orders: i64,
+}
+
+async fn get_stats(Extension(state): Extension<Arc<AppState>>, headers: HeaderMap) -> Result<Json<Stats>, axum::http::StatusCode> {
+    if !require_admin(&headers, &state) { return Err(axum::http::StatusCode::UNAUTHORIZED); }
+    
+    let total_orders: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM orders").fetch_one(&state.pool).await.unwrap_or(0);
+    let total_revenue: i64 = sqlx::query_scalar("SELECT COALESCE(SUM(total_amount_cents), 0) FROM orders").fetch_one(&state.pool).await.unwrap_or(0);
+    let total_users: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM users").fetch_one(&state.pool).await.unwrap_or(0);
+    let pending_orders: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM pending_orders").fetch_one(&state.pool).await.unwrap_or(0);
+    
+    Ok(Json(Stats { total_orders, total_revenue, total_users, pending_orders }))
+}
+
+#[derive(Serialize)]
+struct OrderInfo {
+    id: String,
+    email: String,
+    total_amount_cents: i64,
+    created_at: String,
+}
+
+async fn get_orders(Extension(state): Extension<Arc<AppState>>, headers: HeaderMap) -> Result<Json<Vec<OrderInfo>>, axum::http::StatusCode> {
+    if !require_admin(&headers, &state) { return Err(axum::http::StatusCode::UNAUTHORIZED); }
+    
+    let orders = sqlx::query_as::<_, OrderInfo>("SELECT id, email, total_amount_cents, created_at FROM orders ORDER BY created_at DESC LIMIT 100")
+        .fetch_all(&state.pool)
+        .await
+        .unwrap_or_default();
+    
+    Ok(Json(orders))
+}
+
+async fn get_pending_orders(Extension(state): Extension<Arc<AppState>>, headers: HeaderMap) -> Result<Json<Vec<OrderInfo>>, axum::http::StatusCode> {
+    if !require_admin(&headers, &state) { return Err(axum::http::StatusCode::UNAUTHORIZED); }
+    
+    let orders = sqlx::query_as::<_, OrderInfo>("SELECT id, email, total_amount_cents, created_at FROM pending_orders ORDER BY created_at DESC LIMIT 100")
+        .fetch_all(&state.pool)
+        .await
+        .unwrap_or_default();
+    
+    Ok(Json(orders))
+}
+
+#[derive(Serialize)]
+struct UserInfo {
+    email: String,
+    role: String,
+    created_at: String,
+}
+
+async fn list_users(Extension(state): Extension<Arc<AppState>>, headers: HeaderMap) -> Result<Json<Vec<UserInfo>>, axum::http::StatusCode> {
+    if !require_admin(&headers, &state) { return Err(axum::http::StatusCode::UNAUTHORIZED); }
+    
+    let users = sqlx::query_as::<_, UserInfo>("SELECT email, role, created_at FROM users ORDER BY created_at DESC LIMIT 100")
+        .fetch_all(&state.pool)
+        .await
+        .unwrap_or_default();
+    
+    Ok(Json(users))
+}
+
+#[derive(Serialize)]
+struct ProductInfo {
+    id: i64,
+    name: String,
+    price_cents: i64,
+}
+
+async fn list_products(Extension(state): Extension<Arc<AppState>>, headers: HeaderMap) -> Result<Json<Vec<ProductInfo>>, axum::http::StatusCode> {
+    if !require_admin(&headers, &state) { return Err(axum::http::StatusCode::UNAUTHORIZED); }
+    
+    let products = sqlx::query_as::<_, ProductInfo>("SELECT id, name, unit_amount as price_cents FROM products ORDER BY id DESC LIMIT 200")
+        .fetch_all(&state.pool)
+        .await
+        .unwrap_or_default();
+    
+    Ok(Json(products))
+}
+
+#[derive(Serialize)]
+struct CouponInfo {
+    code: String,
+    percent_off: Option<i64>,
+    amount_off: Option<i64>,
+    remaining_uses: i64,
+}
+
+async fn list_coupons(Extension(state): Extension<Arc<AppState>>, headers: HeaderMap) -> Result<Json<Vec<CouponInfo>>, axum::http::StatusCode> {
+    if !require_admin(&headers, &state) { return Err(axum::http::StatusCode::UNAUTHORIZED); }
+    
+    let coupons = sqlx::query_as::<_, CouponInfo>("SELECT code, percent_off, amount_off, remaining_uses FROM coupons ORDER BY code")
+        .fetch_all(&state.pool)
+        .await
+        .unwrap_or_default();
+    
+    Ok(Json(coupons))
+}
+
+#[derive(Serialize)]
+struct GiftCouponInfo {
+    id: String,
+    email: String,
+    amount_cents: i64,
+    bonus_cents: i64,
+    used: bool,
+    created_at: String,
+}
+
+async fn list_gift_coupons(Extension(state): Extension<Arc<AppState>>, headers: HeaderMap) -> Result<Json<Vec<GiftCouponInfo>>, axum::http::StatusCode> {
+    if !require_admin(&headers, &state) { return Err(axum::http::StatusCode::UNAUTHORIZED); }
+    
+    let gift_coupons = sqlx::query_as::<_, GiftCouponInfo>("SELECT id, email, amount_cents, bonus_cents, used, created_at FROM gift_coupons ORDER BY created_at DESC LIMIT 200")
+        .fetch_all(&state.pool)
+        .await
+        .unwrap_or_default();
+    
+    Ok(Json(gift_coupons))
+}
+
+async fn health_check() -> Json<serde_json::Value> {
+    Json(serde_json::json!({"ok": true}))
 }
 
 
