@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { getBackendApiUrl } from '@/lib/api';
+import { useEffect, useState } from 'react';
 
+import { getBackendApiUrl } from '@/lib/api';
 
 interface Stats {
   total_orders: number;
@@ -11,9 +11,17 @@ interface Stats {
   pending_orders: number;
 }
 
+function formatCurrency(value: number) {
+  return new Intl.NumberFormat('de-DE', {
+    style: 'currency',
+    currency: 'EUR',
+  }).format(value / 100);
+}
+
 export default function AdminOverview() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -23,12 +31,17 @@ export default function AdminOverview() {
           headers: { Authorization: `Bearer ${token}` },
         });
 
-        if (response.ok) {
-          const data = await response.json();
-          setStats(data);
+        if (!response.ok) {
+          const message = await response.text();
+          setError(message || 'Failed to load statistics');
+          return;
         }
+
+        const data = await response.json();
+        setStats(data);
       } catch (err) {
         console.error('Failed to fetch stats:', err);
+        setError('Connection error');
       } finally {
         setLoading(false);
       }
@@ -45,20 +58,41 @@ export default function AdminOverview() {
     );
   }
 
+  if (error) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="text-center text-red-400">{error}</div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <StatCard title="Total Orders" value={stats?.total_orders || 0} icon="📦" />
-        <StatCard title="Total Revenue" value={`€${(stats?.total_revenue || 0) / 100}`} icon="💰" />
-        <StatCard title="Total Users" value={stats?.total_users || 0} icon="👥" />
-        <StatCard title="Pending Orders" value={stats?.pending_orders || 0} icon="⏳" color="yellow" />
+        <StatCard title="Total Orders" value={stats?.total_orders ?? 0} icon="📦" />
+        <StatCard title="Total Revenue" value={formatCurrency(stats?.total_revenue ?? 0)} icon="💰" />
+        <StatCard title="Total Users" value={stats?.total_users ?? 0} icon="👥" />
+        <StatCard title="Pending Orders" value={stats?.pending_orders ?? 0} icon="⏳" color="yellow" />
       </div>
     </div>
   );
 }
 
-function StatCard({ title, value, icon, color = 'blue' }: { title: string; value: string | number; icon: string; color?: string }) {
-  const colorClass = color === 'yellow' ? 'bg-yellow-500/20 border-yellow-500' : 'bg-blue-500/20 border-blue-500';
+function StatCard({
+  title,
+  value,
+  icon,
+  color = 'blue',
+}: {
+  title: string;
+  value: string | number;
+  icon: string;
+  color?: 'blue' | 'yellow';
+}) {
+  const colorClass =
+    color === 'yellow'
+      ? 'bg-yellow-500/20 border-yellow-500'
+      : 'bg-blue-500/20 border-blue-500';
 
   return (
     <div className={`rounded-lg border ${colorClass} p-6`}>
@@ -72,4 +106,6 @@ function StatCard({ title, value, icon, color = 'blue' }: { title: string; value
     </div>
   );
 }
+'use client';
+
 

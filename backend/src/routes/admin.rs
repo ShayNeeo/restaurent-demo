@@ -234,7 +234,7 @@ async fn get_stats(Extension(state): Extension<Arc<AppState>>, headers: HeaderMa
     if !require_admin(&headers, &state) { return Err(axum::http::StatusCode::UNAUTHORIZED); }
     
     let total_orders: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM orders").fetch_one(&state.pool).await.unwrap_or(0);
-    let total_revenue: i64 = sqlx::query_scalar("SELECT COALESCE(SUM(total_amount_cents), 0) FROM orders").fetch_one(&state.pool).await.unwrap_or(0);
+    let total_revenue: i64 = sqlx::query_scalar("SELECT COALESCE(SUM(total_cents), 0) FROM orders").fetch_one(&state.pool).await.unwrap_or(0);
     let total_users: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM users").fetch_one(&state.pool).await.unwrap_or(0);
     let pending_orders: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM pending_orders").fetch_one(&state.pool).await.unwrap_or(0);
     
@@ -244,70 +244,99 @@ async fn get_stats(Extension(state): Extension<Arc<AppState>>, headers: HeaderMa
 #[derive(Serialize, FromRow)]
 struct OrderInfo {
     id: String,
-    email: String,
-    total_amount_cents: i64,
+    email: Option<String>,
+    total_cents: i64,
     created_at: String,
 }
 
-async fn get_orders(Extension(state): Extension<Arc<AppState>>, headers: HeaderMap) -> Result<Json<Vec<OrderInfo>>, axum::http::StatusCode> {
+#[derive(Serialize, FromRow)]
+struct PendingOrderInfo {
+    id: String,
+    email: Option<String>,
+    total_cents: i64,
+    created_at: String,
+}
+
+#[derive(Serialize)]
+struct OrdersResponse {
+    orders: Vec<OrderInfo>,
+}
+
+#[derive(Serialize)]
+struct PendingOrdersResponse {
+    pending_orders: Vec<PendingOrderInfo>,
+}
+
+async fn get_orders(Extension(state): Extension<Arc<AppState>>, headers: HeaderMap) -> Result<Json<OrdersResponse>, axum::http::StatusCode> {
     if !require_admin(&headers, &state) { return Err(axum::http::StatusCode::UNAUTHORIZED); }
     
-    let orders = sqlx::query_as::<_, OrderInfo>("SELECT id, email, total_amount_cents, created_at FROM orders ORDER BY created_at DESC LIMIT 100")
+    let orders = sqlx::query_as::<_, OrderInfo>("SELECT id, email, total_cents, created_at FROM orders ORDER BY created_at DESC LIMIT 100")
         .fetch_all(&state.pool)
         .await
         .unwrap_or_default();
     
-    Ok(Json(orders))
+    Ok(Json(OrdersResponse { orders }))
 }
 
-async fn get_pending_orders(Extension(state): Extension<Arc<AppState>>, headers: HeaderMap) -> Result<Json<Vec<OrderInfo>>, axum::http::StatusCode> {
+async fn get_pending_orders(Extension(state): Extension<Arc<AppState>>, headers: HeaderMap) -> Result<Json<PendingOrdersResponse>, axum::http::StatusCode> {
     if !require_admin(&headers, &state) { return Err(axum::http::StatusCode::UNAUTHORIZED); }
     
     // Handle case where table might not exist
-    let orders = match sqlx::query_as::<_, OrderInfo>("SELECT id, email, total_amount_cents, created_at FROM pending_orders ORDER BY created_at DESC LIMIT 100")
+    let pending_orders = match sqlx::query_as::<_, PendingOrderInfo>("SELECT order_id AS id, email, amount_cents AS total_cents, created_at FROM pending_orders ORDER BY created_at DESC LIMIT 100")
         .fetch_all(&state.pool)
         .await {
             Ok(data) => data,
             Err(_) => Vec::new(), // Table might not exist
         };
     
-    Ok(Json(orders))
+    Ok(Json(PendingOrdersResponse { pending_orders }))
 }
 
 #[derive(Serialize, FromRow)]
 struct UserInfo {
+    id: String,
     email: String,
     role: String,
     created_at: String,
 }
 
-async fn list_users(Extension(state): Extension<Arc<AppState>>, headers: HeaderMap) -> Result<Json<Vec<UserInfo>>, axum::http::StatusCode> {
+#[derive(Serialize)]
+struct UsersResponse {
+    users: Vec<UserInfo>,
+}
+
+async fn list_users(Extension(state): Extension<Arc<AppState>>, headers: HeaderMap) -> Result<Json<UsersResponse>, axum::http::StatusCode> {
     if !require_admin(&headers, &state) { return Err(axum::http::StatusCode::UNAUTHORIZED); }
     
-    let users = sqlx::query_as::<_, UserInfo>("SELECT email, role, created_at FROM users ORDER BY created_at DESC LIMIT 100")
+    let users = sqlx::query_as::<_, UserInfo>("SELECT id, email, role, created_at FROM users ORDER BY created_at DESC LIMIT 100")
         .fetch_all(&state.pool)
         .await
         .unwrap_or_default();
     
-    Ok(Json(users))
+    Ok(Json(UsersResponse { users }))
 }
 
 #[derive(Serialize, FromRow)]
 struct ProductInfo {
-    id: i64,
+    id: String,
     name: String,
     price_cents: i64,
 }
 
-async fn list_products(Extension(state): Extension<Arc<AppState>>, headers: HeaderMap) -> Result<Json<Vec<ProductInfo>>, axum::http::StatusCode> {
+#[derive(Serialize)]
+struct ProductsResponse {
+    products: Vec<ProductInfo>,
+}
+
+async fn list_products(Extension(state): Extension<Arc<AppState>>, headers: HeaderMap) -> Result<Json<ProductsResponse>, axum::http::StatusCode> {
     if !require_admin(&headers, &state) { return Err(axum::http::StatusCode::UNAUTHORIZED); }
     
-    let products = sqlx::query_as::<_, ProductInfo>("SELECT id, name, unit_amount as price_cents FROM products ORDER BY id DESC LIMIT 200")
+    let products = sqlx::query_as::<_, ProductInfo>("SELECT id, name, unit_amount AS price_cents FROM products ORDER BY name COLLATE NOCASE ASC LIMIT 200")
         .fetch_all(&state.pool)
         .await
         .unwrap_or_default();
     
-    Ok(Json(products))
+    Ok(Json(ProductsResponse { products }))
 }
 
 #[derive(Serialize, FromRow)]
@@ -318,7 +347,12 @@ struct CouponInfo {
     remaining_uses: i64,
 }
 
-async fn list_coupons(Extension(state): Extension<Arc<AppState>>, headers: HeaderMap) -> Result<Json<Vec<CouponInfo>>, axum::http::StatusCode> {
+#[derive(Serialize)]
+struct CouponsResponse {
+    coupons: Vec<CouponInfo>,
+}
+
+async fn list_coupons(Extension(state): Extension<Arc<AppState>>, headers: HeaderMap) -> Result<Json<CouponsResponse>, axum::http::StatusCode> {
     if !require_admin(&headers, &state) { return Err(axum::http::StatusCode::UNAUTHORIZED); }
     
     let coupons = sqlx::query_as::<_, CouponInfo>("SELECT code, percent_off, amount_off, remaining_uses FROM coupons ORDER BY code")
@@ -326,31 +360,35 @@ async fn list_coupons(Extension(state): Extension<Arc<AppState>>, headers: Heade
         .await
         .unwrap_or_default();
     
-    Ok(Json(coupons))
+    Ok(Json(CouponsResponse { coupons }))
 }
 
 #[derive(Serialize, FromRow)]
-struct GiftCouponInfo {
-    id: String,
-    email: String,
-    amount_cents: i64,
-    bonus_cents: i64,
-    used: bool,
+struct GiftCodeInfo {
+    code: String,
+    value_cents: i64,
+    remaining_cents: i64,
+    purchaser_email: Option<String>,
     created_at: String,
 }
 
-async fn list_gift_coupons(Extension(state): Extension<Arc<AppState>>, headers: HeaderMap) -> Result<Json<Vec<GiftCouponInfo>>, axum::http::StatusCode> {
+#[derive(Serialize)]
+struct GiftCouponsResponse {
+    gift_coupons: Vec<GiftCodeInfo>,
+}
+
+async fn list_gift_coupons(Extension(state): Extension<Arc<AppState>>, headers: HeaderMap) -> Result<Json<GiftCouponsResponse>, axum::http::StatusCode> {
     if !require_admin(&headers, &state) { return Err(axum::http::StatusCode::UNAUTHORIZED); }
     
     // Handle case where table might not exist
-    let gift_coupons = match sqlx::query_as::<_, GiftCouponInfo>("SELECT id, email, amount_cents, bonus_cents, used, created_at FROM gift_coupons ORDER BY created_at DESC LIMIT 200")
+    let gift_coupons = match sqlx::query_as::<_, GiftCodeInfo>("SELECT code, value_cents, remaining_cents, purchaser_email, created_at FROM gift_codes ORDER BY created_at DESC LIMIT 200")
         .fetch_all(&state.pool)
         .await {
             Ok(data) => data,
             Err(_) => Vec::new(), // Table might not exist
         };
     
-    Ok(Json(gift_coupons))
+    Ok(Json(GiftCouponsResponse { gift_coupons }))
 }
 
 

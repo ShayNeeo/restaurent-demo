@@ -5,15 +5,23 @@ import { getBackendApiUrl } from '@/lib/api';
 import { useState, useEffect } from 'react';
 
 interface PendingOrder {
-  id: number;
-  email: string;
+  id: string;
+  email?: string | null;
   total_cents: number;
   created_at: string;
+}
+
+function formatCurrency(value: number) {
+  return new Intl.NumberFormat('de-DE', {
+    style: 'currency',
+    currency: 'EUR',
+  }).format(value / 100);
 }
 
 export default function AdminPendingOrders() {
   const [orders, setOrders] = useState<PendingOrder[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     const fetchPendingOrders = async () => {
@@ -23,12 +31,17 @@ export default function AdminPendingOrders() {
           headers: { Authorization: `Bearer ${token}` },
         });
 
-        if (response.ok) {
-          const data = await response.json();
-          setOrders(data.pending_orders || []);
+        if (!response.ok) {
+          const message = await response.text();
+          setError(message || 'Failed to load pending orders');
+          return;
         }
+
+        const data = await response.json();
+        setOrders(Array.isArray(data.pending_orders) ? data.pending_orders : []);
       } catch (err) {
         console.error(err);
+        setError('Connection error');
       } finally {
         setLoading(false);
       }
@@ -38,6 +51,8 @@ export default function AdminPendingOrders() {
   }, []);
 
   if (loading) return <div className="py-12 text-center text-gray-400">Loading pending orders...</div>;
+
+  if (error) return <div className="py-12 text-center text-red-400">{error}</div>;
 
   if (orders.length === 0) return <div className="py-12 text-center text-gray-400">No pending orders</div>;
 
@@ -55,10 +70,14 @@ export default function AdminPendingOrders() {
         <tbody className="divide-y divide-gray-700">
           {orders.map((order) => (
             <tr key={order.id} className="hover:bg-gray-800">
-              <td className="px-6 py-3 text-sm text-white">#{order.id}</td>
-              <td className="px-6 py-3 text-sm text-gray-300">{order.email}</td>
-              <td className="px-6 py-3 text-sm font-semibold text-white">€{(order.total_cents / 100).toFixed(2)}</td>
-              <td className="px-6 py-3 text-sm text-gray-400">{new Date(order.created_at).toLocaleString()}</td>
+              <td className="px-6 py-3 text-sm text-white">
+                <span className="font-mono text-xs uppercase tracking-widest text-gray-300">#{order.id}</span>
+              </td>
+              <td className="px-6 py-3 text-sm text-gray-300">{order.email || '—'}</td>
+              <td className="px-6 py-3 text-sm font-semibold text-white">{formatCurrency(order.total_cents)}</td>
+              <td className="px-6 py-3 text-sm text-gray-400">
+                {new Date(order.created_at).toLocaleString('de-DE')}
+              </td>
             </tr>
           ))}
         </tbody>
