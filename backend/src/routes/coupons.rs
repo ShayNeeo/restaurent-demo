@@ -51,7 +51,15 @@ async fn apply(Extension(state): Extension<Arc<AppState>>, Json(payload): Json<A
         if remaining > 0 {
             let amount_off: Option<i64> = r.try_get("amount_off").ok();
             let percent_off: Option<i64> = r.try_get("percent_off").ok();
-            return Json(ApplyCouponResponse { valid: true, amount_off, percent_off });
+            
+            // Only mark as valid if at least one discount type is actually set to a positive value
+            let has_valid_discount = 
+                (amount_off.is_some() && amount_off.unwrap_or(0) > 0) ||
+                (percent_off.is_some() && percent_off.unwrap_or(0) > 0);
+            
+            if has_valid_discount {
+                return Json(ApplyCouponResponse { valid: true, amount_off, percent_off });
+            }
         }
     }
 
