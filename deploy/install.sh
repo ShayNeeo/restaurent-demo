@@ -8,6 +8,7 @@ set -euo pipefail
 # - SQLite3 + headers, build tools, OpenSSL CLI
 
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+FRONTEND_PORT="${FRONTEND_PORT:-5173}"
 
 echo "[install] Using root: $ROOT_DIR"
 
@@ -52,7 +53,7 @@ ensure_prereqs() {
   # Ensure Rust toolchain
   if ! command -v cargo >/dev/null 2>&1; then
     echo "[install] Installing Rust (rustup)"
-    curl https://sh.rustup.rs -s极速电竞官网|【网址㊙️yb23·cc㊙️】f | sh -s -- -y
+    curl https://sh.rustup.rs -sSf | sh -s -- -y
     # shellcheck disable=SC1090
     source "$HOME/.cargo/env"
     export PATH="$HOME/.cargo/bin:$PATH"
@@ -72,25 +73,47 @@ ensure_prereqs() {
 ensure_prereqs
 
 cd "$ROOT_DIR/frontend"
-if [ ! -f .env ]; then
-  echo "PORT=5173" > .env
-  echo "BACKEND_URL=http://127.0.0.1:8080" >> .env
-  # HTTPS envs optionally filled later if certs generated
-  # FRONTEND_HTTPS=1
-  # FRONTEND_SSL_CERT_PATH=
-  # FRONTEND_SSL_KEY_PATH=
-fi
-echo "[install] Installing frontend deps..."
-npm install
-echo "[install] Building frontend (client + server)..."
-npm run build
+echo "[install] Setting up frontend .env..."
 
-# Sanitize frontend .env (port and HTTPS when behind nginx)
-if [ -f "$ROOT_DIR/frontend/.env" ]; then
-  if ! grep -q '^PORT=\([0-9]\)\+$' "$ROOT_DIR/frontend/.env"; then
-    sed -i 's/^PORT=.*/PORT=5173/' "$ROOT_DIR/frontend/.env"
+# Remove .env.local if it exists (so .env takes priority)
+rm -f .env.local
+
+# Update or create .env with Next.js variables
+if [ ! -f .env ]; then
+  cat > .env << EOF
+PORT=$FRONTEND_PORT
+NEXT_PUBLIC_BACKEND_URL=http://127.0.0.1:8080
+EOF
+else
+  # Update existing .env with correct keys
+  if grep -q "^BACKEND_URL=" .env; then
+    sed -i 's|^BACKEND_URL=.*|NEXT_PUBLIC_BACKEND_URL=http://127.0.0.1:8080|' .env
+  elif ! grep -q "^NEXT_PUBLIC_BACKEND_URL=" .env; then
+    echo "NEXT_PUBLIC_BACKEND_URL=http://127.0.0.1:8080" >> .env
   fi
+  
+  # Ensure PORT is set
+  if grep -q "^PORT=" .env; then
+    sed -i "s|^PORT=.*|PORT=$FRONTEND_PORT|" .env
+  else
+    echo "PORT=$FRONTEND_PORT" >> .env
+  fi
+  
+  # Remove old non-Next.js keys
+  sed -i '/^FRONTEND_HTTPS=/d' .env
+  sed -i '/^FRONTEND_SSL_CERT_PATH=/d' .env
+  sed -i '/^FRONTEND_SSL_KEY_PATH=/d' .env
 fi
+
+echo "[install] Frontend .env ready"
+echo "[install] Installing frontend deps (Next.js)..."
+if [ -f package-lock.json ]; then
+  npm ci
+else
+  npm install
+fi
+echo "[install] Building Next.js frontend..."
+npm run build
 
 cd "$ROOT_DIR/backend"
 if [ ! -f .env ]; then
@@ -98,7 +121,7 @@ if [ ! -f .env ]; then
   mkdir -p "$DATA_DIR"
   echo "DATABASE_URL=sqlite://./data/app.db" > .env
   echo "JWT_SECRET=$(openssl rand -hex 16 || echo dev_secret)" >> .env
-  echo "APP_URL=http://localhost:5173" >> .env
+  echo "APP_URL=http://localhost:$FRONTEND_PORT" >> .env
   echo "# STRIPE_SECRET_KEY=sk_test_xxx" >> .env
   echo "# STRIPE_WEBHOOK_SECRET=whsec_xxx" >> .env
   echo "SMTP_HOST=smtp-relay.brevo.com" >> .env
@@ -162,7 +185,7 @@ server {
     }
 
     location / {
-        proxy_pass http://127.0.0.1:5173;
+        proxy_pass http://127.0.0.1:__FRONTEND_PORT__;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
@@ -174,6 +197,7 @@ server {
 NGINXCONF
     $SUDO sed -i "s/__DOMAIN__/$PRIMARY_DOMAIN/g" "$SITE_PATH"
     $SUDO sed -i "s/__WWW_DOMAIN__/$WWW_DOMAIN/g" "$SITE_PATH"
+    $SUDO sed -i "s/__FRONTEND_PORT__/$FRONTEND_PORT/g" "$SITE_PATH"
     # Enable site
     if [ ! -f "/etc/nginx/sites-enabled/$PRIMARY_DOMAIN" ]; then
       $SUDO ln -s "$SITE_PATH" "/etc/nginx/sites-enabled/$PRIMARY_DOMAIN"
@@ -228,14 +252,18 @@ echo "[install] Starting backend (detached)..."
 )
 
 echo "[install] Starting frontend (detached)..."
-# Ensure port 5173 is free (kill any processes bound to it)
+# Ensure port $FRONTEND_PORT is free (kill any processes bound to it)
 if command -v ss >/dev/null 2>&1; then
-  PIDS=$(ss -lntp | awk '/:5173 /{print $7}' | sed 's/users:(//' | sed 's/)//' | sed 's/\"//g' | tr ',' '\n' | sed -n 's/^pid=\([0-9]\+\).*$/\1/p' | sort -u)
+  PIDS=$(ss -lntp | awk -v port=":$FRONTEND_PORT " '$0 ~ port {print $7}' | sed 's/users:(//' | sed 's/)//' | sed 's/\"//g' | tr ',' '\n' | sed -n 's/^pid=\([0-9]\+\).*$/\1/p' | sort -u)
   for P in $PIDS; do
     kill "$P" 2>/dev/null || true
   done
 fi
-nohup node "$ROOT_DIR/frontend/dist/server.js" > "$ROOT_DIR/.frontend.log" 2>&1 & echo $! > "$ROOT_DIR/.frontend.pid"
+(
+  cd "$ROOT_DIR/frontend"
+  nohup env PORT="$FRONTEND_PORT" "$ROOT_DIR/frontend/node_modules/.bin/next" start --port "$FRONTEND_PORT" --hostname 0.0.0.0 > "$ROOT_DIR/.frontend.log" 2>&1 &
+  echo $! > "$ROOT_DIR/.frontend.pid"
+)
 
 echo "[install] Done. PIDs: backend=$(cat "$ROOT_DIR/.backend.pid"), frontend=$(cat "$ROOT_DIR/.frontend.pid")"
 

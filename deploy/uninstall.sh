@@ -23,6 +23,8 @@ stop_if_running "$ROOT_DIR/.frontend.pid" "frontend"
 if command -v pkill >/dev/null 2>&1; then
   pkill -f "restaurent-backend" 2>/dev/null || true
   pkill -f "node .*dist/server.js" 2>/dev/null || true
+  pkill -f "next start" 2>/dev/null || true
+  pkill -f "node .*next/dist/bin/next" 2>/dev/null || true
 fi
 
 if command -v ss >/dev/null 2>&1; then

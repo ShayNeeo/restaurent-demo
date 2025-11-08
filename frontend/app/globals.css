@@ -1,0 +1,41 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+body {
+  min-height: 100vh;
+  background-color: #f7f5e7;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+.section-title {
+  @apply text-3xl md:text-4xl font-semibold text-brand-dark;
+}
+
+.section-subtitle {
+  @apply text-lg text-slate-600 max-w-2xl;
+}
+
+.btn-primary {
+  @apply inline-flex items-center justify-center rounded-full bg-brand px-6 py-3 font-semibold text-white shadow-soft transition hover:bg-brand-dark;
+}
+
+.btn-light {
+  @apply inline-flex items-center justify-center rounded-full border border-brand px-6 py-3 font-semibold text-brand transition hover:bg-brand hover:text-white;
+}
+
+.badge {
+  @apply inline-flex items-center gap-2 rounded-full bg-white/80 px-5 py-2 text-sm font-medium text-brand shadow;
+}
+
+.card {
+  @apply rounded-3xl bg-white/90 p-6 shadow-soft backdrop-blur;
+}
+
