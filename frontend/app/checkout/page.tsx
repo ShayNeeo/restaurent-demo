@@ -59,7 +59,7 @@ export default function CheckoutPage() {
 
     try {
       const base = getBackendUrl();
-      const response = await fetch(`${base}/api/coupons/apply`, {
+      const response = await fetch(`${base}/coupons/apply`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
@@ -120,7 +120,7 @@ export default function CheckoutPage() {
 
     try {
       const base = getBackendUrl();
-      const response = await fetch(`${base}/api/checkout`, {
+      const response = await fetch(`${base}/checkout`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"

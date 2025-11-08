@@ -1,6 +1,9 @@
 'use client';
 
+import { getBackendApiUrl } from '@/lib/api';
+
 import { useState, useEffect } from 'react';
+
 
 interface Stats {
   total_orders: number;
@@ -17,7 +20,7 @@ export default function AdminOverview() {
     const fetchStats = async () => {
       try {
         const token = localStorage.getItem('restaurant_jwt_v1');
-        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8080'}/api/admin/stats`, {
+        const response = await fetch(getBackendApiUrl('/admin/stats'), {
           headers: { Authorization: `Bearer ${token}` },
         });
 

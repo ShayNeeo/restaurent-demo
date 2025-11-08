@@ -1,18 +1,23 @@
-const DEFAULT_BACKEND_URL = "http://localhost:8080";
+const DEFAULT_BACKEND_URL = "http://127.0.0.1:8080";
 
 export function getBackendUrl() {
+  let base: string;
+  
   if (typeof window !== "undefined") {
-    return (
-      process.env.NEXT_PUBLIC_BACKEND_URL?.replace(/\/$/, "") ||
-      DEFAULT_BACKEND_URL
-    );
+    base = process.env.NEXT_PUBLIC_BACKEND_URL || DEFAULT_BACKEND_URL;
+  } else {
+    base = process.env.BACKEND_URL || process.env.NEXT_PUBLIC_BACKEND_URL || DEFAULT_BACKEND_URL;
   }
-
-  return (
-    process.env.BACKEND_URL?.replace(/\/$/, "") ||
-    process.env.NEXT_PUBLIC_BACKEND_URL?.replace(/\/$/, "") ||
-    DEFAULT_BACKEND_URL
-  );
+  
+  // Clean trailing slashes
+  base = base.replace(/\/$/, "");
+  
+  // Ensure /api suffix
+  if (!base.endsWith("/api")) {
+    base = `${base}/api`;
+  }
+  
+  return base;
 }
 
 export async function fetchJson<T>(
@@ -26,5 +31,10 @@ export async function fetchJson<T>(
     throw new Error(message || `Request failed with ${response.status}`);
   }
   return (await response.json()) as T;
+}
+
+export function getBackendApiUrl(path: string): string {
+  const base = getBackendUrl();
+  return `${base}${path}`;
 }
 

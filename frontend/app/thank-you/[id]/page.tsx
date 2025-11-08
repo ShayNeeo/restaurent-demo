@@ -27,7 +27,7 @@ function formatCurrency(value: number) {
 
 async function fetchOrder(id: string): Promise<OrderDetails> {
   const base = getBackendUrl();
-  const response = await fetch(`${base}/api/orders/${id}`, {
+  const response = await fetch(`${base}/orders/${id}`, {
     cache: "no-store"
   });
 

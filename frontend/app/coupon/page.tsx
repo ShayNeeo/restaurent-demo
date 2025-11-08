@@ -46,7 +46,7 @@ export default function CouponPage() {
 
     try {
       const base = getBackendUrl();
-      const response = await fetch(`${base}/api/coupons/apply`, {
+      const response = await fetch(`${base}/coupons/apply`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -109,7 +109,7 @@ export default function CouponPage() {
 
     try {
       const base = getBackendUrl();
-      const response = await fetch(`${base}/api/gift-coupons/buy`, {
+      const response = await fetch(`${base}/gift-coupons/buy`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

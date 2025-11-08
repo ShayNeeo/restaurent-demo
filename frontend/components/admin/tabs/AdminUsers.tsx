@@ -1,5 +1,7 @@
 'use client';
 
+import { getBackendApiUrl } from '@/lib/api';
+
 import { useState, useEffect } from 'react';
 
 interface User {
@@ -16,8 +18,8 @@ export default function AdminUsers() {
     const fetchUsers = async () => {
       try {
         const token = localStorage.getItem('restaurant_jwt_v1');
-        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8080'}/api/admin/users`, {
-          headers: { Authorization: `Bearer ${token}` },
+        const response = await fetch(getBackendApiUrl('/admin/users`, {
+          headers: { Authorization: `Bearer ${token}') },
         });
 
         if (response.ok) {

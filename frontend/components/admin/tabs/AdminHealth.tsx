@@ -1,5 +1,7 @@
 'use client';
 
+import { getBackendApiUrl } from '@/lib/api';
+
 import { useState, useEffect } from 'react';
 
 interface HealthStatus {
@@ -15,7 +17,7 @@ export default function AdminHealth() {
   useEffect(() => {
     const fetchHealth = async () => {
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8080'}/api/health`, {
+        const response = await fetch(getBackendApiUrl('/health'), {
           headers: { 'Content-Type': 'application/json' },
         });
 

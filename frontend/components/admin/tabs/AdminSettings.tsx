@@ -1,5 +1,7 @@
 'use client';
 
+import { getBackendApiUrl } from '@/lib/api';
+
 interface AdminSettingsProps {
   user: { email: string } | null;
 }

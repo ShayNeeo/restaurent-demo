@@ -88,7 +88,7 @@ export default function MenuPage() {
       try {
         setLoading(true);
         const base = getBackendUrl();
-        const response = await fetch(`${base}/api/products`, {
+        const response = await fetch(`${base}/products`, {
           signal: controller.signal,
           cache: "no-store"
         });
