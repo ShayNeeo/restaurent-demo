@@ -113,6 +113,10 @@ rm -f package-lock.json
 
 echo "[install] Running npm install..."
 npm install
+
+echo "[install] Fixing npm vulnerabilities..."
+npm audit fix --force --audit-level=moderate 2>/dev/null || true
+
 echo "[install] Building Next.js frontend..."
 npm run build
 
