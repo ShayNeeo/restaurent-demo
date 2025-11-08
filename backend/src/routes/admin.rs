@@ -4,6 +4,7 @@ use serde::Deserialize;
 use jsonwebtoken::{DecodingKey, Validation, decode};
 use std::sync::Arc;
 use sqlx::{Row, Column, FromRow};
+use argon2::password_hash::{PasswordHasher, SaltString};
 
 use crate::state::AppState;
 
@@ -225,18 +226,18 @@ struct UpdateUserRequest { role: Option<String> }
 async fn update_user_role(
     Extension(state): Extension<Arc<AppState>>,
     headers: HeaderMap,
-    Path(email): Path<String>,
+    Path(target_email): Path<String>,
     Json(payload): Json<UpdateUserRequest>
 ) -> Result<Json<serde_json::Value>, axum::http::StatusCode> {
-    let email = extract_email_from_token(&headers, &state).ok_or(axum::http::StatusCode::UNAUTHORIZED)?;
-    if !is_admin_user(&email, &state).await { return Err(axum::http::StatusCode::FORBIDDEN); }
+    let _admin_email = extract_email_from_token(&headers, &state).ok_or(axum::http::StatusCode::UNAUTHORIZED)?;
+    if !is_admin_user(&_admin_email, &state).await { return Err(axum::http::StatusCode::FORBIDDEN); }
 
     // Update user role, defaulting to 'customer' if no role provided
     let role = payload.role.as_deref().unwrap_or("customer");
 
     sqlx::query(r#"UPDATE users SET role = ? WHERE email = ?"#)
         .bind(role)
-        .bind(&email)
+        .bind(&target_email)
         .execute(&state.pool)
         .await
         .map_err(|_| axum::http::StatusCode::BAD_REQUEST)?;
@@ -450,12 +451,12 @@ async fn add_user(Extension(state): Extension<Arc<AppState>>, headers: HeaderMap
     Ok(Json(serde_json::json!({"ok": true, "id": id})))
 }
 
-async fn delete_user(Extension(state): Extension<Arc<AppState>>, headers: HeaderMap, Path(email): Path<String>) -> Result<Json<serde_json::Value>, axum::http::StatusCode> {
-    let email = extract_email_from_token(&headers, &state).ok_or(axum::http::StatusCode::UNAUTHORIZED)?;
-    if !is_admin_user(&email, &state).await { return Err(axum::http::StatusCode::FORBIDDEN); }
+async fn delete_user(Extension(state): Extension<Arc<AppState>>, headers: HeaderMap, Path(target_email): Path<String>) -> Result<Json<serde_json::Value>, axum::http::StatusCode> {
+    let _admin_email = extract_email_from_token(&headers, &state).ok_or(axum::http::StatusCode::UNAUTHORIZED)?;
+    if !is_admin_user(&_admin_email, &state).await { return Err(axum::http::StatusCode::FORBIDDEN); }
     
     let result = sqlx::query(r#"DELETE FROM users WHERE email = ?"#)
-        .bind(&email)
+        .bind(&target_email)
         .execute(&state.pool)
         .await
         .map_err(|_| axum::http::StatusCode::BAD_REQUEST)?;

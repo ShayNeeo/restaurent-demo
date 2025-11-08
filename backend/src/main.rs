@@ -33,7 +33,6 @@ async fn main() {
     let paypal_client_id = std::env::var("PAYPAL_CLIENT_ID").ok();
     let paypal_secret = std::env::var("PAYPAL_SECRET").ok();
     let paypal_api_base = std::env::var("PAYPAL_API_BASE").unwrap_or_else(|_| "https://api-m.sandbox.paypal.com".into());
-    let admin_email = std::env::var("ADMIN_EMAIL").ok();
 
     // Log configuration status (without exposing sensitive data)
     tracing::info!("Backend starting with configuration:");
@@ -42,7 +41,7 @@ async fn main() {
     tracing::info!("SMTP configured: {}", smtp_host.is_some() && smtp_username.is_some() && smtp_password.is_some() && smtp_from.is_some());
     tracing::info!("PayPal configured: {}", paypal_client_id.is_some() && paypal_secret.is_some());
 
-    let state = Arc::new(state::AppState { pool, jwt_secret, app_url, smtp_host, smtp_port, smtp_username, smtp_password, smtp_from, paypal_client_id, paypal_secret, paypal_api_base, admin_email });
+    let state = Arc::new(state::AppState { pool, jwt_secret, app_url, smtp_host, smtp_port, smtp_username, smtp_password, smtp_from, paypal_client_id, paypal_secret, paypal_api_base });
 
     // Spawn background cleanup task
     let cleanup_pool = state.pool.clone();

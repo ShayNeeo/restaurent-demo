@@ -71,7 +71,7 @@ async fn paypal_return(Extension(state): Extension<Arc<AppState>>, _headers: Hea
                             if let Some(r) = row {
                                 tracing::info!("Found pending order for {}, finalizing...", order_id);
                                 
-                                let user_id: Option<String> = r.try_get("user_id").ok();
+                                let _user_id: Option<String> = r.try_get("user_id").ok();
                                 let email: String = r.try_get("email").unwrap_or_default();
                                 let amount_cents: i64 = r.try_get("amount_cents").unwrap_or(0);
                                 let items_json: String = r.try_get("items_json").unwrap_or_default();

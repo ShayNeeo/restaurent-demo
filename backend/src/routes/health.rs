@@ -24,7 +24,6 @@ struct DatabaseStatus {
 struct ConfigStatus {
     smtp_configured: bool,
     paypal_configured: bool,
-    admin_email_set: bool,
 }
 
 pub fn router() -> Router {
@@ -46,7 +45,6 @@ async fn handler() -> Json<Health> {
         config: ConfigStatus {
             smtp_configured: true,
             paypal_configured: true,
-            admin_email_set: true,
         },
     })
 }
@@ -66,7 +64,6 @@ async fn basic_handler(Extension(state): Extension<Arc<AppState>>) -> Json<Healt
         config: ConfigStatus {
             smtp_configured: state.smtp_host.is_some() && state.smtp_username.is_some() && state.smtp_password.is_some() && state.smtp_from.is_some(),
             paypal_configured: state.paypal_client_id.is_some() && state.paypal_secret.is_some(),
-            admin_email_set: state.admin_email.is_some(),
         },
     })
 }
@@ -88,7 +85,6 @@ async fn detailed_handler(Extension(state): Extension<Arc<AppState>>) -> Json<He
                 config: ConfigStatus {
                     smtp_configured: state.smtp_host.is_some() && state.smtp_username.is_some(),
                     paypal_configured: state.paypal_client_id.is_some() && state.paypal_secret.is_some(),
-                    admin_email_set: state.admin_email.is_some(),
                 },
             });
         }
@@ -128,7 +124,6 @@ async fn detailed_handler(Extension(state): Extension<Arc<AppState>>) -> Json<He
                     config: ConfigStatus {
                         smtp_configured: state.smtp_host.is_some() && state.smtp_username.is_some(),
                         paypal_configured: state.paypal_client_id.is_some() && state.paypal_secret.is_some(),
-                        admin_email_set: state.admin_email.is_some(),
                     },
                 });
             }
@@ -148,41 +143,34 @@ async fn detailed_handler(Extension(state): Extension<Arc<AppState>>) -> Json<He
                 config: ConfigStatus {
                     smtp_configured: state.smtp_host.is_some() && state.smtp_username.is_some(),
                     paypal_configured: state.paypal_client_id.is_some() && state.paypal_secret.is_some(),
-                    admin_email_set: state.admin_email.is_some(),
                 },
             });
         }
     };
 
-    // Check if admin user exists
-    let admin_exists = if let Some(admin_email) = &state.admin_email {
-        match sqlx::query("SELECT id FROM users WHERE email = ?")
-            .bind(admin_email)
-            .fetch_optional(&state.pool)
-            .await
-        {
-            Ok(Some(_)) => true,
-            Ok(None) => false,
-            Err(e) => {
-                tracing::error!("Failed to check admin user existence: {:?}", e);
-                return Json(Health {
-                    ok: false,
-                    database: DatabaseStatus {
-                        connected: true,
-                        users_table_exists: true,
-                        admin_user_exists: false,
-                        error: Some(format!("Failed to check admin user: {:?}", e)),
-                    },
-                    config: ConfigStatus {
-                        smtp_configured: state.smtp_host.is_some() && state.smtp_username.is_some(),
-                        paypal_configured: state.paypal_client_id.is_some() && state.paypal_secret.is_some(),
-                        admin_email_set: state.admin_email.is_some(),
-                    },
-                });
-            }
+    // Check if any admin user exists (role = 'admin')
+    let admin_exists = match sqlx::query("SELECT id FROM users WHERE role = 'admin' LIMIT 1")
+        .fetch_optional(&state.pool)
+        .await
+    {
+        Ok(Some(_)) => true,
+        Ok(None) => false,
+        Err(e) => {
+            tracing::error!("Failed to check admin user existence: {:?}", e);
+            return Json(Health {
+                ok: false,
+                database: DatabaseStatus {
+                    connected: true,
+                    users_table_exists: true,
+                    admin_user_exists: false,
+                    error: Some(format!("Failed to check admin user: {:?}", e)),
+                },
+                config: ConfigStatus {
+                    smtp_configured: state.smtp_host.is_some() && state.smtp_username.is_some(),
+                    paypal_configured: state.paypal_client_id.is_some() && state.paypal_secret.is_some(),
+                },
+            });
         }
-    } else {
-        false
     };
 
     Json(Health {
@@ -196,7 +184,6 @@ async fn detailed_handler(Extension(state): Extension<Arc<AppState>>) -> Json<He
         config: ConfigStatus {
             smtp_configured: state.smtp_host.is_some() && state.smtp_username.is_some() && state.smtp_password.is_some() && state.smtp_from.is_some(),
             paypal_configured: state.paypal_client_id.is_some() && state.paypal_secret.is_some(),
-            admin_email_set: state.admin_email.is_some(),
         },
     })
 }

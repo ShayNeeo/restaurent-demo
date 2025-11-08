@@ -159,8 +159,8 @@ fi
 echo "[install] Building backend..."
 cargo build --release
 
-# If DOMAIN and ADMIN_EMAIL provided, set up Nginx reverse proxy and Let's Encrypt
-if [ -n "${DOMAIN:-}" ] && [ -n "${ADMIN_EMAIL:-}" ] && [ "$APT_AVAILABLE" = true ]; then
+# If DOMAIN provided, set up Nginx reverse proxy and Let's Encrypt
+if [ -n "${DOMAIN:-}" ] && [ "$APT_AVAILABLE" = true ]; then
   echo "[install] Setting up Nginx reverse proxy for $DOMAIN"
   $SUDO apt-get install -y nginx certbot python3-certbot-nginx > /dev/null
 
@@ -224,8 +224,10 @@ NGINXCONF
   fi
 
   echo "[install] Obtaining Let's Encrypt certificate for $DOMAIN"
+  echo "[install] Note: You'll need to provide an email address for certificate renewal notices."
+  EMAIL="${ADMIN_EMAIL:-webmaster@${PRIMARY_DOMAIN}}"
   set +e
-  $SUDO certbot --nginx --redirect --non-interactive --agree-tos -m "$ADMIN_EMAIL" $DOM_FLAGS
+  $SUDO certbot --nginx --redirect --non-interactive --agree-tos -m "$EMAIL" $DOM_FLAGS
   CERTBOT_RC=$?
   set -e
   if [ $CERTBOT_RC -ne 0 ]; then

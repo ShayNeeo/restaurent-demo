@@ -200,7 +200,7 @@ async fn setup_admin(Extension(state): Extension<Arc<AppState>>, Json(payload): 
             axum::http::StatusCode::INTERNAL_SERVER_ERROR
         })?;
 
-    if let Some(user) = existing {
+    if let Some(_user) = existing {
         tracing::info!("Admin user already exists, attempting login instead");
         // User exists, try to login instead
         return login(Extension(state), Json(LoginRequest {
