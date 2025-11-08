@@ -4,7 +4,7 @@ use serde::Deserialize;
 use jsonwebtoken::{DecodingKey, Validation, decode};
 use std::sync::Arc;
 use sqlx::{Row, Column, FromRow};
-use argon2::password_hash::{PasswordHasher, SaltString};
+use argon2::password_hash::PasswordHasher;
 
 use crate::state::AppState;
 
@@ -39,6 +39,7 @@ async fn is_admin_user(email: &str, state: &AppState) -> bool {
         }
     }
 
+#[allow(dead_code)]
 fn require_admin(headers: &HeaderMap, state: &AppState) -> bool {
     extract_email_from_token(headers, state).is_some()
 }

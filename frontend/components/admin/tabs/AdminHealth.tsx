@@ -15,7 +15,6 @@ interface HealthResponse {
   config: {
     smtp_configured: boolean;
     paypal_configured: boolean;
-    admin_email_set: boolean;
   };
 }
 
@@ -89,7 +88,6 @@ export default function AdminHealth() {
     const missingConfig =
       !health.config.smtp_configured ||
       !health.config.paypal_configured ||
-      !health.config.admin_email_set ||
       !health.database.admin_user_exists;
 
     return missingConfig ? 'degraded' : 'healthy';
@@ -140,7 +138,6 @@ export default function AdminHealth() {
             rows={[
               { label: 'SMTP', value: health.config.smtp_configured ? 'Configured' : 'Missing' },
               { label: 'PayPal', value: health.config.paypal_configured ? 'Configured' : 'Missing' },
-              { label: 'Admin email', value: health.config.admin_email_set ? 'Set' : 'Missing' },
             ]}
           />
         </div>

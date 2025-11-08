@@ -29,7 +29,10 @@ export function VisitSection() {
           </p>
           <div className="rounded-3xl border border-brand/20 bg-white/80 p-6">
             <h3 className="text-lg font-semibold text-brand">Kontakt</h3>
-            <p className="mt-2 text-sm text-slate-600">
+            <p className="mt-2 text-sm font-semibold text-brand">
+              Nguyen Restaurant
+            </p>
+            <p className="mt-1 text-sm text-slate-600">
               Georgenstraße 67, 80799 München-Schwabing
             </p>
             <a
@@ -62,7 +65,7 @@ export function VisitSection() {
           <div className="flex-1 overflow-hidden rounded-[2.5rem] shadow-soft">
             <iframe
               title="Google Maps: Nguyen Vietnam-Restaurant München"
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2661.613983626932!2d11.568734815649654!3d48.156246779224944!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x479e75c2be83bf53%3A0xa8dc2f14fecb4608!2sGeorgenstra%C3%9Fe+67%2C+80799+M%C3%BCnchen!5e0!3m2!1sde!2sde!4v1508710615544"
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2661.61!2d11.5682659!3d48.1563592!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x479e75c2bef9cda3:0x815ce024e30267be!2sNguyen+Restaurant!5e0!3m2!1sde!2sde!4v1733780000000"
               className="h-full w-full border-0"
               allowFullScreen
               loading="lazy"
