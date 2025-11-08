@@ -150,26 +150,26 @@ async fn detailed_handler(Extension(state): Extension<Arc<AppState>>) -> Json<He
 
     // Check if any admin user exists (role = 'admin')
     let admin_exists = match sqlx::query("SELECT id FROM users WHERE role = 'admin' LIMIT 1")
-        .fetch_optional(&state.pool)
-        .await
-    {
-        Ok(Some(_)) => true,
-        Ok(None) => false,
-        Err(e) => {
-            tracing::error!("Failed to check admin user existence: {:?}", e);
-            return Json(Health {
-                ok: false,
-                database: DatabaseStatus {
-                    connected: true,
-                    users_table_exists: true,
-                    admin_user_exists: false,
-                    error: Some(format!("Failed to check admin user: {:?}", e)),
-                },
-                config: ConfigStatus {
-                    smtp_configured: state.smtp_host.is_some() && state.smtp_username.is_some(),
-                    paypal_configured: state.paypal_client_id.is_some() && state.paypal_secret.is_some(),
-                },
-            });
+            .fetch_optional(&state.pool)
+            .await
+        {
+            Ok(Some(_)) => true,
+            Ok(None) => false,
+            Err(e) => {
+                tracing::error!("Failed to check admin user existence: {:?}", e);
+                return Json(Health {
+                    ok: false,
+                    database: DatabaseStatus {
+                        connected: true,
+                        users_table_exists: true,
+                        admin_user_exists: false,
+                        error: Some(format!("Failed to check admin user: {:?}", e)),
+                    },
+                    config: ConfigStatus {
+                        smtp_configured: state.smtp_host.is_some() && state.smtp_username.is_some(),
+                        paypal_configured: state.paypal_client_id.is_some() && state.paypal_secret.is_some(),
+                    },
+                });
         }
     };
 

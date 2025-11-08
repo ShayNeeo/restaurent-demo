@@ -92,20 +92,6 @@ export default function AdminSidebar({ activeTab, setActiveTab, onSignOut }: Adm
               {tab.label}
             </button>
           ))}
-          <a
-            href="/test-email"
-            className="block w-full rounded-lg border border-gray-700 px-3 py-2 text-left text-sm text-gray-300 transition hover:border-yellow-500 hover:text-white"
-          >
-            <span className="mr-2">✉️</span>
-            Test Email
-          </a>
-          <a
-            href="/test-paypal"
-            className="block w-full rounded-lg border border-gray-700 px-3 py-2 text-left text-sm text-gray-300 transition hover:border-yellow-500 hover:text-white"
-          >
-            <span className="mr-2">💳</span>
-            Test PayPal
-          </a>
         </div>
       </div>
 

@@ -15,7 +15,7 @@ const categories = [
       },
       {
         name: "Saté-Suppe",
-        price: "ab 15,50 €",
+        price: "15,50 €",
         detail: "Kräftige Hühnerbrühe mit Erdnüssen, Pak Choi und Saté-Gewürz."
       },
       {

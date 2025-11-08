@@ -36,8 +36,8 @@ async fn is_admin_user(email: &str, state: &AppState) -> bool {
             role == "admin"
         }
         _ => false,
+        }
     }
-}
 
 fn require_admin(headers: &HeaderMap, state: &AppState) -> bool {
     extract_email_from_token(headers, state).is_some()
