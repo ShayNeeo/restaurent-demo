@@ -3,7 +3,7 @@ use serde::Serialize;
 use serde::Deserialize;
 use jsonwebtoken::{DecodingKey, Validation, decode};
 use std::sync::Arc;
-use sqlx::{Row, Column};
+use sqlx::{Row, Column, FromRow};
 
 use crate::state::AppState;
 
@@ -242,7 +242,7 @@ async fn get_stats(Extension(state): Extension<Arc<AppState>>, headers: HeaderMa
     Ok(Json(Stats { total_orders, total_revenue, total_users, pending_orders }))
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, FromRow)]
 struct OrderInfo {
     id: String,
     email: String,
@@ -272,7 +272,7 @@ async fn get_pending_orders(Extension(state): Extension<Arc<AppState>>, headers:
     Ok(Json(orders))
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, FromRow)]
 struct UserInfo {
     email: String,
     role: String,
@@ -290,7 +290,7 @@ async fn list_users(Extension(state): Extension<Arc<AppState>>, headers: HeaderM
     Ok(Json(users))
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, FromRow)]
 struct ProductInfo {
     id: i64,
     name: String,
@@ -308,7 +308,7 @@ async fn list_products(Extension(state): Extension<Arc<AppState>>, headers: Head
     Ok(Json(products))
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, FromRow)]
 struct CouponInfo {
     code: String,
     percent_off: Option<i64>,
@@ -327,7 +327,7 @@ async fn list_coupons(Extension(state): Extension<Arc<AppState>>, headers: Heade
     Ok(Json(coupons))
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, FromRow)]
 struct GiftCouponInfo {
     id: String,
     email: String,
