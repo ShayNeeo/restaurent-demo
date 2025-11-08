@@ -1,11 +1,14 @@
-const DEFAULT_BACKEND_URL = "http://127.0.0.1:8080";
+const DEFAULT_BACKEND_URL = "http://localhost:8080";
 
 export function getBackendUrl() {
   let base: string;
   
   if (typeof window !== "undefined") {
-    base = process.env.NEXT_PUBLIC_BACKEND_URL || DEFAULT_BACKEND_URL;
+    // Client-side: use the current domain if no env var set
+    base = process.env.NEXT_PUBLIC_BACKEND_URL || 
+           (typeof window !== "undefined" ? `${window.location.protocol}//${window.location.host}` : DEFAULT_BACKEND_URL);
   } else {
+    // Server-side: use env vars
     base = process.env.BACKEND_URL || process.env.NEXT_PUBLIC_BACKEND_URL || DEFAULT_BACKEND_URL;
   }
   

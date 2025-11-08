@@ -78,18 +78,27 @@ echo "[install] Setting up frontend .env..."
 # Remove .env.local if it exists (so .env takes priority)
 rm -f .env.local
 
+# Determine backend URL based on DOMAIN
+if [ -n "$DOMAIN" ]; then
+  BACKEND_URL="https://$DOMAIN"
+else
+  BACKEND_URL="http://127.0.0.1:8080"
+fi
+
 # Update or create .env with Next.js variables
 if [ ! -f .env ]; then
   cat > .env << EOF
 PORT=$FRONTEND_PORT
-NEXT_PUBLIC_BACKEND_URL=http://127.0.0.1:8080
+NEXT_PUBLIC_BACKEND_URL=$BACKEND_URL
 EOF
 else
   # Update existing .env with correct keys
   if grep -q "^BACKEND_URL=" .env; then
-    sed -i 's|^BACKEND_URL=.*|NEXT_PUBLIC_BACKEND_URL=http://127.0.0.1:8080|' .env
+    sed -i "s|^BACKEND_URL=.*|NEXT_PUBLIC_BACKEND_URL=$BACKEND_URL|" .env
   elif ! grep -q "^NEXT_PUBLIC_BACKEND_URL=" .env; then
-    echo "NEXT_PUBLIC_BACKEND_URL=http://127.0.0.1:8080" >> .env
+    echo "NEXT_PUBLIC_BACKEND_URL=$BACKEND_URL" >> .env
+  else
+    sed -i "s|^NEXT_PUBLIC_BACKEND_URL=.*|NEXT_PUBLIC_BACKEND_URL=$BACKEND_URL|" .env
   fi
   
   # Ensure PORT is set
