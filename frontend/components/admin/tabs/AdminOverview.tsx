@@ -106,6 +106,4 @@ function StatCard({
     </div>
   );
 }
-'use client';
-
 
