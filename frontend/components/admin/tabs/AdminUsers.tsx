@@ -19,7 +19,7 @@ export default function AdminUsers() {
       try {
         const token = localStorage.getItem('restaurant_jwt_v1');
         const response = await fetch(getBackendApiUrl('/admin/users'), {
-          headers: { Authorization: `Bearer ${token}`) },
+          headers: { Authorization: `Bearer ${token}` },
         });
 
         if (response.ok) {

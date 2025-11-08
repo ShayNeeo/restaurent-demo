@@ -21,7 +21,7 @@ export default function AdminOrders() {
       try {
         const token = localStorage.getItem('restaurant_jwt_v1');
         const response = await fetch(getBackendApiUrl('/admin/orders'), {
-          headers: { Authorization: `Bearer ${token}`) },
+          headers: { Authorization: `Bearer ${token}` },
         });
 
         if (response.ok) {

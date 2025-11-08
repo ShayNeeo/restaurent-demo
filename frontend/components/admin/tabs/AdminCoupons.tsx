@@ -21,7 +21,7 @@ export default function AdminCoupons() {
       try {
         const token = localStorage.getItem('restaurant_jwt_v1');
         const response = await fetch(getBackendApiUrl('/admin/coupons'), {
-          headers: { Authorization: `Bearer ${token}`) },
+          headers: { Authorization: `Bearer ${token}` },
         });
 
         if (response.ok) {
