@@ -257,9 +257,14 @@ DB_URL_ABS="sqlite:///$DATA_DIR/app.db"
 echo "[install] Starting backend (detached)..."
 (
   cd "$ROOT_DIR/backend"
+  
+  # Initialize database from schema if migrations don't exist
+  echo "[install] Initializing database from schema..."
+  sqlite3 "$DATA_DIR/app.db" < schema.sql || true
+  
   # Run migrations with absolute database URL
   echo "[install] Running database migrations..."
-  env DATABASE_URL="$DB_URL_ABS" sqlx migrate run
+  env DATABASE_URL="$DB_URL_ABS" sqlx migrate run || true
   
   # Start backend with absolute database URL
   nohup env DATABASE_URL="$DB_URL_ABS" ./target/release/restaurent-backend > "$ROOT_DIR/.backend.log" 2>&1 & echo $! > "$ROOT_DIR/.backend.pid"
