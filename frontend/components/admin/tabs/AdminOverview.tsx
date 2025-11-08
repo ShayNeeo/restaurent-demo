@@ -1,8 +1,7 @@
 'use client';
 
-import { getBackendApiUrl } from '@/lib/api';
-
 import { useState, useEffect } from 'react';
+import { getBackendApiUrl } from '@/lib/api';
 
 
 interface Stats {

@@ -19,8 +19,8 @@ export default function AdminGiftCoupons() {
     const fetchGiftCoupons = async () => {
       try {
         const token = localStorage.getItem('restaurant_jwt_v1');
-        const response = await fetch(getBackendApiUrl('/admin/gift-coupons`, {
-          headers: { Authorization: `Bearer ${token}') },
+        const response = await fetch(getBackendApiUrl('/admin/gift-coupons'), {
+          headers: { Authorization: `Bearer ${token}`) },
         });
 
         if (response.ok) {
