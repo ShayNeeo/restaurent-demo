@@ -7,7 +7,7 @@ const slides = [
   {
     image: "/images/view-3.jpg",
     eyebrow: "Tradition trifft Moderne",
-    heading: "Nguyễn Restaurant München",
+    heading: "Nguyen Restaurant München",
     description:
       "Familiengeführt, herzlich, exquisit. Erleben Sie die unverwechselbar leichte Küche Vietnams – frisch zubereitet und mit viel Liebe serviert."
   },

@@ -49,7 +49,7 @@ export function NavBar() {
             href="#hero"
             className="font-display text-2xl text-white drop-shadow transition hover:text-yellow-300"
           >
-            Nguyễn Restaurant
+            Nguyen Restaurant
           </Link>
 
           <nav className="hidden items-center gap-6 text-sm font-medium text-white sm:flex">
