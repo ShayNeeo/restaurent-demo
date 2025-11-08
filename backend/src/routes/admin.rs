@@ -64,6 +64,8 @@ pub fn router() -> Router {
         .route("/api/admin/stats", get(get_stats))
         .route("/api/admin/orders", get(get_orders))
         .route("/api/admin/pending-orders", get(get_pending_orders))
+        .route("/api/admin/pending-orders/:order_id", delete(delete_pending_order))
+        .route("/api/admin/cleanup", post(cleanup_stale_pending))
         .route("/api/admin/products", get(list_products))
         .route("/api/admin/gift-coupons", get(list_gift_coupons))
 }
@@ -468,4 +470,56 @@ async fn delete_user(Extension(state): Extension<Arc<AppState>>, headers: Header
     Ok(Json(serde_json::json!({"ok": true})))
 }
 
+// Cleanup endpoints for pending orders
+async fn delete_pending_order(
+    Extension(state): Extension<Arc<AppState>>,
+    headers: HeaderMap,
+    Path(order_id): Path<String>
+) -> Result<Json<serde_json::Value>, axum::http::StatusCode> {
+    let email = extract_email_from_token(&headers, &state).ok_or(axum::http::StatusCode::UNAUTHORIZED)?;
+    if !is_admin_user(&email, &state).await { return Err(axum::http::StatusCode::FORBIDDEN); }
+
+    let result = sqlx::query(r#"DELETE FROM pending_orders WHERE order_id = ?"#)
+        .bind(&order_id)
+        .execute(&state.pool)
+        .await
+        .map_err(|_| axum::http::StatusCode::INTERNAL_SERVER_ERROR)?;
+
+    if result.rows_affected() == 0 {
+        return Err(axum::http::StatusCode::NOT_FOUND);
+    }
+
+    Ok(Json(serde_json::json!({"ok": true, "message": format!("Deleted pending order {}", order_id)})))
+}
+
+async fn cleanup_stale_pending(
+    Extension(state): Extension<Arc<AppState>>,
+    headers: HeaderMap
+) -> Result<Json<serde_json::Value>, axum::http::StatusCode> {
+    let email = extract_email_from_token(&headers, &state).ok_or(axum::http::StatusCode::UNAUTHORIZED)?;
+    if !is_admin_user(&email, &state).await { return Err(axum::http::StatusCode::FORBIDDEN); }
+
+    // Delete pending orders older than 24 hours
+    let orders_deleted = sqlx::query(r#"DELETE FROM pending_orders WHERE datetime(created_at) < datetime('now', '-24 hours')"#)
+        .execute(&state.pool)
+        .await
+        .map_err(|_| axum::http::StatusCode::INTERNAL_SERVER_ERROR)?
+        .rows_affected();
+
+    // Delete pending gifts older than 24 hours
+    let gifts_deleted = sqlx::query(r#"DELETE FROM pending_gifts WHERE datetime(created_at) < datetime('now', '-24 hours')"#)
+        .execute(&state.pool)
+        .await
+        .map_err(|_| axum::http::StatusCode::INTERNAL_SERVER_ERROR)?
+        .rows_affected();
+
+    tracing::info!("Manual cleanup: deleted {} pending orders and {} pending gifts", orders_deleted, gifts_deleted);
+
+    Ok(Json(serde_json::json!({
+        "ok": true,
+        "pending_orders_deleted": orders_deleted,
+        "pending_gifts_deleted": gifts_deleted,
+        "message": format!("Cleaned up {} stale orders and {} stale gifts", orders_deleted, gifts_deleted)
+    })))
+}
 
