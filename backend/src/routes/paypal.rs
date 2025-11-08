@@ -94,9 +94,8 @@ async fn paypal_return(Extension(state): Extension<Arc<AppState>>, _headers: Hea
                                 let order_db_id = Uuid::new_v4().to_string();
                                 tracing::info!("Creating order record: {}", order_db_id);
                                 
-                                match sqlx::query(r#"INSERT INTO orders (id, user_id, email, total_cents, currency, coupon_code, items_json) VALUES (?, ?, ?, ?, ?, ?, ?)"#)
+                                match sqlx::query(r#"INSERT INTO orders (id, email, total_cents, currency, coupon_code, items_json) VALUES (?, ?, ?, ?, ?, ?)"#)
                                     .bind(&order_db_id)
-                                    .bind(user_id.as_deref())
                                     .bind(&email)
                                     .bind(amount_cents)
                                     .bind("EUR")
