@@ -107,11 +107,12 @@ fi
 
 echo "[install] Frontend .env ready"
 echo "[install] Installing frontend deps (Next.js)..."
-if [ -f package-lock.json ]; then
-  npm ci
-else
-  npm install
-fi
+
+# Remove old lock file if it exists (ensures fresh install with new Next.js versions)
+rm -f package-lock.json
+
+echo "[install] Running npm install..."
+npm install
 echo "[install] Building Next.js frontend..."
 npm run build
 
