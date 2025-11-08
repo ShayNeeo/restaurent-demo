@@ -140,14 +140,14 @@ pub fn order_confirmation_html(order_id: &str, email: &str, items_html: &str, su
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
         }}
         .header {{
-            background: linear-gradient(135deg, #c4a747 0%, #d4b757 100%);
+            background: linear-gradient(135deg, #6b0b0a 0%, #3f0505 100%);
             padding: 40px 20px;
             text-align: center;
         }}
         .header h1 {{
             margin: 0;
-            color: #000;
-            font-family: 'Forum', cursive;
+            color: #f7f5e7;
+            font-family: 'Kaushan Script', cursive;
             font-size: 32px;
             font-weight: 700;
             letter-spacing: 2px;
@@ -157,7 +157,7 @@ pub fn order_confirmation_html(order_id: &str, email: &str, items_html: &str, su
         }}
         .order-id-box {{
             background: #1a1a1a;
-            border: 2px solid #c4a747;
+            border: 2px solid #8c3231;
             border-radius: 8px;
             padding: 20px;
             margin: 20px 0;
@@ -172,7 +172,7 @@ pub fn order_confirmation_html(order_id: &str, email: &str, items_html: &str, su
             display: block;
         }}
         .order-id-value {{
-            color: #c4a747;
+            color: #8c3231;
             font-size: 20px;
             font-weight: 700;
             font-family: 'Courier New', monospace;
@@ -185,7 +185,7 @@ pub fn order_confirmation_html(order_id: &str, email: &str, items_html: &str, su
             line-height: 1.6;
         }}
         .section-title {{
-            color: #c4a747;
+            color: #8c3231;
             font-size: 18px;
             font-weight: 700;
             margin: 30px 0 15px 0;
@@ -198,12 +198,12 @@ pub fn order_confirmation_html(order_id: &str, email: &str, items_html: &str, su
         }}
         thead {{
             background: #1a1a1a;
-            border-bottom: 2px solid #c4a747;
+            border-bottom: 2px solid #8c3231;
         }}
         th {{
             padding: 12px;
             text-align: left;
-            color: #c4a747;
+            color: #8c3231;
             font-weight: 700;
             font-size: 12px;
             text-transform: uppercase;
@@ -230,7 +230,7 @@ pub fn order_confirmation_html(order_id: &str, email: &str, items_html: &str, su
         .total-row.grand-total {{
             font-size: 18px;
             font-weight: 700;
-            color: #c4a747;
+            color: #8c3231;
             margin-top: 15px;
             padding-top: 15px;
             border-top: 1px solid #2a2a2a;
@@ -240,8 +240,8 @@ pub fn order_confirmation_html(order_id: &str, email: &str, items_html: &str, su
         }}
         .cta-button {{
             display: inline-block;
-            background: linear-gradient(135deg, #c4a747 0%, #d4b757 100%);
-            color: #000;
+            background: linear-gradient(135deg, #8c3231 0%, #6b0b0a 100%);
+            color: #f7f5e7;
             padding: 14px 32px;
             border-radius: 8px;
             text-decoration: none;
@@ -370,13 +370,13 @@ pub fn gift_coupon_html(code: &str, value: f64, _email: &str, app_url: &str) -> 
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
         }}
         .header {{
-            background: linear-gradient(135deg, #c4a747 0%, #d4b757 100%);
+            background: linear-gradient(135deg, #8c3231 0%, #6b0b0a 100%);
             padding: 40px 20px;
             text-align: center;
         }}
         .header h1 {{
             margin: 0;
-            color: #000;
+            color: #f7f5e7;
             font-family: 'Forum', cursive;
             font-size: 36px;
             font-weight: 700;
@@ -387,7 +387,7 @@ pub fn gift_coupon_html(code: &str, value: f64, _email: &str, app_url: &str) -> 
         }}
         .coupon-display {{
             background: #1a1a1a;
-            border: 3px dashed #c4a747;
+            border: 3px dashed #8c3231;
             border-radius: 12px;
             padding: 30px;
             margin: 30px 0;
@@ -402,7 +402,7 @@ pub fn gift_coupon_html(code: &str, value: f64, _email: &str, app_url: &str) -> 
             display: block;
         }}
         .coupon-code {{
-            color: #c4a747;
+            color: #8c3231;
             font-size: 28px;
             font-weight: 700;
             font-family: 'Courier New', monospace;
@@ -421,7 +421,7 @@ pub fn gift_coupon_html(code: &str, value: f64, _email: &str, app_url: &str) -> 
         }}
         .highlight-box {{
             background: #1a1a1a;
-            border-left: 4px solid #c4a747;
+            border-left: 4px solid #8c3231;
             padding: 20px;
             border-radius: 8px;
             margin: 25px 0;
@@ -429,10 +429,10 @@ pub fn gift_coupon_html(code: &str, value: f64, _email: &str, app_url: &str) -> 
             font-size: 14px;
         }}
         .highlight-box strong {{
-            color: #c4a747;
+            color: #8c3231;
         }}
         .section-title {{
-            color: #c4a747;
+            color: #8c3231;
             font-size: 18px;
             font-weight: 700;
             margin: 30px 0 15px 0;
@@ -454,7 +454,7 @@ pub fn gift_coupon_html(code: &str, value: f64, _email: &str, app_url: &str) -> 
             content: "→";
             position: absolute;
             left: 0;
-            color: #c4a747;
+            color: #8c3231;
             font-weight: 700;
         }}
         .info-box {{
@@ -471,8 +471,8 @@ pub fn gift_coupon_html(code: &str, value: f64, _email: &str, app_url: &str) -> 
         }}
         .cta-button {{
             display: inline-block;
-            background: linear-gradient(135deg, #c4a747 0%, #d4b757 100%);
-            color: #000;
+            background: linear-gradient(135deg, #8c3231 0%, #6b0b0a 100%);
+            color: #f7f5e7;
             padding: 14px 32px;
             border-radius: 8px;
             text-decoration: none;
