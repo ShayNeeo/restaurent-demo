@@ -36,7 +36,7 @@ export default function AdminProducts() {
           return;
         }
 
-        const data = await response.json();
+          const data = await response.json();
         setProducts(Array.isArray(data.products) ? data.products : []);
       } catch (err) {
         console.error(err);

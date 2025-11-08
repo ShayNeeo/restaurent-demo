@@ -37,7 +37,7 @@ export default function AdminPendingOrders() {
           return;
         }
 
-        const data = await response.json();
+          const data = await response.json();
         setOrders(Array.isArray(data.pending_orders) ? data.pending_orders : []);
       } catch (err) {
         console.error(err);

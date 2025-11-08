@@ -37,7 +37,7 @@ export default function AdminOrders() {
           return;
         }
 
-        const data = await response.json();
+          const data = await response.json();
         setOrders(Array.isArray(data.orders) ? data.orders : []);
       } catch (err) {
         console.error(err);

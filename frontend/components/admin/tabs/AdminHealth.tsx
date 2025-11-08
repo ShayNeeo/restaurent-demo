@@ -63,7 +63,7 @@ export default function AdminHealth() {
         }
       } finally {
         if (!cancelled) {
-          setLoading(false);
+        setLoading(false);
         }
       }
     };

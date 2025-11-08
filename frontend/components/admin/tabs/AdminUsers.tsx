@@ -30,7 +30,7 @@ export default function AdminUsers() {
           return;
         }
 
-        const data = await response.json();
+          const data = await response.json();
         setUsers(Array.isArray(data.users) ? data.users : []);
       } catch (err) {
         console.error(err);

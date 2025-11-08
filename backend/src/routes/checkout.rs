@@ -61,23 +61,23 @@ async fn start(Extension(state): Extension<Arc<AppState>>, headers: HeaderMap, J
                     (percent_off.is_some() && percent_off.unwrap_or(0) > 0);
                 
                 if has_valid_discount {
-                    // Apply fixed amount discount if available
-                    if let Some(amount) = amount_off {
+                // Apply fixed amount discount if available
+                if let Some(amount) = amount_off {
                         if amount > 0 {
-                            discount_cents = amount;
+                    discount_cents = amount;
+                        }
+                }
+                
+                // Apply percentage discount if available (and no fixed amount was applied)
+                if discount_cents == 0 {
+                    if let Some(percent) = percent_off {
+                        if percent > 0 {
+                            discount_cents = ((percent as f64 / 100.0) * subtotal_cents as f64).round() as i64;
                         }
                     }
-                    
-                    // Apply percentage discount if available (and no fixed amount was applied)
-                    if discount_cents == 0 {
-                        if let Some(percent) = percent_off {
-                            if percent > 0 {
-                                discount_cents = ((percent as f64 / 100.0) * subtotal_cents as f64).round() as i64;
-                            }
-                        }
-                    }
-                    
-                    applied_coupon = Some(code_upper);
+                }
+                
+                applied_coupon = Some(code_upper);
                 }
             }
         }

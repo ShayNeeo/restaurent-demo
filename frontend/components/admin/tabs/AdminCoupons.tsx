@@ -45,7 +45,7 @@ export default function AdminCoupons() {
           return;
         }
 
-        const data = await response.json();
+          const data = await response.json();
         setCoupons(Array.isArray(data.coupons) ? data.coupons : []);
       } catch (err) {
         console.error(err);

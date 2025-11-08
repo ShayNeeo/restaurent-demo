@@ -37,8 +37,8 @@ export default function AdminOverview() {
           return;
         }
 
-        const data = await response.json();
-        setStats(data);
+          const data = await response.json();
+          setStats(data);
       } catch (err) {
         console.error('Failed to fetch stats:', err);
         setError('Connection error');

@@ -38,7 +38,7 @@ export default function AdminGiftCoupons() {
           return;
         }
 
-        const data = await response.json();
+          const data = await response.json();
         setCoupons(Array.isArray(data.gift_coupons) ? data.gift_coupons : []);
       } catch (err) {
         console.error(err);
