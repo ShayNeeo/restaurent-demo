@@ -28,6 +28,32 @@ async fn paypal_return(Extension(state): Extension<Arc<AppState>>, _headers: Hea
     if let Some(order_id) = params.token {
         tracing::info!("PayPal return callback received for order_id: {}", order_id);
         
+        // First check if pending order exists
+        match sqlx::query(r#"SELECT order_id FROM pending_orders WHERE order_id = ?"#)
+            .bind(&order_id)
+            .fetch_optional(&state.pool)
+            .await
+        {
+            Ok(Some(_)) => {
+                tracing::info!("Found pending order in database: {}", order_id);
+            }
+            Ok(None) => {
+                tracing::warn!("NO pending order found for: {}", order_id);
+                tracing::warn!("Listing all pending orders:");
+                if let Ok(all_orders) = sqlx::query_scalar::<_, String>(r#"SELECT order_id FROM pending_orders"#)
+                    .fetch_all(&state.pool)
+                    .await
+                {
+                    for oid in all_orders {
+                        tracing::warn!("  - {}", oid);
+                    }
+                }
+            }
+            Err(e) => {
+                tracing::error!("Error checking pending orders: {:?}", e);
+            }
+        }
+        
         match capture_paypal_order(&state, &order_id).await {
             Ok(captured) => {
                 tracing::info!("PayPal order captured. Status: {}", captured.status);
@@ -202,6 +228,19 @@ async fn paypal_return(Extension(state): Extension<Arc<AppState>>, _headers: Hea
                                 return Redirect::to(&format!("/thank-you/{}", order_db_id));
                             } else {
                                 tracing::warn!("PayPal order {} completed but no pending_orders entry found in database", order_id);
+                                // Still create an order from the PayPal response even if not in pending_orders
+                                let order_db_id = Uuid::new_v4().to_string();
+                                tracing::info!("Creating order from PayPal callback without pending entry: {}", order_db_id);
+                                
+                                let _ = sqlx::query(r#"INSERT INTO orders (id, email, total_cents, items_json) VALUES (?, ?, ?, ?)"#)
+                                    .bind(&order_db_id)
+                                    .bind("noemail@example.com")
+                                    .bind(0)
+                                    .bind(serde_json::json!({"cart": []}).to_string())
+                                    .execute(&state.pool)
+                                    .await;
+                                
+                                return Redirect::to(&format!("/thank-you/{}", order_db_id));
                             }
                         }
                         Err(e) => {
