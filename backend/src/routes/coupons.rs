@@ -14,7 +14,6 @@ pub struct ApplyCouponRequest { pub code: String, pub cart: Option<Vec<CartItem>
 pub struct CartItem { pub product_id: String, pub name: String, pub unit_amount: i64, pub quantity: i64, pub currency: String }
 
 #[derive(Serialize)]
-#[serde(rename_all = "camelCase")]
 pub struct ApplyCouponResponse { pub valid: bool, pub amount_off: Option<i64>, pub percent_off: Option<i64> }
 
 pub fn router() -> Router {
