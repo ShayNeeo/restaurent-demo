@@ -47,7 +47,6 @@ pub fn router() -> Router {
         .route("/api/admin/users", get(list_users))
         .route("/api/admin/products", get(list_products))
         .route("/api/admin/gift-coupons", get(list_gift_coupons))
-        .route("/api/health", get(health_check))
 }
 
 async fn list_tables(Extension(state): Extension<Arc<AppState>>, headers: HeaderMap) -> Result<Json<Tables>, axum::http::StatusCode> {
@@ -264,10 +263,13 @@ async fn get_orders(Extension(state): Extension<Arc<AppState>>, headers: HeaderM
 async fn get_pending_orders(Extension(state): Extension<Arc<AppState>>, headers: HeaderMap) -> Result<Json<Vec<OrderInfo>>, axum::http::StatusCode> {
     if !require_admin(&headers, &state) { return Err(axum::http::StatusCode::UNAUTHORIZED); }
     
-    let orders = sqlx::query_as::<_, OrderInfo>("SELECT id, email, total_amount_cents, created_at FROM pending_orders ORDER BY created_at DESC LIMIT 100")
+    // Handle case where table might not exist
+    let orders = match sqlx::query_as::<_, OrderInfo>("SELECT id, email, total_amount_cents, created_at FROM pending_orders ORDER BY created_at DESC LIMIT 100")
         .fetch_all(&state.pool)
-        .await
-        .unwrap_or_default();
+        .await {
+            Ok(data) => data,
+            Err(_) => Vec::new(), // Table might not exist
+        };
     
     Ok(Json(orders))
 }
@@ -340,16 +342,15 @@ struct GiftCouponInfo {
 async fn list_gift_coupons(Extension(state): Extension<Arc<AppState>>, headers: HeaderMap) -> Result<Json<Vec<GiftCouponInfo>>, axum::http::StatusCode> {
     if !require_admin(&headers, &state) { return Err(axum::http::StatusCode::UNAUTHORIZED); }
     
-    let gift_coupons = sqlx::query_as::<_, GiftCouponInfo>("SELECT id, email, amount_cents, bonus_cents, used, created_at FROM gift_coupons ORDER BY created_at DESC LIMIT 200")
+    // Handle case where table might not exist
+    let gift_coupons = match sqlx::query_as::<_, GiftCouponInfo>("SELECT id, email, amount_cents, bonus_cents, used, created_at FROM gift_coupons ORDER BY created_at DESC LIMIT 200")
         .fetch_all(&state.pool)
-        .await
-        .unwrap_or_default();
+        .await {
+            Ok(data) => data,
+            Err(_) => Vec::new(), // Table might not exist
+        };
     
     Ok(Json(gift_coupons))
-}
-
-async fn health_check() -> Json<serde_json::Value> {
-    Json(serde_json::json!({"ok": true}))
 }
 
 
