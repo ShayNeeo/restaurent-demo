@@ -104,7 +104,7 @@ fi
 # Update or create .env with Next.js variables
 if [ ! -f .env ]; then
   cat > .env << EOF
-PORT=$FRONTEND_PORT
+PORT=$INTERNAL_FRONTEND_PORT
 NEXT_PUBLIC_BACKEND_URL=$BACKEND_URL
 EOF
 else
@@ -119,9 +119,9 @@ else
   
   # Ensure PORT is set
   if grep -q "^PORT=" .env; then
-    sed -i "s|^PORT=.*|PORT=$FRONTEND_PORT|" .env
+    sed -i "s|^PORT=.*|PORT=$INTERNAL_FRONTEND_PORT|" .env
   else
-    echo "PORT=$FRONTEND_PORT" >> .env
+    echo "PORT=$INTERNAL_FRONTEND_PORT" >> .env
   fi
   
   # Remove old non-Next.js keys
