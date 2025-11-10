@@ -50,7 +50,7 @@ const productMeta: Record<string, ProductMeta> = {
   },
   bunthitxao: {
     image: "/images/bun-thit-xao.jpg",
-    description: "Gebratene Nudeln mit zartem Fleisch, Gemüse und knusprig gerösteten Zwiebeln.",
+    description: "Gebratene Nudel mit zartem Fleisch, Gemüse und knusprig gerösteten Zwiebeln.",
     category: "Nudelgerichte"
   },
   friedgyoza: {
@@ -72,9 +72,7 @@ function ScrollReveal({ children, className = "" }: { children: React.ReactNode;
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsVisible(true);
-        }
+        setIsVisible(entry.isIntersecting);
       },
       { threshold: 0.1 }
     );
@@ -86,7 +84,7 @@ function ScrollReveal({ children, className = "" }: { children: React.ReactNode;
   return (
     <div
       ref={ref}
-      className={`transition-all duration-1000 ${
+      className={`transition-all duration-1000 ease-out ${
         isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
       } ${className}`}
     >
@@ -159,39 +157,6 @@ export default function ExamplePage() {
             filter: blur(0);
           }
         }
-
-        .animate-fade-in-up {
-          animation: fadeInUp 0.8s ease-out forwards;
-        }
-
-        .animate-slide-up {
-          animation: slideUp 0.8s ease-out forwards;
-        }
-
-        .animate-blur-in {
-          animation: blurIn 0.8s ease-out forwards;
-        }
-
-        [data-scroll-reveal] {
-          opacity: 0;
-          transform: translateY(40px);
-          transition: all 1s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-
-        [data-scroll-reveal].is-visible {
-          opacity: 1;
-          transform: translateY(0);
-        }
-
-        .split-text {
-          display: inline-block;
-          overflow: hidden;
-        }
-
-        .split-text span {
-          display: inline-block;
-          animation: fadeInUp 1s ease-out forwards;
-        }
       `}</style>
 
       <NavBar />
@@ -205,38 +170,127 @@ export default function ExamplePage() {
             <div className="space-y-6">
               <div className="inline-block">
                 <span className="text-xs uppercase tracking-widest font-semibold text-brand/70 font-sans">
-                  Kulinarische Meisterwerke
+                  Familiengeführt seit 1996
                 </span>
               </div>
               
               <h1 className="text-5xl sm:text-6xl lg:text-7xl font-display font-bold text-brand-dark leading-tight">
-                Entdecke unsere <span className="text-brand">Köstlichkeiten</span>
+                NGUYEN<br /><span className="text-brand">Vietnam Restaurant</span>
               </h1>
               
               <p className="text-lg sm:text-xl text-slate-700 max-w-2xl mx-auto leading-relaxed font-light">
-                Eine Reise durch authentische vietnamesische Küche, zubereitet mit Leidenschaft und frischesten Zutaten.
+                Herzlich willkommen im Herzen von München-Schwabing. Erleben Sie die unverwechselbar leichte vietnamesische Küche in gastfreundlicher Atmosphäre mit aufmerksamen Service und frisch zubereiteten Köstlichkeiten.
               </p>
 
-              <div className="flex gap-4 justify-center pt-8">
-                <a href="#galerie" className="btn-primary">
+              <div className="flex gap-4 justify-center pt-8 flex-wrap">
+                <a href="#speisekarte" className="btn-primary">
                   Speisekarte erkunden
                 </a>
                 <a href="tel:+498928803451" className="btn-light">
-                  Reservieren
+                  089 28803451
                 </a>
               </div>
             </div>
           </ScrollReveal>
         </section>
 
-        {/* Gallery Section */}
-        <section id="galerie" className="py-20 sm:py-32 relative">
-          <div className="mx-auto max-w-7xl px-6">
-            <ScrollReveal className="text-center mb-20">
+        {/* Story Section */}
+        <section className="py-20 sm:py-32 bg-white">
+          <div className="mx-auto max-w-6xl px-6">
+            <div className="grid md:grid-cols-2 gap-12 items-center">
+              <ScrollReveal>
+                <div className="space-y-6">
+                  <h2 className="text-4xl sm:text-5xl font-display font-bold text-brand-dark">
+                    Unsere Geschichte
+                  </h2>
+                  <p className="text-lg text-slate-700 leading-relaxed">
+                    Im NGUYEN bereiten wir unsere Speisen von Hand und mit größter Sorgfalt zu. Die vietnamesische Küche ist geprägt von Tradition und Leichtigkeit. Entdecken Sie eine Vielfalt an milden bis aromatisch-würzigen Gerichten und lassen Sie sich auf Wunsch einen Hauch vietnamesisches Feuer servieren.
+                  </p>
+                  <p className="text-lg text-slate-700 leading-relaxed">
+                    Reis begleitet uns in jeder Variation: als Reispapier, Reisnudeln oder duftender Jasminreis. Probieren Sie Pho Bò, Goi Cuon oder unser vegetarisches Bun – jede Spezialität erzählt eine Geschichte aus Saigon.
+                  </p>
+                  <div className="flex gap-4 pt-4">
+                    <div className="flex-1">
+                      <p className="text-3xl font-bold text-brand">1996</p>
+                      <p className="text-sm text-slate-600">Gründungsjahr</p>
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-3xl font-bold text-brand">∞</p>
+                      <p className="text-sm text-slate-600">Familiengeführt</p>
+                    </div>
+                  </div>
+                </div>
+              </ScrollReveal>
+              
+              <ScrollReveal>
+                <div className="relative h-96 rounded-3xl overflow-hidden shadow-lg">
+                  <Image
+                    src="/images/view-5.jpg"
+                    alt="NGUYEN Restaurant Schwabing"
+                    fill
+                    className="object-cover hover:scale-105 transition-transform duration-700"
+                  />
+                </div>
+              </ScrollReveal>
+            </div>
+          </div>
+        </section>
+
+        {/* What Makes Us Special */}
+        <section className="py-20 sm:py-32">
+          <div className="mx-auto max-w-6xl px-6">
+            <ScrollReveal className="text-center mb-16">
               <h2 className="text-4xl sm:text-5xl font-display font-bold text-brand-dark mb-4">
-                Speisekarte
+                Was uns auszeichnet
               </h2>
               <p className="text-lg text-slate-600 max-w-xl mx-auto">
+                Qualität, Authentizität und Leidenschaft in jedem Gericht
+              </p>
+            </ScrollReveal>
+
+            <div className="grid md:grid-cols-3 gap-8">
+              {[
+                {
+                  icon: "🌿",
+                  title: "Frische Zutaten",
+                  description: "Wir wählen Zutaten täglich frisch aus und bereiten jedes Gericht unmittelbar zu. Ohne Kompromisse, mit viel Liebe."
+                },
+                {
+                  icon: "👨‍🍳",
+                  title: "Traditionelle Rezepte",
+                  description: "Authentische Rezepte aus Saigon, zubereitet mit Leidenschaft und Erfahrung über Generationen hinweg."
+                },
+                {
+                  icon: "🎭",
+                  title: "Warme Atmosphäre",
+                  description: "Warme Farben, sorgfältig arrangierte Details und ein Service, der aufmerksam und herzlich ist."
+                }
+              ].map((item, index) => (
+                <ScrollReveal key={index}>
+                  <div className="group rounded-2xl bg-white p-8 shadow-soft hover:shadow-xl transition-all duration-500 hover:-translate-y-1">
+                    <div className="text-5xl mb-4">{item.icon}</div>
+                    <h3 className="text-2xl font-bold text-brand-dark mb-3">{item.title}</h3>
+                    <p className="text-slate-600 leading-relaxed">{item.description}</p>
+                  </div>
+                </ScrollReveal>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Menu Preview Section */}
+        <section id="speisekarte" className="py-20 sm:py-32 bg-gradient-to-r from-brand/90 to-brand-dark/90 text-white relative overflow-hidden">
+          <div className="absolute inset-0 opacity-10">
+            <div className="absolute top-10 right-10 w-40 h-40 rounded-full bg-white/20 blur-3xl" />
+            <div className="absolute bottom-10 left-10 w-40 h-40 rounded-full bg-white/20 blur-3xl" />
+          </div>
+
+          <div className="mx-auto max-w-6xl px-6 relative z-10">
+            <ScrollReveal className="text-center mb-16">
+              <h2 className="text-4xl sm:text-5xl font-display font-bold mb-4">
+                Unsere <span className="text-amber-100">Speisekarte</span>
+              </h2>
+              <p className="text-xl text-white/90 max-w-2xl mx-auto">
                 Sorgfältig ausgewählte Gerichte, die die Seele Vietnams einfangen
               </p>
             </ScrollReveal>
@@ -250,8 +304,8 @@ export default function ExamplePage() {
                     onClick={() => setActiveCategory(category)}
                     className={`px-6 py-2.5 rounded-full font-medium transition-all duration-500 text-sm uppercase tracking-wide ${
                       activeCategory === category
-                        ? "bg-brand text-white shadow-lg scale-105"
-                        : "bg-white text-brand border border-brand/20 hover:border-brand/50 hover:bg-brand/5"
+                        ? "bg-amber-100 text-brand shadow-lg scale-105"
+                        : "bg-white/20 text-white hover:bg-white/30 border border-white/30"
                     }`}
                   >
                     {category}
@@ -263,17 +317,17 @@ export default function ExamplePage() {
             {/* Products Grid */}
             {loading ? (
               <div className="text-center py-20">
-                <p className="text-slate-600">Produkte werden geladen...</p>
+                <p className="text-white/70">Produkte werden geladen...</p>
               </div>
             ) : (
               <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
                 {filteredProducts.map((product, index) => {
                   const meta = productMeta[product.id.toLowerCase()];
                   return (
-                    <ScrollReveal key={product.id} className={`${index % 3 === 0 ? "lg:col-start-1" : ""}`}>
-                      <div className="group h-full overflow-hidden rounded-3xl bg-white shadow-soft hover:shadow-2xl transition-all duration-500 hover:-translate-y-2">
-                        {/* Image Container */}
-                        <div className="relative h-80 w-full overflow-hidden bg-gradient-to-br from-amber-100 to-amber-50">
+                    <ScrollReveal key={product.id}>
+                      <div className="group h-full overflow-hidden rounded-2xl bg-white/95 shadow-soft hover:shadow-2xl transition-all duration-500 hover:-translate-y-2">
+                        {/* Image */}
+                        <div className="relative h-64 w-full overflow-hidden bg-gradient-to-br from-amber-100 to-amber-50">
                           {meta?.image && (
                             <Image
                               src={meta.image}
@@ -282,28 +336,27 @@ export default function ExamplePage() {
                               className="object-cover transition-all duration-700 group-hover:scale-110"
                             />
                           )}
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                         </div>
 
                         {/* Content */}
-                        <div className="p-8">
-                          <p className="text-xs font-bold uppercase tracking-widest text-brand/60 mb-3">
+                        <div className="p-6">
+                          <p className="text-xs font-bold uppercase tracking-widest text-brand/60 mb-2">
                             {meta?.category || "Gericht"}
                           </p>
-                          <h3 className="text-2xl font-display font-bold text-brand-dark mb-3 group-hover:text-brand transition-colors duration-300">
+                          <h3 className="text-xl font-display font-bold text-brand-dark mb-3">
                             {product.name}
                           </h3>
-                          <p className="text-sm leading-relaxed text-slate-600 mb-6 line-clamp-3">
+                          <p className="text-sm leading-relaxed text-slate-600 mb-4">
                             {meta?.description}
                           </p>
-                          <div className="flex items-center justify-between pt-6 border-t border-amber-100">
-                            <span className="text-3xl font-bold text-brand">
+                          <div className="flex items-center justify-between pt-4 border-t border-amber-100">
+                            <span className="text-2xl font-bold text-brand">
                               {(product.unit_amount / 100).toLocaleString("de-DE", {
                                 style: "currency",
                                 currency: product.currency
                               })}
                             </span>
-                            <button className="rounded-full bg-gradient-to-r from-brand to-brand-accent px-6 py-2.5 font-semibold text-white shadow-soft hover:shadow-lg transition-all duration-300 hover:scale-105">
+                            <button className="rounded-full bg-gradient-to-r from-brand to-brand-accent px-5 py-2 font-semibold text-white shadow-soft hover:shadow-lg transition-all duration-300 hover:scale-105">
                               +
                             </button>
                           </div>
@@ -317,43 +370,6 @@ export default function ExamplePage() {
           </div>
         </section>
 
-        {/* Philosophy Section */}
-        <section className="py-20 sm:py-32 bg-gradient-to-r from-brand/90 to-brand-dark/90 text-white relative overflow-hidden">
-          <div className="absolute inset-0 opacity-10">
-            <div className="absolute top-10 right-10 w-40 h-40 rounded-full bg-white/20 blur-3xl" />
-            <div className="absolute bottom-10 left-10 w-40 h-40 rounded-full bg-white/20 blur-3xl" />
-          </div>
-
-          <div className="mx-auto max-w-4xl px-6 relative z-10">
-            <ScrollReveal>
-              <div className="space-y-8">
-                <h2 className="text-4xl sm:text-5xl font-display font-bold">
-                  Unsere <span className="text-amber-100">Philosophie</span>
-                </h2>
-                <p className="text-xl leading-relaxed text-white/90 max-w-2xl">
-                  Im NGUYEN bereiten wir nicht nur Speisen zu – wir erzählen Geschichten. Jedes Gericht ist ein Kapitel aus der reichen kulinarischen Tradition Vietnams, serviert mit Authentizität und Herzlichkeit.
-                </p>
-              </div>
-            </ScrollReveal>
-
-            <div className="grid md:grid-cols-3 gap-8 mt-16">
-              {[
-                { icon: "🌿", title: "Frische Zutaten", description: "Täglich handverlesen für maximale Qualität" },
-                { icon: "👨‍🍳", title: "Handwerk", description: "Traditionelle Techniken, moderne Raffinesse" },
-                { icon: "❤️", title: "Leidenschaft", description: "Gekocht mit Seele für Ihre Tafel" }
-              ].map((item, index) => (
-                <ScrollReveal key={index} className={`group`}>
-                  <div className="text-center space-y-4 p-8 rounded-2xl bg-white/10 backdrop-blur hover:bg-white/20 transition-all duration-500">
-                    <span className="text-5xl inline-block">{item.icon}</span>
-                    <h3 className="text-xl font-bold">{item.title}</h3>
-                    <p className="text-white/80 text-sm">{item.description}</p>
-                  </div>
-                </ScrollReveal>
-              ))}
-            </div>
-          </div>
-        </section>
-
         {/* Restaurant Gallery */}
         <section className="py-20 sm:py-32">
           <div className="mx-auto max-w-7xl px-6">
@@ -362,13 +378,13 @@ export default function ExamplePage() {
                 Unser Restaurant
               </h2>
               <p className="text-lg text-slate-600 max-w-xl mx-auto">
-                Atmosphäre, die Erinnerungen schafft
+                Atmosphäre, die Erinnerungen schafft – Buddhistische Klarheit und Idylle
               </p>
             </ScrollReveal>
 
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
               {[1, 2, 3, 4, 5, 6, 7, 8].map((index) => (
-                <ScrollReveal key={index} className={`${index > 2 ? "lg:col-span-2" : "lg:col-span-1"}`}>
+                <ScrollReveal key={index}>
                   <div className="group relative h-64 lg:h-80 overflow-hidden rounded-2xl bg-gradient-to-br from-amber-200 to-amber-100 shadow-soft hover:shadow-2xl transition-all duration-500 hover:-translate-y-1">
                     <Image
                       src={`/images/view-${index}.jpg`}
@@ -384,23 +400,61 @@ export default function ExamplePage() {
           </div>
         </section>
 
-        {/* CTA Section */}
+        {/* Info & Hours Section */}
         <section className="py-20 sm:py-32 bg-amber-50">
+          <div className="mx-auto max-w-6xl px-6">
+            <div className="grid md:grid-cols-3 gap-8">
+              <ScrollReveal>
+                <div className="bg-white rounded-2xl p-8 shadow-soft">
+                  <h3 className="text-2xl font-display font-bold text-brand-dark mb-4">Adresse</h3>
+                  <p className="text-slate-700 leading-relaxed">
+                    Georgenstraße 67<br />
+                    80799 München-Schwabing
+                  </p>
+                </div>
+              </ScrollReveal>
+
+              <ScrollReveal>
+                <div className="bg-white rounded-2xl p-8 shadow-soft">
+                  <h3 className="text-2xl font-display font-bold text-brand-dark mb-4">Öffnungszeiten</h3>
+                  <p className="text-sm text-slate-700 space-y-2">
+                    <span className="block"><strong>Mo–Fr & So:</strong> 12:00–15:00 & 17:30–22:30</span>
+                    <span className="block"><strong>Sa:</strong> 17:30–22:30</span>
+                    <span className="block text-xs text-slate-600 pt-2">Warme Küche: Mo-Fr bis 21:00 Uhr</span>
+                  </p>
+                </div>
+              </ScrollReveal>
+
+              <ScrollReveal>
+                <div className="bg-gradient-to-br from-brand to-brand-accent rounded-2xl p-8 shadow-soft text-white">
+                  <h3 className="text-2xl font-display font-bold mb-4">Reservierungen</h3>
+                  <p className="text-lg font-semibold mb-3">089 28803451</p>
+                  <a href="tel:+498928803451" className="inline-block px-6 py-2 bg-white text-brand font-bold rounded-full hover:bg-amber-100 transition-colors duration-300">
+                    Jetzt anrufen
+                  </a>
+                </div>
+              </ScrollReveal>
+            </div>
+          </div>
+        </section>
+
+        {/* CTA Section */}
+        <section className="py-20 sm:py-32 bg-gradient-to-br from-brand/95 to-brand-dark/95 text-white">
           <div className="mx-auto max-w-4xl px-6 text-center">
             <ScrollReveal>
               <div className="space-y-8">
-                <h2 className="text-4xl sm:text-5xl font-display font-bold text-brand-dark">
-                  Bereit für ein Abenteuer?
+                <h2 className="text-4xl sm:text-5xl font-display font-bold">
+                  Bereit für ein kulinarisches Abenteuer?
                 </h2>
-                <p className="text-lg text-slate-700 max-w-xl mx-auto">
-                  Reservieren Sie Ihren Tisch und erleben Sie die Magie vietnamesischer Küche.
+                <p className="text-lg text-white/90 max-w-xl mx-auto">
+                  Reservieren Sie Ihren Tisch und erleben Sie die Magie authentischer vietnamesischer Küche in herzlicher Atmosphäre.
                 </p>
-                <div className="flex gap-4 justify-center pt-4">
-                  <a href="tel:+498928803451" className="btn-primary">
-                    089 28803451
+                <div className="flex gap-4 justify-center pt-4 flex-wrap">
+                  <a href="tel:+498928803451" className="inline-flex items-center justify-center rounded-full bg-amber-100 text-brand px-8 py-3 font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+                    Reservieren
                   </a>
-                  <a href="#" className="btn-light">
-                    Online Reservation
+                  <a href="#speisekarte" className="inline-flex items-center justify-center rounded-full border-2 border-white text-white px-8 py-3 font-semibold hover:bg-white/10 transition-all duration-300">
+                    Speisekarte anschauen
                   </a>
                 </div>
               </div>
