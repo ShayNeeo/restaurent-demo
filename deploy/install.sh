@@ -151,7 +151,7 @@ if [ ! -f .env ]; then
   mkdir -p "$DATA_DIR"
   echo "DATABASE_URL=sqlite://./data/app.db" > .env
   echo "JWT_SECRET=$(openssl rand -hex 16 || echo dev_secret)" >> .env
-  echo "APP_URL=http://localhost:$FRONTEND_PORT" >> .env
+  echo "APP_URL=http://localhost:$INTERNAL_FRONTEND_PORT" >> .env
   echo "# STRIPE_SECRET_KEY=sk_test_xxx" >> .env
   echo "# STRIPE_WEBHOOK_SECRET=whsec_xxx" >> .env
   echo "SMTP_HOST=smtp-relay.brevo.com" >> .env
@@ -228,7 +228,7 @@ server {
 NGINXCONF
     $SUDO sed -i "s/__DOMAIN__/$PRIMARY_DOMAIN/g" "$SITE_PATH"
     $SUDO sed -i "s/__WWW_DOMAIN__/$WWW_DOMAIN/g" "$SITE_PATH"
-    $SUDO sed -i "s/__FRONTEND_PORT__/$FRONTEND_PORT/g" "$SITE_PATH"
+    $SUDO sed -i "s/__FRONTEND_PORT__/$INTERNAL_FRONTEND_PORT/g" "$SITE_PATH"
     # Enable site
     if [ ! -f "/etc/nginx/sites-enabled/$PRIMARY_DOMAIN" ]; then
       $SUDO ln -s "$SITE_PATH" "/etc/nginx/sites-enabled/$PRIMARY_DOMAIN"
