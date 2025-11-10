@@ -49,6 +49,29 @@ graph TD
    - `cd backend && cp .env.example .env && cargo run`
 3. Open the app at `http://localhost:5173` (frontend will proxy API to backend).
 
+Quick start (production deployment with Cloudflare)
+```bash
+# Set environment variables
+export DOMAIN=yourdomain.com
+export SETUP_CERTBOT=false
+
+# Run install (will prompt for admin user on first run)
+bash deploy/install.sh
+```
+
+The script will:
+1. Install dependencies (Node.js 20+, Rust, SQLite)
+2. Build backend and frontend
+3. Configure Nginx reverse proxy
+4. Initialize database with schema
+5. **Prompt for admin email + password** (first-time only)
+6. Start backend and frontend services
+
+Then configure Cloudflare:
+- Add DNS A record pointing to your server IP
+- Set to "Proxied" (🔒) status
+- SSL/TLS mode: "Full"
+
 Notes
 - Static site under `Restaurent/` is served as-is; client enhancements go in `Restaurent/assets/js/app.js`.
 - Payment uses PayPal by default (Sandbox). Set `PAYPAL_CLIENT_ID`, `PAYPAL_SECRET`, `PAYPAL_API_BASE` (default sandbox). Stripe stubs remain and can be re-enabled by adding keys.
@@ -56,17 +79,32 @@ Notes
 
 Deploy scripts
 - `deploy/install.sh`: installs deps, builds, and starts backend and frontend (detached). Creates `.env` defaults if missing.
-- `deploy/uninstall.sh`: stops running backend/frontend using stored PIDs.
-  - Optional: set `DOMAIN` and `ADMIN_EMAIL` env before running to auto-generate a self-signed SSL cert in `certs/` and enable HTTPS for the frontend.
+  - **First-time run**: Automatically detects fresh database and prompts to create admin user interactively
+  - Optional: set `DOMAIN` env to configure Nginx reverse proxy
+  - Optional: set `SETUP_CERTBOT=false` to skip certbot (use with Cloudflare proxied mode)
+  - Optional: set `ADMIN_EMAIL` for certbot renewal notices
+- `deploy/uninstall.sh`: stops running backend/frontend using stored PIDs, cleans up build artifacts, optionally removes database and config files.
 
 Environment
-- Frontend `.env`: `PORT`, `BACKEND_URL`.
+- Frontend `.env`: `PORT`, `NEXT_PUBLIC_BACKEND_URL`.
 - Backend `.env`: `DATABASE_URL`, `JWT_SECRET`, `APP_URL`, PayPal: `PAYPAL_CLIENT_ID`, `PAYPAL_SECRET`, optional `PAYPAL_API_BASE`, `PAYPAL_WEBHOOK_ID`; Stripe (optional): `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`; Email: `SMTP_HOST`, `SMTP_PORT`, `SMTP_USERNAME`, `SMTP_PASSWORD`, `SMTP_FROM`.
 
-Optional frontend HTTPS envs
-- `FRONTEND_HTTPS=1`
-- `FRONTEND_SSL_CERT_PATH=/absolute/path/to/cert.crt`
-- `FRONTEND_SSL_KEY_PATH=/absolute/path/to/cert.key`
+Cloudflare Proxied Setup (Recommended)
+- Set `SETUP_CERTBOT=false` before running `deploy/install.sh` to skip certbot
+- Cloudflare handles HTTPS automatically (proxied mode 🔒)
+- Your services run on HTTP internally; Cloudflare encrypts all external traffic
+- Example deployment:
+  ```bash
+  export DOMAIN=yourdomain.com
+  export SETUP_CERTBOT=false
+  export ADMIN_EMAIL=admin@yourdomain.com
+  bash deploy/install.sh
+  ```
+- Then in Cloudflare dashboard:
+  - Add DNS A record pointing to your server IP
+  - Set to "Proxied" (🔒) status, not "DNS only"
+  - Go to SSL/TLS → Overview and set to "Full" mode
+  - Cloudflare will automatically issue a certificate
 
 For Brevo SMTP:
 - `SMTP_HOST=smtp-relay.brevo.com`

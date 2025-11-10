@@ -196,6 +196,7 @@ server {
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header CF-Connecting-IP $remote_addr;
     }
 
     location / {
@@ -223,18 +224,24 @@ NGINXCONF
     $SUDO nginx -t && $SUDO systemctl reload nginx || echo "[install] Warning: nginx reload failed"
   fi
 
-  echo "[install] Obtaining Let's Encrypt certificate for $DOMAIN"
-  echo "[install] Note: You'll need to provide an email address for certificate renewal notices."
-  EMAIL="${ADMIN_EMAIL:-webmaster@${PRIMARY_DOMAIN}}"
-  set +e
-  $SUDO certbot --nginx --redirect --non-interactive --agree-tos -m "$EMAIL" $DOM_FLAGS
-  CERTBOT_RC=$?
-  set -e
-  if [ $CERTBOT_RC -ne 0 ]; then
-    echo "[install] Certbot failed (code $CERTBOT_RC). Nginx will serve HTTP only."
+  # Check if using Cloudflare (proxied)
+  SETUP_CERTBOT="${SETUP_CERTBOT:-true}"
+  if [ "$SETUP_CERTBOT" = "false" ]; then
+    echo "[install] Skipping certbot (using Cloudflare or manual SSL setup)"
   else
-    echo "[install] Certificate obtained. Reloading nginx."
-    $SUDO systemctl reload nginx || true
+    echo "[install] Obtaining Let's Encrypt certificate for $DOMAIN"
+    echo "[install] Note: You'll need to provide an email address for certificate renewal notices."
+    EMAIL="${ADMIN_EMAIL:-webmaster@${PRIMARY_DOMAIN}}"
+    set +e
+    $SUDO certbot --nginx --redirect --non-interactive --agree-tos -m "$EMAIL" $DOM_FLAGS
+    CERTBOT_RC=$?
+    set -e
+    if [ $CERTBOT_RC -ne 0 ]; then
+      echo "[install] Certbot failed (code $CERTBOT_RC). Nginx will serve HTTP only."
+    else
+      echo "[install] Certificate obtained. Reloading nginx."
+      $SUDO systemctl reload nginx || true
+    fi
   fi
 fi
 
@@ -252,6 +259,12 @@ chmod 755 "$DATA_DIR"
 # Create database file if it doesn't exist
 touch "$DATA_DIR/app.db"
 chmod 644 "$DATA_DIR/app.db"
+
+# Check if this is a first-time run (database is new)
+IS_FIRST_RUN=false
+if [ ! -s "$DATA_DIR/app.db" ] || [ $(stat -f%z "$DATA_DIR/app.db" 2>/dev/null || stat -c%s "$DATA_DIR/app.db" 2>/dev/null) -eq 0 ]; then
+  IS_FIRST_RUN=true
+fi
 
 # Use absolute path for database URL to avoid any working directory issues
 DB_URL_ABS="sqlite:///$DATA_DIR/app.db"
@@ -272,6 +285,58 @@ echo "[install] Starting backend (detached)..."
   nohup env DATABASE_URL="$DB_URL_ABS" ./target/release/restaurent-backend > "$ROOT_DIR/.backend.log" 2>&1 & echo $! > "$ROOT_DIR/.backend.pid"
 )
 
+# Wait for backend to start before setting up admin user
+echo "[install] Waiting for backend to start..."
+sleep 3
+
+# If first run, prompt to create admin user
+if [ "$IS_FIRST_RUN" = true ]; then
+  echo ""
+  echo "============================================"
+  echo "⚙️  First-time setup detected!"
+  echo "============================================"
+  echo ""
+  read -p "📧 Enter admin email: " ADMIN_USER_EMAIL
+  
+  # Validate email format (basic check)
+  if [[ ! "$ADMIN_USER_EMAIL" =~ ^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$ ]]; then
+    echo "❌ Invalid email format. Skipping admin user creation."
+  else
+    read -sp "🔐 Enter admin password (min 6 characters): " ADMIN_USER_PASSWORD
+    echo ""
+    
+    # Validate password length
+    if [ ${#ADMIN_USER_PASSWORD} -lt 6 ]; then
+      echo "❌ Password too short (minimum 6 characters). Skipping admin user creation."
+    else
+      # Get the backend port (default 8080)
+      BACKEND_URL="${BACKEND_URL:-http://127.0.0.1:8080}"
+      
+      # Attempt to create admin user
+      echo ""
+      echo "[install] Creating admin user..."
+      ADMIN_RESPONSE=$(curl -s -X POST "$BACKEND_URL/api/auth/setup-admin" \
+        -H "Content-Type: application/json" \
+        -d "{\"email\": \"$ADMIN_USER_EMAIL\", \"password\": \"$ADMIN_USER_PASSWORD\"}" 2>/dev/null)
+      
+      if echo "$ADMIN_RESPONSE" | grep -q "token"; then
+        echo "✅ Admin user created successfully!"
+        echo ""
+        echo "Login credentials:"
+        echo "  Email: $ADMIN_USER_EMAIL"
+        echo "  Password: (as entered)"
+        echo ""
+      else
+        echo "⚠️  Admin user creation may have failed. You can create it manually later:"
+        echo "curl -X POST $BACKEND_URL/api/auth/setup-admin \\"
+        echo "  -H 'Content-Type: application/json' \\"
+        echo "  -d '{\"email\": \"admin@domain.com\", \"password\": \"YourPassword123\"}'"
+      fi
+    fi
+  fi
+  echo ""
+fi
+
 echo "[install] Starting frontend (detached)..."
 # Ensure port $FRONTEND_PORT is free (kill any processes bound to it)
 if command -v ss >/dev/null 2>&1; then
@@ -286,5 +351,33 @@ fi
   echo $! > "$ROOT_DIR/.frontend.pid"
 )
 
+echo ""
+echo "============================================"
+echo "✅ Installation Complete!"
+echo "============================================"
+echo ""
+echo "📊 Service Status:"
+echo "  Backend  (Rust):  http://127.0.0.1:8080"
+echo "  Frontend (Next):  http://127.0.0.1:$FRONTEND_PORT"
+echo ""
+echo "📁 Logs:"
+echo "  Backend:  $ROOT_DIR/.backend.log"
+echo "  Frontend: $ROOT_DIR/.frontend.log"
+echo ""
+if [ -n "${DOMAIN:-}" ]; then
+  echo "🌐 Domain: https://$DOMAIN"
+  if [ "$SETUP_CERTBOT" = "false" ]; then
+    echo "   Cloudflare Proxied (HTTPS handled by Cloudflare)"
+  else
+    echo "   Let's Encrypt Certificate (certbot)"
+  fi
+  echo ""
+fi
+echo "📝 Next steps:"
+echo "  1. Access admin panel: https://$DOMAIN/admin (or http://127.0.0.1:$FRONTEND_PORT/admin)"
+echo "  2. Login with admin credentials created during setup"
+echo "  3. Configure menu items, manage orders, and more"
+echo ""
 echo "[install] Done. PIDs: backend=$(cat "$ROOT_DIR/.backend.pid"), frontend=$(cat "$ROOT_DIR/.frontend.pid")"
+echo ""
 
