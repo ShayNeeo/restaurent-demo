@@ -382,16 +382,24 @@ fi
 echo "[install] Starting frontend (detached)..."
 # Ensure port $INTERNAL_FRONTEND_PORT is free (kill any processes bound to it)
 if command -v ss >/dev/null 2>&1; then
-  PIDS=$(ss -lntp | awk -v port=":$INTERNAL_FRONTEND_PORT " '$0 ~ port {print $7}' | sed 's/users:(//' | sed 's/)//' | sed 's/\"//g' | tr ',' '\n' | sed -n 's/^pid=\([0-9]\+\).*$/\1/p' | sort -u)
+  PIDS=$(ss -lntp 2>/dev/null | awk -v port=":$INTERNAL_FRONTEND_PORT " '$0 ~ port {print $7}' | sed 's/users:(//' | sed 's/)//' | sed 's/\"//g' | tr ',' '\n' | sed -n 's/^pid=\([0-9]\+\).*$/\1/p' | sort -u)
   for P in $PIDS; do
-    kill "$P" 2>/dev/null || true
+    echo "[install] Killing existing process on port $INTERNAL_FRONTEND_PORT (PID: $P)"
+    kill -9 "$P" 2>/dev/null || true
   done
+  sleep 2  # Wait for port to be released
 fi
-(
-  cd "$ROOT_DIR/frontend"
-  nohup env PORT="$INTERNAL_FRONTEND_PORT" "$ROOT_DIR/frontend/node_modules/.bin/next" start --port "$INTERNAL_FRONTEND_PORT" --hostname 0.0.0.0 > "$ROOT_DIR/.frontend.log" 2>&1 &
-  echo $! > "$ROOT_DIR/.frontend.pid"
-)
+cd "$ROOT_DIR/frontend"
+echo "[install] Frontend starting on port $INTERNAL_FRONTEND_PORT..."
+# Start frontend with explicit PORT environment variable
+# The PORT variable is used by next start --port ${PORT:-5173} in package.json
+export PORT="$INTERNAL_FRONTEND_PORT"
+nohup npm start > "$ROOT_DIR/.frontend.log" 2>&1 &
+FRONTEND_PID=$!
+echo $FRONTEND_PID > "$ROOT_DIR/.frontend.pid"
+echo "[install] Frontend PID: $FRONTEND_PID (listening on port $INTERNAL_FRONTEND_PORT)"
+sleep 3  # Give frontend time to start
+cd "$ROOT_DIR"
 
 echo ""
 echo "============================================"
