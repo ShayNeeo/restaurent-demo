@@ -382,9 +382,9 @@ export default function ExamplePage() {
               </p>
             </ScrollReveal>
 
-            {!loading && products.length > 0 && (
+            {!loading && (
               <div className="grid gap-6 sm:gap-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 auto-rows-max">
-                {products.slice(0, 6).map((product, index) => {
+                {products.length > 0 ? products.slice(0, 6).map((product, index) => {
                   const meta = productMeta[product.id.toLowerCase()];
                   
                   // Skip if no metadata
@@ -443,7 +443,60 @@ export default function ExamplePage() {
                       </div>
                     </ScrollReveal>
                   );
-                })}
+                }) : (
+                  // Fallback: Show sample images from productMeta when API is not available
+                  Object.entries(productMeta).slice(0, 6).map(([id, meta], index) => {
+                    let spanClass = "";
+                    if (index === 0) spanClass = "lg:col-span-1";
+                    if (index === 1) spanClass = "md:col-span-2 lg:col-span-1";
+                    if (index === 2) spanClass = "lg:col-span-2";
+                    
+                    return (
+                      <ScrollReveal key={id} className={`${spanClass}`}>
+                        <div className="group relative overflow-hidden rounded-3xl bg-white shadow-soft hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 h-full flex flex-col">
+                          {/* Image Container */}
+                          <div className="relative h-80 w-full overflow-hidden bg-gradient-to-br from-amber-100 to-amber-50">
+                            <Image
+                              src={meta.image}
+                              alt={id}
+                              fill
+                              className="object-cover transition-all duration-700 group-hover:scale-110"
+                            />
+                            {/* Overlay on Hover */}
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                            
+                            {/* Category Badge */}
+                            <div className="absolute top-4 right-4 bg-brand text-white px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                              {meta.category}
+                            </div>
+                          </div>
+
+                          {/* Content */}
+                          <div className="p-8 flex-1 flex flex-col justify-between">
+                            <div>
+                              <h3 className="text-2xl font-display font-bold text-brand-dark mb-2 group-hover:text-brand transition-colors duration-300">
+                                {id.charAt(0).toUpperCase() + id.slice(1)}
+                              </h3>
+                              <p className="text-sm leading-relaxed text-slate-600">
+                                {meta.description}
+                              </p>
+                            </div>
+
+                            {/* Footer */}
+                            <div className="flex items-center justify-between pt-6 border-t border-amber-100 mt-6">
+                              <span className="text-2xl font-bold text-brand">
+                                €12,00
+                              </span>
+                              <button className="rounded-full bg-gradient-to-r from-brand to-brand-accent px-5 py-2.5 font-bold text-white shadow-soft hover:shadow-lg transition-all duration-300 hover:scale-110 text-sm uppercase tracking-wide">
+                                + Wagen
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </ScrollReveal>
+                    );
+                  })
+                )}
               </div>
             )}
 
