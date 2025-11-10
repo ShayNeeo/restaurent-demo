@@ -196,16 +196,90 @@ if [ -n "${DOMAIN:-}" ] && [ "$APT_AVAILABLE" = true ]; then
   PRIMARY_DOMAIN="${PRIMARY_DOMAIN#,}"
   PRIMARY_DOMAIN="${PRIMARY_DOMAIN%,}"
 
-  # Write nginx site config
+  # Check if using Cloudflare (proxied) - check early to determine config type
+  SETUP_CERTBOT="${SETUP_CERTBOT:-true}"
+  
+  # Write nginx site config (HTTP-only if certbot will run, SSL config if skipping certbot)
   SITE_PATH="/etc/nginx/sites-available/$PRIMARY_DOMAIN"
   WWW_DOMAIN="www.$PRIMARY_DOMAIN"
-  TMP_SITE="$(mktemp)"
-  cat <<'NGINXCONF' > "$TMP_SITE"
+  
+  if [ "$SETUP_CERTBOT" = "false" ]; then
+    # Generate self-signed certificate for Cloudflare "Full" mode
+    SSL_DIR="/etc/nginx/ssl/$PRIMARY_DOMAIN"
+    $SUDO mkdir -p "$SSL_DIR"
+    CERT_PATH="$SSL_DIR/cert.pem"
+    KEY_PATH="$SSL_DIR/key.pem"
+    
+    if [ ! -f "$CERT_PATH" ] || [ ! -f "$KEY_PATH" ]; then
+      echo "[install] 🔒 Generating self-signed SSL certificate for Cloudflare 'Full' mode..."
+      $SUDO openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+        -keyout "$KEY_PATH" \
+        -out "$CERT_PATH" \
+        -subj "/CN=$PRIMARY_DOMAIN" \
+        -addext "subjectAltName=DNS:$PRIMARY_DOMAIN,DNS:$WWW_DOMAIN" 2>/dev/null || \
+      $SUDO openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+        -keyout "$KEY_PATH" \
+        -out "$CERT_PATH" \
+        -subj "/CN=$PRIMARY_DOMAIN"
+      $SUDO chmod 600 "$KEY_PATH"
+      $SUDO chmod 644 "$CERT_PATH"
+      echo "[install] ✅ Self-signed certificate generated"
+    fi
+    
+    # Generate SSL-enabled nginx config
+    TMP_SITE="$(mktemp)"
+    cat <<'NGINXSSLCONF' > "$TMP_SITE"
 server {
     listen 80 default_server;
     listen [::]:80 default_server;
-    listen 443 default_server;
-    listen [::]:443 default_server;
+    server_name __DOMAIN__ __WWW_DOMAIN__ _;
+    
+    # Redirect HTTP to HTTPS
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 443 ssl http2 default_server;
+    listen [::]:443 ssl http2 default_server;
+    server_name __DOMAIN__ __WWW_DOMAIN__ _;
+    
+    ssl_certificate __CERT_PATH__;
+    ssl_certificate_key __KEY_PATH__;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers HIGH:!aNULL:!MD5;
+    
+    location /api/ {
+        proxy_pass http://127.0.0.1:8080;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header CF-Connecting-IP $remote_addr;
+    }
+
+    location / {
+        proxy_pass http://127.0.0.1:__FRONTEND_PORT__;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+NGINXSSLCONF
+    sed -i "s/__DOMAIN__/$PRIMARY_DOMAIN/g" "$TMP_SITE"
+    sed -i "s/__WWW_DOMAIN__/$WWW_DOMAIN/g" "$TMP_SITE"
+    sed -i "s|__CERT_PATH__|$CERT_PATH|g" "$TMP_SITE"
+    sed -i "s|__KEY_PATH__|$KEY_PATH|g" "$TMP_SITE"
+    sed -i "s/__FRONTEND_PORT__/$INTERNAL_FRONTEND_PORT/g" "$TMP_SITE"
+  else
+    # Generate HTTP-only nginx config (certbot will add SSL)
+    TMP_SITE="$(mktemp)"
+    cat <<'NGINXCONF' > "$TMP_SITE"
+server {
+    listen 80 default_server;
+    listen [::]:80 default_server;
     server_name __DOMAIN__ __WWW_DOMAIN__ _;
 
     location /api/ {
@@ -228,9 +302,10 @@ server {
     }
 }
 NGINXCONF
-  sed -i "s/__DOMAIN__/$PRIMARY_DOMAIN/g" "$TMP_SITE"
-  sed -i "s/__WWW_DOMAIN__/$WWW_DOMAIN/g" "$TMP_SITE"
-  sed -i "s/__FRONTEND_PORT__/$INTERNAL_FRONTEND_PORT/g" "$TMP_SITE"
+    sed -i "s/__DOMAIN__/$PRIMARY_DOMAIN/g" "$TMP_SITE"
+    sed -i "s/__WWW_DOMAIN__/$WWW_DOMAIN/g" "$TMP_SITE"
+    sed -i "s/__FRONTEND_PORT__/$INTERNAL_FRONTEND_PORT/g" "$TMP_SITE"
+  fi
 
   if [ ! -f "$SITE_PATH" ]; then
     echo "[install] Writing nginx config: $SITE_PATH"
@@ -259,17 +334,14 @@ NGINXCONF
     echo "[install] Warning: nginx configuration test failed; manual inspection required"
   fi
 
-  # Check if using Cloudflare (proxied)
-  SETUP_CERTBOT="${SETUP_CERTBOT:-true}"
   if [ "$SETUP_CERTBOT" = "false" ]; then
-    echo "[install] ⚠️  Certbot skipped (using Cloudflare proxy or manual SSL setup)"
+    echo "[install] ⚠️  Certbot skipped (using Cloudflare proxy with self-signed certificate)"
     echo "[install] 📝 Cloudflare Usage:"
     echo "[install]    1. Go to https://dash.cloudflare.com"
     echo "[install]    2. Set DNS to 'Proxied' (🔒) for your domain"
-    echo "[install]    3. Go to SSL/TLS → Overview → Set to 'Flexible' mode"
-    echo "[install]    4. Cloudflare will handle HTTPS automatically (connects to origin via HTTP)"
-    echo "[install]    ⚠️  IMPORTANT: Use 'Flexible' mode when skipping certbot!"
-    echo "[install]       'Full' mode requires SSL certificate on origin server."
+    echo "[install]    3. Go to SSL/TLS → Overview → Set to 'Full' mode"
+    echo "[install]    4. Cloudflare will use the self-signed certificate for origin connection"
+    echo "[install]    ✅ Self-signed certificate configured - Cloudflare 'Full' mode ready!"
   else
     echo "[install] ⚠️  IMPORTANT: Ensure your domain is set to 'DNS only' (⚙️) in Cloudflare"
     echo "[install]    OR have certbot DNS validation set up for proxied domains"
