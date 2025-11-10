@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import Image from "next/image";
 import { NavBar } from "@/components/NavBar";
 import { SiteFooter } from "@/components/SiteFooter";
@@ -65,7 +66,7 @@ const productMeta: Record<string, ProductMeta> = {
   }
 };
 
-function ScrollReveal({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+function ScrollReveal({ children, className = "" }: { children: ReactNode; className?: string }) {
   const ref = useRef<HTMLDivElement>(null);
   const [isVisible, setIsVisible] = useState(false);
 
@@ -129,38 +130,49 @@ export default function ExamplePage() {
       currency: currency ?? "EUR"
     });
 
-  const defaultMeta: ProductMeta = {
-    image: "/images/view-1.jpg",
-    description: "Frisch zubereitetes Gericht aus unserer Küche.",
-    category: "Spezialität"
-  };
-
-  const fallbackProducts: Product[] = Object.keys(productMeta).map((id) => ({
-    id,
-    name: id.charAt(0).toUpperCase() + id.slice(1),
-    unit_amount: 1200,
-    currency: "EUR"
-  }));
-
-  const fallbackMetas = Object.values(productMeta);
-  const gallerySourceProducts = (products.length > 0 ? products : fallbackProducts).slice(0, 6);
-
-  const galleryItems = gallerySourceProducts.map((product, index) => {
-    const fallbackMeta = fallbackMetas.length > 0 ? fallbackMetas[index % fallbackMetas.length] : defaultMeta;
-    const meta =
-      productMeta[product.id.toLowerCase()] ??
-      fallbackMeta ??
-      defaultMeta;
-
-    return {
-      key: `${product.id}-${index}`,
-      name: product.name,
-      description: meta.description,
-      category: meta.category || "Gericht",
-      image: meta.image || defaultMeta.image,
-      price: formatPrice(product.unit_amount, product.currency)
-    };
-  });
+  const galleryImages: Array<{
+    src: string;
+    alt: string;
+    style: CSSProperties;
+    zIndex: number;
+  }> = [
+    {
+      src: "/images/goi-cuon.jpg",
+      alt: "Frische Sommerrollen mit Kräutern auf einem Teller",
+      style: { top: "0%", left: "5%", width: "32%", aspectRatio: "4 / 5" },
+      zIndex: 5
+    },
+    {
+      src: "/images/bo-kho-goi-cuon.jpg",
+      alt: "Bò Kho in einer Schale mit Dip",
+      style: { bottom: "-6%", left: "15%", width: "38%", aspectRatio: "5 / 6" },
+      zIndex: 3
+    },
+    {
+      src: "/images/fried-gyoza.jpg",
+      alt: "Knusprige Gyoza in Gusseisenpfanne",
+      style: { top: "10%", right: "-12%", width: "45%", aspectRatio: "3 / 2" },
+      zIndex: 4
+    },
+    {
+      src: "/images/bun-thit-xao.jpg",
+      alt: "Bún Thịt Xào mit frischem Gemüse",
+      style: { bottom: "-12%", right: "0%", width: "40%", aspectRatio: "4 / 5" },
+      zIndex: 2
+    },
+    {
+      src: "/images/curry.jpg",
+      alt: "Duftender vietnamesischer Curry in Keramikschale",
+      style: { top: "42%", left: "-10%", width: "36%", aspectRatio: "4 / 5" },
+      zIndex: 1
+    },
+    {
+      src: "/images/steamed-gyoza.jpg",
+      alt: "Gedämpfte Gyoza mit Dip-Schälchen",
+      style: { top: "-18%", right: "15%", width: "28%", aspectRatio: "3 / 4" },
+      zIndex: 6
+    }
+  ];
 
   return (
     <>
@@ -408,80 +420,63 @@ export default function ExamplePage() {
         </section>
 
         {/* Food Showcase Gallery */}
-        <section className="py-20 sm:py-32 bg-gradient-to-b from-white to-amber-50">
-          <div className="mx-auto max-w-7xl px-6">
-            <ScrollReveal className="text-center mb-16">
-              <h2 className="text-4xl sm:text-5xl font-display font-bold text-brand-dark mb-4">
-                Unsere Speisen-Galerie
-              </h2>
-              <p className="text-lg text-slate-600 max-w-xl mx-auto">
-                Kulinarische Meisterwerke – Jedes Bild erzählt eine Geschichte
-              </p>
-            </ScrollReveal>
+        <section className="relative overflow-hidden py-20 sm:py-32 bg-gradient-to-b from-white via-amber-50/60 to-white">
+          <div className="pointer-events-none absolute inset-0">
+            <div className="absolute -top-24 right-12 h-64 w-64 rounded-full bg-brand/10 blur-3xl" />
+            <div className="absolute bottom-0 left-1/3 h-72 w-72 rounded-full bg-brand-accent/10 blur-3xl" />
+            <div className="absolute top-1/2 left-0 h-40 w-40 -translate-x-1/2 -translate-y-1/2 rounded-full bg-amber-100/30 blur-3xl" />
+          </div>
 
-            {!loading ? (
-              <div className="grid gap-6 sm:gap-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 auto-rows-max">
-                {galleryItems.map((item, index) => {
-                  let spanClass = "";
-                  if (index === 0) spanClass = "lg:col-span-1";
-                  if (index === 1) spanClass = "md:col-span-2 lg:col-span-1";
-                  if (index === 2) spanClass = "lg:col-span-2";
+          <div className="relative z-10 mx-auto max-w-7xl px-6">
+            <div className="grid items-center gap-16 lg:grid-cols-[0.9fr,1.1fr]">
+              <ScrollReveal className="space-y-8">
+                <p className="text-xs uppercase tracking-[0.35rem] font-semibold text-brand/70">
+                  Unsere Speisen-Galerie
+                </p>
+                <div className="text-4xl sm:text-5xl lg:text-6xl font-display font-bold leading-tight text-brand-dark space-y-4">
+                  <span className="block">Wir sind ein Kollektiv von</span>
+                  <span className="block text-brand">Köchinnen, Denkern und</span>
+                  <span className="block">Kreativen, die Geschmack gestalten,</span>
+                  <span className="block">Vertrauen verdienen und Momente veredeln.</span>
+                </div>
+                <p className="text-lg text-slate-600 max-w-xl">
+                  Jede Komposition entsteht aus frischen Kräutern, aromatischen Brühen und saisonalen Zutaten,
+                  liebevoll arrangiert, um unsere Gäste zu berühren. Diese Galerie zeigt eine Auswahl unserer
+                  Lieblingskreationen – statisch festgehalten, doch voller lebendiger Geschichten.
+                </p>
+                <div className="flex flex-wrap gap-4">
+                  <a href="#speisekarte" className="btn-primary">
+                    Speisekarte entdecken
+                  </a>
+                  <a href="tel:+498928803451" className="btn-light">
+                    Tisch reservieren
+                  </a>
+                </div>
+              </ScrollReveal>
 
-                  return (
-                    <ScrollReveal key={item.key} className={`${spanClass}`}>
-                      <div className="group relative overflow-hidden rounded-3xl bg-white shadow-soft hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 h-full flex flex-col">
-                        <div className="relative h-80 w-full overflow-hidden bg-gradient-to-br from-amber-100 to-amber-50">
-                          <Image
-                            src={item.image}
-                            alt={item.name}
-                            fill
-                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                            className="object-cover transition-all duration-700 group-hover:scale-110"
-                            priority={false}
-                          />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                          <div className="absolute top-4 right-4 bg-brand text-white px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                            {item.category}
-                          </div>
-                        </div>
-
-                        <div className="p-8 flex-1 flex flex-col justify-between">
-                          <div>
-                            <h3 className="text-2xl font-display font-bold text-brand-dark mb-2 group-hover:text-brand transition-colors duration-300">
-                              {item.name}
-                            </h3>
-                            <p className="text-sm leading-relaxed text-slate-600">
-                              {item.description}
-                            </p>
-                          </div>
-
-                          <div className="flex items-center justify-between pt-6 border-t border-amber-100 mt-6">
-                            <span className="text-2xl font-bold text-brand">
-                              {item.price}
-                            </span>
-                            <button className="rounded-full bg-gradient-to-r from-brand to-brand-accent px-5 py-2.5 font-bold text-white shadow-soft hover:shadow-lg transition-all duration-300 hover:scale-110 text-sm uppercase tracking-wide">
-                              + Wagen
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </ScrollReveal>
-                  );
-                })}
-              </div>
-            ) : (
-              <div className="text-center py-20">
-                <p className="text-slate-500">Galerie wird geladen...</p>
-              </div>
-            )}
-
-            {/* View All Foods Link */}
-            <ScrollReveal className="mt-16 text-center">
-              <a href="#menu-preview" className="inline-flex items-center gap-2 px-8 py-3 bg-brand text-white font-bold rounded-full hover:bg-brand-dark transition-all duration-300 hover:shadow-lg">
-                Alle Speisen entdecken
-                <span>→</span>
-              </a>
-            </ScrollReveal>
+              <ScrollReveal>
+                <div className="relative h-[520px] sm:h-[640px]">
+                  <div className="absolute inset-0 rounded-[48px] bg-gradient-to-br from-white/80 to-amber-100/60 blur-3xl" />
+                  {galleryImages.map((image, index) => (
+                    <div
+                      key={`${image.src}-${index}`}
+                      className="group absolute overflow-hidden rounded-[36px] border border-white/40 bg-white/30 shadow-2xl backdrop-blur-sm transition-transform duration-700 ease-out hover:-translate-y-2 hover:rotate-[1deg]"
+                      style={{ ...image.style, zIndex: image.zIndex }}
+                    >
+                      <Image
+                        src={image.src}
+                        alt={image.alt}
+                        fill
+                        sizes="(max-width: 768px) 60vw, (max-width: 1200px) 35vw, 30vw"
+                        className="object-cover transition-transform duration-700 group-hover:scale-105"
+                        priority={index === 0}
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+                    </div>
+                  ))}
+                </div>
+              </ScrollReveal>
+            </div>
           </div>
         </section>
 
