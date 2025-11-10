@@ -89,22 +89,39 @@ Environment
 - Frontend `.env`: `PORT`, `NEXT_PUBLIC_BACKEND_URL`.
 - Backend `.env`: `DATABASE_URL`, `JWT_SECRET`, `APP_URL`, PayPal: `PAYPAL_CLIENT_ID`, `PAYPAL_SECRET`, optional `PAYPAL_API_BASE`, `PAYPAL_WEBHOOK_ID`; Stripe (optional): `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`; Email: `SMTP_HOST`, `SMTP_PORT`, `SMTP_USERNAME`, `SMTP_PASSWORD`, `SMTP_FROM`.
 
-Cloudflare Proxied Setup (Recommended)
-- Set `SETUP_CERTBOT=false` before running `deploy/install.sh` to skip certbot
-- Cloudflare handles HTTPS automatically (proxied mode 🔒)
-- Your services run on HTTP internally; Cloudflare encrypts all external traffic
+Cloudflare Proxied Setup (Recommended - No Certbot Needed!)
+- When using Cloudflare proxy (🔒), **certbot cannot validate** because your IP is masked
+- Solution: Let Cloudflare handle SSL automatically instead
+- Set `SETUP_CERTBOT=false` to skip certbot
 - Example deployment:
   ```bash
   export DOMAIN=yourdomain.com
-  export SETUP_CERTBOT=false
+  export SETUP_CERTBOT=false      # Skip certbot - not needed with Cloudflare!
   export ADMIN_EMAIL=admin@yourdomain.com
   bash deploy/install.sh
   ```
 - Then in Cloudflare dashboard:
   - Add DNS A record pointing to your server IP
-  - Set to "Proxied" (🔒) status, not "DNS only"
-  - Go to SSL/TLS → Overview and set to "Full" mode
-  - Cloudflare will automatically issue a certificate
+  - Set to "Proxied" (🔒) status (not "DNS only")
+  - Go to SSL/TLS → Overview
+  - Set mode to **"Full"** (not "Flexible")
+  - Cloudflare automatically issues & manages certificates for you
+
+Why skip certbot with Cloudflare?
+- Your IP is hidden by Cloudflare proxy (IP-based validation fails)
+- Cloudflare automatically issues SSL certificates
+- Zero management needed - certificates auto-renew
+- Your backend runs on plain HTTP internally, Cloudflare encrypts external traffic
+
+SSL Certificate Options Comparison:
+
+| Setup | Certbot? | Cloudflare Mode | Validation | Best For |
+|-------|----------|-----------------|-----------|----------|
+| **Cloudflare + Proxied** | ❌ No | Proxied (🔒) | Cloudflare handles it | Production with Cloudflare |
+| **Cloudflare + DNS only** | ✅ Yes | DNS only (⚙️) | HTTP/DNS validation | Mix of proxied & direct traffic |
+| **No Cloudflare** | ✅ Yes | N/A | HTTP/DNS validation | Direct domain management |
+
+For most users: **Use Cloudflare Proxied + skip certbot** ✅
 
 For Brevo SMTP:
 - `SMTP_HOST=smtp-relay.brevo.com`

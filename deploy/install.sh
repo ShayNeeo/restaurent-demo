@@ -227,27 +227,56 @@ NGINXCONF
   # Check if using Cloudflare (proxied)
   SETUP_CERTBOT="${SETUP_CERTBOT:-true}"
   if [ "$SETUP_CERTBOT" = "false" ]; then
-    echo "[install] Skipping certbot (using Cloudflare or manual SSL setup)"
+    echo "[install] ⚠️  Certbot skipped (using Cloudflare proxy or manual SSL setup)"
+    echo "[install] 📝 Cloudflare Usage:"
+    echo "[install]    1. Go to https://dash.cloudflare.com"
+    echo "[install]    2. Set DNS to 'Proxied' (🔒) for your domain"
+    echo "[install]    3. Go to SSL/TLS → Overview → Set to 'Full' mode"
+    echo "[install]    4. Cloudflare will handle HTTPS automatically"
   else
-    echo "[install] Obtaining Let's Encrypt certificate for $DOMAIN"
-    echo "[install] Note: You'll need to provide an email address for certificate renewal notices."
+    echo "[install] ⚠️  IMPORTANT: Ensure your domain is set to 'DNS only' (⚙️) in Cloudflare"
+    echo "[install]    OR have certbot DNS validation set up for proxied domains"
+    echo "[install] 🔒 Obtaining Let's Encrypt certificate for $DOMAIN"
+    echo "[install] 📧 Note: You'll need to provide an email for certificate renewal notices."
     EMAIL="${ADMIN_EMAIL:-webmaster@${PRIMARY_DOMAIN}}"
     set +e
     $SUDO certbot --nginx --redirect --non-interactive --agree-tos -m "$EMAIL" $DOM_FLAGS
     CERTBOT_RC=$?
     set -e
     if [ $CERTBOT_RC -ne 0 ]; then
-      echo "[install] Certbot failed (code $CERTBOT_RC). Nginx will serve HTTP only."
+      echo "[install] ❌ Certbot failed (code $CERTBOT_RC). Nginx will serve HTTP only."
+      echo "[install] 💡 If using Cloudflare proxy, you can safely ignore this error."
+      echo "[install]    Cloudflare will provide HTTPS automatically."
     else
-      echo "[install] Certificate obtained. Reloading nginx."
+      echo "[install] ✅ Certificate obtained. Reloading nginx."
       $SUDO systemctl reload nginx || true
     fi
   fi
 fi
 
 echo "[install] Stopping any existing processes..."
-if [ -x "$ROOT_DIR/deploy/uninstall.sh" ]; then
-  "$ROOT_DIR/deploy/uninstall.sh" || true
+# Kill processes by port instead of running full uninstall script
+# (uninstall.sh would prompt for database deletion and other cleanup)
+if command -v pkill >/dev/null 2>&1; then
+  pkill -f "restaurent-backend" 2>/dev/null || true
+  pkill -f "node .*dist/server.js" 2>/dev/null || true
+  pkill -f "next start" 2>/dev/null || true
+  pkill -f "node .*next/dist/bin/next" 2>/dev/null || true
+fi
+
+# Also try killing by port if available
+if command -v ss >/dev/null 2>&1; then
+  # Kill on port 8080 (backend)
+  PIDS=$(ss -lntp 2>/dev/null | awk '/:8080 /{print $7}' | sed 's/users:(//' | sed 's/)//' | sed 's/\"//g' | tr ',' '\n' | sed -n 's/^pid=\([0-9]\+\).*$/\1/p' | sort -u)
+  for P in $PIDS; do
+    kill "$P" 2>/dev/null || true
+  done
+  
+  # Kill on port 5173 (frontend dev)
+  PIDS=$(ss -lntp 2>/dev/null | awk '/:5173 /{print $7}' | sed 's/users:(//' | sed 's/)//' | sed 's/\"//g' | tr ',' '\n' | sed -n 's/^pid=\([0-9]\+\).*$/\1/p' | sort -u)
+  for P in $PIDS; do
+    kill "$P" 2>/dev/null || true
+  done
 fi
 
 # Ensure data directory exists and has proper permissions
