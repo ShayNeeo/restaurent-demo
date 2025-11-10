@@ -203,6 +203,9 @@ if [ -n "${DOMAIN:-}" ] && [ "$APT_AVAILABLE" = true ]; then
   cat <<'NGINXCONF' > "$TMP_SITE"
 server {
     listen 80 default_server;
+    listen [::]:80 default_server;
+    listen 443 default_server;
+    listen [::]:443 default_server;
     server_name __DOMAIN__ __WWW_DOMAIN__ _;
 
     location /api/ {
@@ -263,8 +266,10 @@ NGINXCONF
     echo "[install] 📝 Cloudflare Usage:"
     echo "[install]    1. Go to https://dash.cloudflare.com"
     echo "[install]    2. Set DNS to 'Proxied' (🔒) for your domain"
-    echo "[install]    3. Go to SSL/TLS → Overview → Set to 'Full' mode"
-    echo "[install]    4. Cloudflare will handle HTTPS automatically"
+    echo "[install]    3. Go to SSL/TLS → Overview → Set to 'Flexible' mode"
+    echo "[install]    4. Cloudflare will handle HTTPS automatically (connects to origin via HTTP)"
+    echo "[install]    ⚠️  IMPORTANT: Use 'Flexible' mode when skipping certbot!"
+    echo "[install]       'Full' mode requires SSL certificate on origin server."
   else
     echo "[install] ⚠️  IMPORTANT: Ensure your domain is set to 'DNS only' (⚙️) in Cloudflare"
     echo "[install]    OR have certbot DNS validation set up for proxied domains"
