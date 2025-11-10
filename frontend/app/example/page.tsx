@@ -370,8 +370,130 @@ export default function ExamplePage() {
           </div>
         </section>
 
+        {/* Food Showcase Gallery */}
+        <section className="py-20 sm:py-32 bg-gradient-to-b from-white to-amber-50">
+          <div className="mx-auto max-w-7xl px-6">
+            <ScrollReveal className="text-center mb-16">
+              <h2 className="text-4xl sm:text-5xl font-display font-bold text-brand-dark mb-4">
+                Unsere Speisen-Galerie
+              </h2>
+              <p className="text-lg text-slate-600 max-w-xl mx-auto">
+                Kulinarische Meisterwerke – Jedes Bild erzählt eine Geschichte
+              </p>
+            </ScrollReveal>
+
+            {!loading && products.length > 0 && (
+              <div className="grid gap-6 sm:gap-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 auto-rows-max">
+                {products.slice(0, 6).map((product, index) => {
+                  const meta = productMeta[product.id.toLowerCase()];
+                  
+                  // Create varied grid spans for visual interest
+                  let spanClass = "";
+                  if (index === 0) spanClass = "lg:col-span-1"; // First item normal
+                  if (index === 1) spanClass = "md:col-span-2 lg:col-span-1"; // Second item spans 2 cols on tablet
+                  if (index === 2) spanClass = "lg:col-span-2"; // Third item spans 2 cols
+                  
+                  return (
+                    <ScrollReveal key={product.id} className={`${spanClass}`}>
+                      <div className="group relative overflow-hidden rounded-3xl bg-white shadow-soft hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 h-full flex flex-col">
+                        {/* Image Container */}
+                        <div className="relative h-80 w-full overflow-hidden bg-gradient-to-br from-amber-100 to-amber-50">
+                          <Image
+                            src={meta.image}
+                            alt={product.name}
+                            fill
+                            className="object-cover transition-all duration-700 group-hover:scale-110"
+                          />
+                          {/* Overlay on Hover */}
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                          
+                          {/* Category Badge */}
+                          <div className="absolute top-4 right-4 bg-brand text-white px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                            {meta.category}
+                          </div>
+                        </div>
+
+                        {/* Content */}
+                        <div className="p-8 flex-1 flex flex-col justify-between">
+                          <div>
+                            <h3 className="text-2xl font-display font-bold text-brand-dark mb-2 group-hover:text-brand transition-colors duration-300">
+                              {product.name}
+                            </h3>
+                            <p className="text-sm leading-relaxed text-slate-600">
+                              {meta.description}
+                            </p>
+                          </div>
+
+                          {/* Footer */}
+                          <div className="flex items-center justify-between pt-6 border-t border-amber-100 mt-6">
+                            <span className="text-2xl font-bold text-brand">
+                              {(product.unit_amount / 100).toLocaleString("de-DE", {
+                                style: "currency",
+                                currency: product.currency
+                              })}
+                            </span>
+                            <button className="rounded-full bg-gradient-to-r from-brand to-brand-accent px-5 py-2.5 font-bold text-white shadow-soft hover:shadow-lg transition-all duration-300 hover:scale-110 text-sm uppercase tracking-wide">
+                              + Wagen
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </ScrollReveal>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* View All Foods Link */}
+            <ScrollReveal className="mt-16 text-center">
+              <a href="#menu-preview" className="inline-flex items-center gap-2 px-8 py-3 bg-brand text-white font-bold rounded-full hover:bg-brand-dark transition-all duration-300 hover:shadow-lg">
+                Alle Speisen entdecken
+                <span>→</span>
+              </a>
+            </ScrollReveal>
+          </div>
+        </section>
+
+        {/* Mission Statement */}
+        <section className="py-20 sm:py-32 bg-white">
+          <div className="mx-auto max-w-4xl px-6">
+            <ScrollReveal className="text-center space-y-8">
+              <div className="text-5xl sm:text-6xl font-display font-bold leading-tight text-brand-dark">
+                <div className="overflow-hidden mb-4">
+                  <p>Wir sind eine Familie von</p>
+                </div>
+                <div className="overflow-hidden mb-4">
+                  <p>Köchen, Denkern und</p>
+                </div>
+                <div className="overflow-hidden mb-4">
+                  <p>leidenschaftlichen Menschen</p>
+                </div>
+              </div>
+
+              <p className="text-lg sm:text-xl text-slate-700 leading-relaxed max-w-2xl mx-auto">
+                die authentische Speisen zubereiten, die das Vertrauen verdienen, menschliches Potenzial entfalten und das Leben bedeutungsvoll bereichern.
+              </p>
+
+              <div className="flex gap-4 pt-4 flex-wrap justify-center">
+                <a 
+                  href="tel:+498928803451"
+                  className="btn-primary"
+                >
+                  Jetzt Reservieren
+                </a>
+                <a 
+                  href="#gallery"
+                  className="btn-light"
+                >
+                  Galerie anschauen
+                </a>
+              </div>
+            </ScrollReveal>
+          </div>
+        </section>
+
         {/* Restaurant Gallery */}
-        <section className="py-20 sm:py-32">
+        <section id="gallery" className="py-20 sm:py-32">
           <div className="mx-auto max-w-7xl px-6">
             <ScrollReveal className="text-center mb-16">
               <h2 className="text-4xl sm:text-5xl font-display font-bold text-brand-dark mb-4">
