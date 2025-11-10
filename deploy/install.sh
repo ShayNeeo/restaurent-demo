@@ -8,9 +8,25 @@ set -euo pipefail
 # - SQLite3 + headers, build tools, OpenSSL CLI
 
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
-FRONTEND_PORT="${FRONTEND_PORT:-5173}"
+
+# Determine frontend port based on setup type
+# For Cloudflare proxied: use Nginx on port 80, internal Next.js on 3000
+# For local/direct: use port 5173
+if [ -n "${DOMAIN:-}" ] && [ "${SETUP_CERTBOT:-true}" = "false" ]; then
+  # Cloudflare proxied setup
+  INTERNAL_FRONTEND_PORT="${INTERNAL_FRONTEND_PORT:-3000}"
+  NGINX_ENABLED=true
+else
+  # Local or direct setup
+  INTERNAL_FRONTEND_PORT="${FRONTEND_PORT:-5173}"
+  NGINX_ENABLED=false
+fi
 
 echo "[install] Using root: $ROOT_DIR"
+echo "[install] Frontend port (internal): $INTERNAL_FRONTEND_PORT"
+if [ "$NGINX_ENABLED" = "true" ]; then
+  echo "[install] Nginx will proxy to $INTERNAL_FRONTEND_PORT"
+fi
 
 APT_AVAILABLE=false
 if command -v apt-get >/dev/null 2>&1; then
@@ -364,16 +380,16 @@ if [ "$IS_FIRST_RUN" = true ]; then
 fi
 
 echo "[install] Starting frontend (detached)..."
-# Ensure port $FRONTEND_PORT is free (kill any processes bound to it)
+# Ensure port $INTERNAL_FRONTEND_PORT is free (kill any processes bound to it)
 if command -v ss >/dev/null 2>&1; then
-  PIDS=$(ss -lntp | awk -v port=":$FRONTEND_PORT " '$0 ~ port {print $7}' | sed 's/users:(//' | sed 's/)//' | sed 's/\"//g' | tr ',' '\n' | sed -n 's/^pid=\([0-9]\+\).*$/\1/p' | sort -u)
+  PIDS=$(ss -lntp | awk -v port=":$INTERNAL_FRONTEND_PORT " '$0 ~ port {print $7}' | sed 's/users:(//' | sed 's/)//' | sed 's/\"//g' | tr ',' '\n' | sed -n 's/^pid=\([0-9]\+\).*$/\1/p' | sort -u)
   for P in $PIDS; do
     kill "$P" 2>/dev/null || true
   done
 fi
 (
   cd "$ROOT_DIR/frontend"
-  nohup env PORT="$FRONTEND_PORT" "$ROOT_DIR/frontend/node_modules/.bin/next" start --port "$FRONTEND_PORT" --hostname 0.0.0.0 > "$ROOT_DIR/.frontend.log" 2>&1 &
+  nohup env PORT="$INTERNAL_FRONTEND_PORT" "$ROOT_DIR/frontend/node_modules/.bin/next" start --port "$INTERNAL_FRONTEND_PORT" --hostname 0.0.0.0 > "$ROOT_DIR/.frontend.log" 2>&1 &
   echo $! > "$ROOT_DIR/.frontend.pid"
 )
 
@@ -383,8 +399,11 @@ echo "✅ Installation Complete!"
 echo "============================================"
 echo ""
 echo "📊 Service Status:"
-echo "  Backend  (Rust):  http://127.0.0.1:8080"
-echo "  Frontend (Next):  http://127.0.0.1:$FRONTEND_PORT"
+echo "  Backend  (Rust):  http://127.0.0.1:8080/api"
+echo "  Frontend (Next):  http://127.0.0.1:$INTERNAL_FRONTEND_PORT"
+if [ "$NGINX_ENABLED" = "true" ]; then
+  echo "  Nginx Proxy:      http://127.0.0.1:80 → :$INTERNAL_FRONTEND_PORT"
+fi
 echo ""
 echo "📁 Logs:"
 echo "  Backend:  $ROOT_DIR/.backend.log"
@@ -393,16 +412,23 @@ echo ""
 if [ -n "${DOMAIN:-}" ]; then
   echo "🌐 Domain: https://$DOMAIN"
   if [ "$SETUP_CERTBOT" = "false" ]; then
-    echo "   Cloudflare Proxied (HTTPS handled by Cloudflare)"
+    echo "   ✅ Cloudflare Proxied (HTTPS handled by Cloudflare)"
+    echo "   📍 Internal: http://127.0.0.1:80 (Nginx)"
   else
-    echo "   Let's Encrypt Certificate (certbot)"
+    echo "   🔒 Let's Encrypt Certificate (certbot)"
   fi
   echo ""
 fi
 echo "📝 Next steps:"
-echo "  1. Access admin panel: https://$DOMAIN/admin (or http://127.0.0.1:$FRONTEND_PORT/admin)"
-echo "  2. Login with admin credentials created during setup"
-echo "  3. Configure menu items, manage orders, and more"
+if [ "$NGINX_ENABLED" = "true" ]; then
+  echo "  1. Access admin: https://$DOMAIN/admin"
+  echo "  2. Cloudflare will proxy traffic to your server"
+  echo "  3. Login with admin credentials"
+else
+  echo "  1. Access admin: http://127.0.0.1:$INTERNAL_FRONTEND_PORT/admin"
+  echo "  2. Login with admin credentials"
+fi
+echo "  4. Configure menu items, manage orders, and more"
 echo ""
 echo "[install] Done. PIDs: backend=$(cat "$ROOT_DIR/.backend.pid"), frontend=$(cat "$ROOT_DIR/.frontend.pid")"
 echo ""

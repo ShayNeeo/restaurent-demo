@@ -50,27 +50,85 @@ graph TD
 3. Open the app at `http://localhost:5173` (frontend will proxy API to backend).
 
 Quick start (production deployment with Cloudflare)
-```bash
-# Set environment variables
-export DOMAIN=yourdomain.com
-export SETUP_CERTBOT=false
 
-# Run install (will prompt for admin user on first run)
-bash deploy/install.sh
+**One-liner deployment:**
+```bash
+export DOMAIN=saigon.ovh SETUP_CERTBOT=false ADMIN_EMAIL=admin@saigon.ovh && bash deploy/install.sh
 ```
 
-The script will:
-1. Install dependencies (Node.js 20+, Rust, SQLite)
-2. Build backend and frontend
-3. Configure Nginx reverse proxy
-4. Initialize database with schema
-5. **Prompt for admin email + password** (first-time only)
-6. Start backend and frontend services
+**Or step-by-step:**
+```bash
+# 1. Set configuration
+export DOMAIN=saigon.ovh
+export SETUP_CERTBOT=false              # Skip certbot - Cloudflare handles SSL
+export ADMIN_EMAIL=admin@saigon.ovh     # For certificates & admin setup
+export INTERNAL_FRONTEND_PORT=3000      # (optional, defaults to 3000)
 
-Then configure Cloudflare:
-- Add DNS A record pointing to your server IP
-- Set to "Proxied" (🔒) status
-- SSL/TLS mode: "Full"
+# 2. Run installer (will prompt for admin password interactively)
+bash deploy/install.sh
+
+# 3. View logs
+tail -f .backend.log
+tail -f .frontend.log
+```
+
+**What the script does:**
+1. ✅ Installs dependencies (Node.js 20+, Rust, SQLite)
+2. ✅ Builds backend and frontend
+3. ✅ Configures Nginx reverse proxy (port 80 → internal port 3000)
+4. ✅ Initializes database with migrations
+5. ✅ **Prompts for admin email + password** (first-time only)
+6. ✅ Starts services:
+   - Backend on port 8080 (internal, not exposed)
+   - Frontend on port 3000 (internal, not exposed)
+   - Nginx on port 80 (receives Cloudflare traffic)
+
+**Then configure Cloudflare DNS:**
+1. Go to https://dash.cloudflare.com
+2. Add DNS record:
+   - Type: **A**
+   - Name: **@** (or your subdomain)
+   - Content: **your.server.ip.address**
+   - TTL: **Auto**
+   - Status: **Proxied** (🔒) ← Important!
+3. Go to SSL/TLS → Overview
+4. Set mode to **"Full"** (not "Flexible")
+5. Done! Cloudflare handles all HTTPS
+
+**Port mapping (Cloudflare Proxied):**
+```
+Client Request
+    ↓ HTTPS
+Cloudflare Proxy (yourdomain.com)
+    ↓ HTTP (decrypted)
+Nginx (port 80)
+    ├─ /api/* → Rust Backend (port 8080)
+    └─ / → Next.js Frontend (port 3000)
+```
+
+**Environment variables:**
+- `DOMAIN` - Your domain name (required for Cloudflare setup)
+- `SETUP_CERTBOT=false` - Skip certbot (Cloudflare handles SSL)
+- `ADMIN_EMAIL` - Email for Cloudflare certificate notifications
+- `INTERNAL_FRONTEND_PORT` - Internal Next.js port (default: 3000)
+
+**Useful commands:**
+```bash
+# Check service status
+ps aux | grep restaurent-backend
+ps aux | grep "next start"
+
+# View logs
+cat .backend.log
+cat .frontend.log
+
+# Restart services
+bash deploy/uninstall.sh
+bash deploy/install.sh
+
+# Remove everything (data + config)
+SETUP_CERTBOT=false bash deploy/uninstall.sh
+```
 
 Notes
 - Static site under `Restaurent/` is served as-is; client enhancements go in `Restaurent/assets/js/app.js`.
