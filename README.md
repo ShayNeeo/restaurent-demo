@@ -76,6 +76,7 @@ Notes
 - Static site under `Restaurent/` is served as-is; client enhancements go in `Restaurent/assets/js/app.js`.
 - Payment uses PayPal by default (Sandbox). Set `PAYPAL_CLIENT_ID`, `PAYPAL_SECRET`, `PAYPAL_API_BASE` (default sandbox). Stripe stubs remain and can be re-enabled by adding keys.
 - SMTP via Brevo; add credentials in backend `.env`.
+- **Database Migrations**: Consolidated from 9 redundant migrations into a single `0001_initial_schema.sql` for clarity and to prevent migration conflicts on fresh installations.
 
 Deploy scripts
 - `deploy/install.sh`: installs deps, builds, and starts backend and frontend (detached). Creates `.env` defaults if missing.
