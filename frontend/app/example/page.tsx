@@ -405,7 +405,9 @@ export default function ExamplePage() {
                             src={meta.image}
                             alt={product.name}
                             fill
+                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                             className="object-cover transition-all duration-700 group-hover:scale-110"
+                            priority={false}
                           />
                           {/* Overlay on Hover */}
                           <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
@@ -460,7 +462,9 @@ export default function ExamplePage() {
                               src={meta.image}
                               alt={id}
                               fill
+                              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                               className="object-cover transition-all duration-700 group-hover:scale-110"
+                              priority={false}
                             />
                             {/* Overlay on Hover */}
                             <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
