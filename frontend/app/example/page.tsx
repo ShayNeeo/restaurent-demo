@@ -24,42 +24,42 @@ type ProductMeta = {
 
 const productMeta: Record<string, ProductMeta> = {
   lobster: {
-    image: "/Nguyen-Restaurent/Bo Kho - Goi Cuon - Banh Bao Kep Nhan.jpg",
+    image: "/images/bo-kho-goi-cuon.jpg",
     description: "Hausgemachte Pasta mit Hummer in aromatischer Bisque. Ein Signature-Dish des Hauses.",
     category: "Spezialitäten"
   },
   pho: {
-    image: "/Nguyen-Restaurent/Mi_Pho_Bun Nuoc Chay.jpg",
+    image: "/images/pho-chay.jpg",
     description: "Aromatische Reisnudelsuppe mit frischen Kräutern, Limette und zarter Brühe.",
     category: "Suppen"
   },
   bao: {
-    image: "/Nguyen-Restaurent/Khai Vi Starter.jpg",
+    image: "/images/khai-vi-starter.jpg",
     description: "Fluffige Bao-Buns gefüllt mit saftigem Fleisch oder Tofu, mariniert in Hoisin.",
     category: "Street Food"
   },
   gyoza: {
-    image: "/Nguyen-Restaurent/Steamed Gyoza.jpg",
+    image: "/images/steamed-gyoza.jpg",
     description: "Handgefaltete Teigtaschen mit Gemüse- oder Fleischfüllung, dazu Soja-Dip.",
     category: "Vorspeisen"
   },
   curry: {
-    image: "/Nguyen-Restaurent/Curry.jpg",
+    image: "/images/curry.jpg",
     description: "Cremiger Curry mit zarten Fleischstücken, Kokosmilch und aromatischen Gewürzen.",
     category: "Hauptgänge"
   },
   bunthitxao: {
-    image: "/Nguyen-Restaurent/Bun Thit Xao.jpg",
+    image: "/images/bun-thit-xao.jpg",
     description: "Gebratene Nudel mit zartem Fleisch, Gemüse und knusprig gerösteten Zwiebeln.",
     category: "Nudelgerichte"
   },
   friedgyoza: {
-    image: "/Nguyen-Restaurent/fried-gyoza.jpg",
+    image: "/images/fried-gyoza.jpg",
     description: "Knusprig frittierte Teigtaschen mit würziger Soße zum Dippen.",
     category: "Vorspeisen"
   },
   goicuon: {
-    image: "/Nguyen-Restaurent/Goi-Cuon.jpg",
+    image: "/images/goi-cuon.jpg",
     description: "Frische Reispapierrollen mit Shrimps, Kräutern und cremigem Erdnuss-Dip.",
     category: "Vorspeisen"
   }
@@ -401,20 +401,18 @@ export default function ExamplePage() {
                       <div className="group relative overflow-hidden rounded-3xl bg-white shadow-soft hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 h-full flex flex-col">
                         {/* Image Container */}
                         <div className="relative h-80 w-full overflow-hidden bg-gradient-to-br from-amber-100 to-amber-50">
-                          {meta?.image && (
-                            <Image
-                              src={meta.image}
-                              alt={product.name}
-                              fill
-                              className="object-cover transition-all duration-700 group-hover:scale-110"
-                            />
-                          )}
+                          <Image
+                            src={meta.image}
+                            alt={product.name}
+                            fill
+                            className="object-cover transition-all duration-700 group-hover:scale-110"
+                          />
                           {/* Overlay on Hover */}
                           <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                           
                           {/* Category Badge */}
                           <div className="absolute top-4 right-4 bg-brand text-white px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                            {meta?.category || "Gericht"}
+                            {meta.category}
                           </div>
                         </div>
 
@@ -425,7 +423,7 @@ export default function ExamplePage() {
                               {product.name}
                             </h3>
                             <p className="text-sm leading-relaxed text-slate-600">
-                              {meta?.description}
+                              {meta.description}
                             </p>
                           </div>
 
