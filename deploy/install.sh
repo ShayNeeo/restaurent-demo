@@ -302,11 +302,8 @@ echo "[install] Starting backend (detached)..."
 (
   cd "$ROOT_DIR/backend"
   
-  # Initialize database from schema if migrations don't exist
-  echo "[install] Initializing database from schema..."
-  sqlite3 "$DATA_DIR/app.db" < schema.sql || true
-  
   # Run migrations with absolute database URL
+  # Note: Do NOT run schema.sql first - migrations will create all tables properly
   echo "[install] Running database migrations..."
   env DATABASE_URL="$DB_URL_ABS" sqlx migrate run || true
   
