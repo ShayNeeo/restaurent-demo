@@ -10,15 +10,15 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 
 # Determine frontend port based on setup type
-# For Cloudflare proxied: use Nginx on port 80, internal Next.js on 3000
-# For local/direct: use port 5173
-if [ -n "${DOMAIN:-}" ] && [ "${SETUP_CERTBOT:-true}" = "false" ]; then
-  # Cloudflare proxied setup
+# For domain deployments: use nginx on port 80 with Next.js on 3000 internally
+# For local/direct installs: run Next.js directly on port 5173
+if [ -n "${DOMAIN:-}" ]; then
+  # Domain setup always runs behind nginx and uses an internal port
   INTERNAL_FRONTEND_PORT="${INTERNAL_FRONTEND_PORT:-3000}"
   NGINX_ENABLED=true
 else
   # Local or direct setup
-  INTERNAL_FRONTEND_PORT="${FRONTEND_PORT:-5173}"
+  INTERNAL_FRONTEND_PORT="${INTERNAL_FRONTEND_PORT:-${FRONTEND_PORT:-5173}}"
   NGINX_ENABLED=false
 fi
 
@@ -198,10 +198,9 @@ if [ -n "${DOMAIN:-}" ] && [ "$APT_AVAILABLE" = true ]; then
 
   # Write nginx site config
   SITE_PATH="/etc/nginx/sites-available/$PRIMARY_DOMAIN"
-  if [ ! -f "$SITE_PATH" ]; then
-    echo "[install] Writing nginx config: $SITE_PATH"
-    WWW_DOMAIN="www.$PRIMARY_DOMAIN"
-    $SUDO tee "$SITE_PATH" > /dev/null <<'NGINXCONF'
+  WWW_DOMAIN="www.$PRIMARY_DOMAIN"
+  TMP_SITE="$(mktemp)"
+  cat <<'NGINXCONF' > "$TMP_SITE"
 server {
     listen 80 default_server;
     server_name __DOMAIN__ __WWW_DOMAIN__ _;
@@ -226,18 +225,35 @@ server {
     }
 }
 NGINXCONF
-    $SUDO sed -i "s/__DOMAIN__/$PRIMARY_DOMAIN/g" "$SITE_PATH"
-    $SUDO sed -i "s/__WWW_DOMAIN__/$WWW_DOMAIN/g" "$SITE_PATH"
-    $SUDO sed -i "s/__FRONTEND_PORT__/$INTERNAL_FRONTEND_PORT/g" "$SITE_PATH"
-    # Enable site
-    if [ ! -f "/etc/nginx/sites-enabled/$PRIMARY_DOMAIN" ]; then
-      $SUDO ln -s "$SITE_PATH" "/etc/nginx/sites-enabled/$PRIMARY_DOMAIN"
+  sed -i "s/__DOMAIN__/$PRIMARY_DOMAIN/g" "$TMP_SITE"
+  sed -i "s/__WWW_DOMAIN__/$WWW_DOMAIN/g" "$TMP_SITE"
+  sed -i "s/__FRONTEND_PORT__/$INTERNAL_FRONTEND_PORT/g" "$TMP_SITE"
+
+  if [ ! -f "$SITE_PATH" ]; then
+    echo "[install] Writing nginx config: $SITE_PATH"
+    $SUDO mv "$TMP_SITE" "$SITE_PATH"
+  else
+    if ! cmp -s "$TMP_SITE" "$SITE_PATH" 2>/dev/null; then
+      echo "[install] Updating nginx config: $SITE_PATH"
+      $SUDO mv "$TMP_SITE" "$SITE_PATH"
+    else
+      echo "[install] nginx config unchanged at $SITE_PATH"
+      rm -f "$TMP_SITE"
     fi
-    # Optionally disable default
-    if [ -f "/etc/nginx/sites-enabled/default" ]; then
-      $SUDO rm -f "/etc/nginx/sites-enabled/default"
-    fi
-    $SUDO nginx -t && $SUDO systemctl reload nginx || echo "[install] Warning: nginx reload failed"
+  fi
+
+  # Enable site (force link to ensure it points to the latest config)
+  $SUDO ln -sf "$SITE_PATH" "/etc/nginx/sites-enabled/$PRIMARY_DOMAIN"
+
+  # Optionally disable default site
+  if [ -f "/etc/nginx/sites-enabled/default" ]; then
+    $SUDO rm -f "/etc/nginx/sites-enabled/default"
+  fi
+
+  if $SUDO nginx -t; then
+    $SUDO systemctl reload nginx || echo "[install] Warning: nginx reload failed"
+  else
+    echo "[install] Warning: nginx configuration test failed; manual inspection required"
   fi
 
   # Check if using Cloudflare (proxied)
