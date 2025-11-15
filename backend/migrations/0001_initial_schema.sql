@@ -39,10 +39,12 @@ CREATE TABLE IF NOT EXISTS coupons (
 -- Gift codes purchased and used as payment method
 -- Note: Separate from coupons table to support both discount and payment use cases
 CREATE TABLE IF NOT EXISTS gift_codes (
-  code TEXT PRIMARY KEY,
+  id TEXT PRIMARY KEY,
+  code TEXT NOT NULL UNIQUE,
   value_cents INTEGER NOT NULL,
   remaining_cents INTEGER NOT NULL,
   purchaser_email TEXT,
+  customer_email TEXT,                 -- Customer who received/using the gift code
   created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
 );
 
@@ -56,6 +58,7 @@ CREATE TABLE IF NOT EXISTS orders (
   currency TEXT NOT NULL DEFAULT 'EUR',
   coupon_code TEXT,                 -- Can reference coupons or gift_codes (no FK for flexibility)
   items_json TEXT,                  -- JSON: {cart: [...], coupon_code: "...", discount_cents: ...}
+  status TEXT NOT NULL DEFAULT 'pending',  -- pending, completed, cancelled
   created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
   FOREIGN KEY(user_id) REFERENCES users(id)
   -- NOTE: coupon_code has NO FOREIGN KEY constraint

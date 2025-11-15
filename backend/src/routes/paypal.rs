@@ -291,7 +291,7 @@ async fn paypal_gift_return(Extension(state): Extension<Arc<AppState>>, Query(pa
                 
                 tracing::info!("Creating gift code: {}, value: {}¢ (base: {}¢ + bonus: {}¢)", code, total_value, base_amount, bonus);
                 
-                let _ = sqlx::query(r#"INSERT INTO gift_codes (id, code, value_cents, remaining_cents, purchaser_email, customer_email) VALUES (?, ?, ?, ?, ?, ?)"#)
+                if let Err(e) = sqlx::query(r#"INSERT INTO gift_codes (id, code, value_cents, remaining_cents, purchaser_email, customer_email) VALUES (?, ?, ?, ?, ?, ?)"#)
                     .bind(&gift_id)
                     .bind(&code)
                     .bind(total_value)
@@ -299,7 +299,12 @@ async fn paypal_gift_return(Extension(state): Extension<Arc<AppState>>, Query(pa
                     .bind(&email)
                     .bind(&email)
                     .execute(&state.pool)
-                    .await;
+                    .await
+                {
+                    tracing::error!("Failed to insert gift code: {:?}", e);
+                } else {
+                    tracing::info!("Gift code inserted successfully: {}", code);
+                }
                 
                 // Create an order record for this gift purchase
                 let order_db_id = Uuid::new_v4().to_string();
