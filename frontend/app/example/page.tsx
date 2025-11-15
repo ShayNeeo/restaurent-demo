@@ -117,11 +117,11 @@ function CarouselSection() {
   const getNextIndex = () => (currentIndex + 1) % carouselImages.length;
 
   return (
-    <section className="relative overflow-hidden py-20 sm:py-32 bg-gradient-to-b from-white via-amber-50/60 to-white">
+    <section className="relative overflow-hidden py-20 sm:py-32 bg-gradient-to-b from-brand-light via-brand-light to-brand-light">
       <div className="pointer-events-none absolute inset-0">
         <div className="absolute -top-24 right-12 h-64 w-64 rounded-full bg-brand/10 blur-3xl" />
         <div className="absolute bottom-0 left-1/3 h-72 w-72 rounded-full bg-brand-accent/10 blur-3xl" />
-        <div className="absolute top-1/2 left-0 h-40 w-40 -translate-x-1/2 -translate-y-1/2 rounded-full bg-amber-100/30 blur-3xl" />
+        <div className="absolute top-1/2 left-0 h-40 w-40 -translate-x-1/2 -translate-y-1/2 rounded-full bg-brand-accent/30 blur-3xl" />
       </div>
 
       <div className="relative z-10 mx-auto max-w-7xl px-6">
@@ -153,13 +153,13 @@ function CarouselSection() {
 
           <ScrollReveal>
             <div className="relative h-[520px] sm:h-[640px] flex items-center justify-center">
-              <div className="absolute inset-0 rounded-[48px] bg-gradient-to-br from-white/80 to-amber-100/60 blur-3xl" />
+              <div className="absolute inset-0 rounded-[48px] bg-gradient-to-br from-brand-light/80 to-brand-accent/30 blur-3xl" />
               
               {/* Carousel Container */}
               <div className="relative w-full h-full flex items-center justify-center">
                 {/* Left blurred image */}
                 <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1/4 h-2/3 opacity-40">
-                  <div className="relative w-full h-full rounded-[24px] overflow-hidden shadow-lg blur-sm border border-white/30">
+                  <div className="relative w-full h-full rounded-[24px] overflow-hidden shadow-lg blur-sm border border-brand-light/30">
                     <Image
                       src={carouselImages[getPrevIndex()].src}
                       alt={carouselImages[getPrevIndex()].alt}
@@ -172,7 +172,7 @@ function CarouselSection() {
                 {/* Center main image */}
                 <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-1/2 h-full cursor-pointer z-20">
                   <div 
-                    className="relative w-full h-full rounded-[36px] overflow-hidden border-2 border-white/40 shadow-2xl bg-white/30 backdrop-blur-sm transition-all duration-500 hover:-translate-y-2 hover:shadow-3xl"
+                    className="relative w-full h-full rounded-[36px] overflow-hidden border-2 border-brand-light/40 shadow-2xl bg-brand-light/30 backdrop-blur-sm transition-all duration-500 hover:-translate-y-2 hover:shadow-3xl"
                     onClick={nextImage}
                   >
                     <Image
@@ -192,7 +192,7 @@ function CarouselSection() {
 
                 {/* Right blurred image */}
                 <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1/4 h-2/3 opacity-40">
-                  <div className="relative w-full h-full rounded-[24px] overflow-hidden shadow-lg blur-sm border border-white/30">
+                  <div className="relative w-full h-full rounded-[24px] overflow-hidden shadow-lg blur-sm border border-brand-light/30">
                     <Image
                       src={carouselImages[getNextIndex()].src}
                       alt={carouselImages[getNextIndex()].alt}
@@ -212,7 +212,7 @@ function CarouselSection() {
                     className={`h-2.5 rounded-full transition-all duration-500 ${
                       index === currentIndex
                         ? "bg-brand w-8"
-                        : "bg-white/40 w-2.5 hover:bg-white/60"
+                        : "bg-brand-light/40 w-2.5 hover:bg-brand-light/60"
                     }`}
                     aria-label={`Go to image ${index + 1}`}
                   />
@@ -389,7 +389,7 @@ function CarouselStory() {
           animation: fadeInRight 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
         }
       `}</style>
-      <div className="absolute inset-0 rounded-[48px] bg-gradient-to-br from-white/80 to-amber-100/60 blur-3xl" />
+      <div className="absolute inset-0 rounded-[48px] bg-gradient-to-br from-brand-light/80 to-brand-accent/30 blur-3xl" />
       
       {/* Carousel Container */}
       <div className="relative w-full h-full flex items-center justify-center">
@@ -424,7 +424,7 @@ function CarouselStory() {
         <div className="absolute left-1/4 top-1/2 -translate-y-1/2 w-1/2 h-full z-20">
           {/* Current center image */}
           <div 
-            className={`absolute inset-0 cursor-pointer rounded-[36px] overflow-hidden border-2 border-white/40 shadow-2xl bg-white/30 backdrop-blur-sm hover:shadow-3xl transition-shadow duration-300 ${
+            className={`absolute inset-0 cursor-pointer rounded-[36px] overflow-hidden border-2 border-brand-light/40 shadow-2xl bg-brand-light/30 backdrop-blur-sm hover:shadow-3xl transition-shadow duration-300 ${
               slideDirection === 'left' ? 'slide-out-left' : slideDirection === 'right' ? 'slide-out-right' : ''
             }`}
             onClick={nextImage}
@@ -446,7 +446,7 @@ function CarouselStory() {
           {/* Next center image coming in */}
           {slideDirection && (
             <div 
-              className={`absolute inset-0 rounded-[36px] overflow-hidden border-2 border-white/40 shadow-2xl bg-white/30 backdrop-blur-sm ${
+              className={`absolute inset-0 rounded-[36px] overflow-hidden border-2 border-brand-light/40 shadow-2xl bg-brand-light/30 backdrop-blur-sm ${
                 slideDirection === 'left' ? 'slide-in-from-right' : 'slide-in-from-left'
               }`}
             >
@@ -508,7 +508,7 @@ function CarouselStory() {
             className={`h-2.5 rounded-full transition-all duration-500 relative ${
               index === currentIndex
                 ? "bg-brand w-8 shadow-lg"
-                : "bg-white/40 w-2.5 hover:bg-white/60"
+                : "bg-brand-light/40 w-2.5 hover:bg-brand-light/60"
             }`}
             aria-label={`Go to image ${index + 1}`}
           >
@@ -671,11 +671,11 @@ export default function ExamplePage() {
       `}</style>
 
       <NavBar />
-      <main className="flex min-h-screen flex-col bg-gradient-to-b from-amber-50 via-white to-amber-50">
+      <main className="flex min-h-screen flex-col" style={{ backgroundColor: '#F7F7F0' }}>
         
         {/* Hero Section */}
         <section className="relative min-h-screen flex items-center justify-center overflow-hidden py-20 px-6">
-          <div className="absolute inset-0 bg-gradient-to-br from-brand/5 via-transparent to-amber-200/10 pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-br from-brand/5 via-transparent to-brand-accent/10 pointer-events-none" />
           
           <ScrollReveal className="relative z-10 text-center max-w-4xl mx-auto">
             <div className="space-y-6">
@@ -706,7 +706,7 @@ export default function ExamplePage() {
         </section>
 
         {/* Story Section */}
-        <section className="py-20 sm:py-32 bg-white">
+        <section className="py-20 sm:py-32" style={{ backgroundColor: '#F7F7F0' }}>
           <div className="mx-auto max-w-6xl px-6">
             <div className="grid md:grid-cols-2 gap-12 items-center">
               <ScrollReveal>
@@ -741,7 +741,7 @@ export default function ExamplePage() {
         </section>
 
         {/* What Makes Us Special */}
-        <section className="py-20 sm:py-32">
+        <section className="py-20 sm:py-32" style={{ backgroundColor: '#F7F7F0' }}>
           <div className="mx-auto max-w-6xl px-6">
             <ScrollReveal className="text-center mb-16">
               <h2 className="text-4xl sm:text-5xl font-display font-bold text-brand-dark mb-4">
@@ -771,7 +771,7 @@ export default function ExamplePage() {
                 }
               ].map((item, index) => (
                 <ScrollReveal key={index}>
-                  <div className="group rounded-2xl bg-white p-8 shadow-soft hover:shadow-xl transition-all duration-500 hover:-translate-y-1">
+                  <div className="group rounded-2xl p-8 shadow-soft hover:shadow-xl transition-all duration-500 hover:-translate-y-1" style={{ backgroundColor: '#F7F7F0' }}>
                     <div className="text-5xl mb-4">{item.icon}</div>
                     <h3 className="text-2xl font-bold text-brand-dark mb-3">{item.title}</h3>
                     <p className="text-slate-600 leading-relaxed">{item.description}</p>
@@ -783,7 +783,7 @@ export default function ExamplePage() {
         </section>
 
         {/* Menu Preview Section */}
-        <section id="speisekarte" className="py-20 sm:py-32 bg-gradient-to-r from-brand/90 to-brand-dark/90 text-white relative overflow-hidden">
+        <section id="speisekarte" className="py-20 sm:py-32 text-white relative overflow-hidden" style={{ background: 'linear-gradient(to right, rgba(179, 142, 90, 0.9), rgba(44, 44, 44, 0.9))' }}>
           <div className="absolute inset-0 opacity-10">
             <div className="absolute top-10 right-10 w-40 h-40 rounded-full bg-white/20 blur-3xl" />
             <div className="absolute bottom-10 left-10 w-40 h-40 rounded-full bg-white/20 blur-3xl" />
@@ -792,7 +792,7 @@ export default function ExamplePage() {
           <div className="mx-auto max-w-6xl px-6 relative z-10">
             <ScrollReveal className="text-center mb-16">
               <h2 className="text-4xl sm:text-5xl font-display font-bold mb-4">
-                Unsere <span className="text-amber-100">Speisekarte</span>
+                Unsere <span style={{ color: '#F7F7F0' }}>Speisekarte</span>
               </h2>
               <p className="text-xl text-white/90 max-w-2xl mx-auto">
                 Sorgfältig ausgewählte Gerichte, die die Seele Vietnams einfangen
@@ -808,9 +808,10 @@ export default function ExamplePage() {
                     onClick={() => setActiveCategory(category)}
                     className={`px-6 py-2.5 rounded-full font-medium transition-all duration-500 text-sm uppercase tracking-wide ${
                       activeCategory === category
-                        ? "bg-amber-100 text-brand shadow-lg scale-105"
+                        ? "text-brand-dark shadow-lg scale-105 border border-brand-light"
                         : "bg-white/20 text-white hover:bg-white/30 border border-white/30"
                     }`}
+                    style={activeCategory === category ? { backgroundColor: '#F7F7F0' } : undefined}
                   >
                     {category}
                   </button>
@@ -829,9 +830,9 @@ export default function ExamplePage() {
                   const meta = productMeta[product.id.toLowerCase()];
                   return (
                     <ScrollReveal key={product.id}>
-                      <div className="group h-full overflow-hidden rounded-2xl bg-white/95 shadow-soft hover:shadow-2xl transition-all duration-500 hover:-translate-y-2">
+                      <div className="group h-full overflow-hidden rounded-2xl shadow-soft hover:shadow-2xl transition-all duration-500 hover:-translate-y-2" style={{ backgroundColor: '#F7F7F0' }}>
                         {/* Image */}
-                        <div className="relative h-64 w-full overflow-hidden bg-gradient-to-br from-amber-100 to-amber-50">
+                        <div className="relative h-64 w-full overflow-hidden" style={{ background: 'linear-gradient(to bottom right, rgba(179, 142, 90, 0.2), rgba(204, 136, 102, 0.2))' }}>
                           {meta?.image && (
                             <Image
                               src={meta.image}
@@ -853,7 +854,7 @@ export default function ExamplePage() {
                           <p className="text-sm leading-relaxed text-slate-600 mb-4">
                             {meta?.description}
                           </p>
-                          <div className="flex items-center justify-between pt-4 border-t border-amber-100">
+                          <div className="flex items-center justify-between pt-4" style={{ borderTop: '1px solid rgba(179, 142, 90, 0.2)' }}>
                             <span className="text-2xl font-bold text-brand">
                               {formatPrice(product.unit_amount, product.currency)}
                             </span>
@@ -872,11 +873,11 @@ export default function ExamplePage() {
         </section>
 
         {/* Food Showcase Gallery */}
-        <section className="relative overflow-hidden py-20 sm:py-32 bg-gradient-to-b from-white via-amber-50/60 to-white">
+        <section className="relative overflow-hidden py-20 sm:py-32" style={{ background: `linear-gradient(to bottom, #F7F7F0, rgba(179, 142, 90, 0.1), #F7F7F0)` }}>
           <div className="pointer-events-none absolute inset-0">
             <div className="absolute -top-24 right-12 h-64 w-64 rounded-full bg-brand/10 blur-3xl" />
             <div className="absolute bottom-0 left-1/3 h-72 w-72 rounded-full bg-brand-accent/10 blur-3xl" />
-            <div className="absolute top-1/2 left-0 h-40 w-40 -translate-x-1/2 -translate-y-1/2 rounded-full bg-amber-100/30 blur-3xl" />
+            <div className="absolute top-1/2 left-0 h-40 w-40 -translate-x-1/2 -translate-y-1/2 rounded-full bg-brand-accent/30 blur-3xl" />
           </div>
 
           <div className="relative z-10 mx-auto max-w-7xl px-6">
@@ -908,12 +909,12 @@ export default function ExamplePage() {
 
               <ScrollReveal>
                 <div className="relative h-[520px] sm:h-[640px]">
-                  <div className="absolute inset-0 rounded-[48px] bg-gradient-to-br from-white/80 to-amber-100/60 blur-3xl" />
+                  <div className="absolute inset-0 rounded-[48px] bg-gradient-to-br from-brand-light/80 to-brand-accent/30 blur-3xl" />
                   {galleryImages.map((image, index) => (
                     <div
                       key={`${image.src}-${index}`}
-                      className="group absolute overflow-hidden rounded-[36px] border border-white/40 bg-white/30 shadow-2xl backdrop-blur-sm transition-transform duration-700 ease-out hover:-translate-y-2 hover:rotate-[1deg]"
-                      style={{ ...image.style, zIndex: image.zIndex }}
+                      className="group absolute overflow-hidden rounded-[36px] border shadow-2xl backdrop-blur-sm transition-transform duration-700 ease-out hover:-translate-y-2 hover:rotate-[1deg]"
+                      style={{ ...image.style, zIndex: image.zIndex, borderColor: 'rgba(179, 142, 90, 0.4)', backgroundColor: 'rgba(247, 247, 240, 0.3)' }}
                     >
                       <Image
                         src={image.src}
@@ -933,7 +934,7 @@ export default function ExamplePage() {
         </section>
 
         {/* Mission Statement */}
-        <section className="py-20 sm:py-32 bg-white">
+        <section className="py-20 sm:py-32" style={{ backgroundColor: '#F7F7F0' }}>
           <div className="mx-auto max-w-4xl px-6">
             <ScrollReveal className="text-center space-y-8">
               <div className="text-5xl sm:text-6xl font-display font-bold leading-tight text-brand-dark">
@@ -971,7 +972,7 @@ export default function ExamplePage() {
         </section>
 
         {/* Restaurant Gallery */}
-        <section id="gallery" className="py-20 sm:py-32">
+        <section id="gallery" className="py-20 sm:py-32" style={{ backgroundColor: '#F7F7F0' }}>
           <div className="mx-auto max-w-7xl px-6">
             <ScrollReveal className="text-center mb-16">
               <h2 className="text-4xl sm:text-5xl font-display font-bold text-brand-dark mb-4">
@@ -985,7 +986,7 @@ export default function ExamplePage() {
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
               {[1, 2, 3, 4, 5, 6, 7, 8].map((index) => (
                 <ScrollReveal key={index}>
-                  <div className="group relative h-64 lg:h-80 overflow-hidden rounded-2xl bg-gradient-to-br from-amber-200 to-amber-100 shadow-soft hover:shadow-2xl transition-all duration-500 hover:-translate-y-1">
+                  <div className="group relative h-64 lg:h-80 overflow-hidden rounded-2xl shadow-soft hover:shadow-2xl transition-all duration-500 hover:-translate-y-1" style={{ background: `linear-gradient(to bottom right, rgba(179, 142, 90, 0.3), rgba(204, 136, 102, 0.2))` }}>
                     <Image
                       src={`/images/view-${index}.jpg`}
                       alt={`Restaurant View ${index}`}
@@ -1001,11 +1002,11 @@ export default function ExamplePage() {
         </section>
 
         {/* Info & Hours Section */}
-        <section className="py-20 sm:py-32 bg-amber-50">
+        <section className="py-20 sm:py-32" style={{ backgroundColor: 'rgba(179, 142, 90, 0.05)' }}>
           <div className="mx-auto max-w-6xl px-6">
             <div className="grid md:grid-cols-3 gap-8">
               <ScrollReveal>
-                <div className="bg-white rounded-2xl p-8 shadow-soft">
+                <div className="rounded-2xl p-8 shadow-soft" style={{ backgroundColor: '#F7F7F0' }}>
                   <h3 className="text-2xl font-display font-bold text-brand-dark mb-4">Adresse</h3>
                   <p className="text-slate-700 leading-relaxed">
                     Georgenstraße 67<br />
@@ -1015,7 +1016,7 @@ export default function ExamplePage() {
               </ScrollReveal>
 
               <ScrollReveal>
-                <div className="bg-white rounded-2xl p-8 shadow-soft">
+                <div className="rounded-2xl p-8 shadow-soft" style={{ backgroundColor: '#F7F7F0' }}>
                   <h3 className="text-2xl font-display font-bold text-brand-dark mb-4">Öffnungszeiten</h3>
                   <p className="text-sm text-slate-700 space-y-2">
                     <span className="block"><strong>Mo–Fr & So:</strong> 12:00–15:00 & 17:30–22:30</span>
@@ -1026,10 +1027,10 @@ export default function ExamplePage() {
               </ScrollReveal>
 
               <ScrollReveal>
-                <div className="bg-gradient-to-br from-brand to-brand-accent rounded-2xl p-8 shadow-soft text-white">
+                <div className="rounded-2xl p-8 shadow-soft text-white" style={{ background: 'linear-gradient(to bottom right, rgba(179, 142, 90, 0.9), rgba(204, 136, 102, 0.8))' }}>
                   <h3 className="text-2xl font-display font-bold mb-4">Reservierungen</h3>
                   <p className="text-lg font-semibold mb-3">089 28803451</p>
-                  <a href="tel:+498928803451" className="inline-block px-6 py-2 bg-white text-brand font-bold rounded-full hover:bg-amber-100 transition-colors duration-300">
+                  <a href="tel:+498928803451" className="inline-block px-6 py-2 text-brand font-bold rounded-full hover:opacity-90 transition-opacity duration-300" style={{ backgroundColor: '#F7F7F0' }}>
                     Jetzt anrufen
                   </a>
                 </div>
@@ -1039,7 +1040,7 @@ export default function ExamplePage() {
         </section>
 
         {/* CTA Section */}
-        <section className="py-20 sm:py-32 bg-gradient-to-br from-brand/95 to-brand-dark/95 text-white">
+        <section className="py-20 sm:py-32 text-white" style={{ background: 'linear-gradient(to bottom right, rgba(179, 142, 90, 0.95), rgba(44, 44, 44, 0.95))' }}>
           <div className="mx-auto max-w-4xl px-6 text-center">
             <ScrollReveal>
               <div className="space-y-8">
@@ -1050,7 +1051,7 @@ export default function ExamplePage() {
                   Reservieren Sie Ihren Tisch und erleben Sie die Magie authentischer vietnamesischer Küche in herzlicher Atmosphäre.
                 </p>
                 <div className="flex gap-4 justify-center pt-4 flex-wrap">
-                  <a href="tel:+498928803451" className="inline-flex items-center justify-center rounded-full bg-amber-100 text-brand px-8 py-3 font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+                  <a href="tel:+498928803451" className="inline-flex items-center justify-center rounded-full text-brand px-8 py-3 font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105" style={{ backgroundColor: '#F7F7F0' }}>
                     Reservieren
                   </a>
                   <a href="#speisekarte" className="inline-flex items-center justify-center rounded-full border-2 border-white text-white px-8 py-3 font-semibold hover:bg-white/10 transition-all duration-300">

@@ -9,10 +9,10 @@ const config: Config = {
     extend: {
       colors: {
         brand: {
-          DEFAULT: "#6b0b0a",
-          accent: "#8c3231",
-          light: "#f7f5e7",
-          dark: "#3f0505"
+          DEFAULT: "#B38E5A",
+          accent: "#CC8866",
+          light: "#F7F7F0",
+          dark: "#2C2C2C"
         }
       },
       fontFamily: {
@@ -20,11 +20,11 @@ const config: Config = {
         display: ["var(--font-kaushan)", "cursive"]
       },
       boxShadow: {
-        soft: "0 10px 30px rgba(107, 11, 10, 0.12)"
+        soft: "0 10px 30px rgba(179, 142, 90, 0.12)"
       },
       backgroundImage: {
         "hero-overlay":
-          "linear-gradient(135deg, rgba(107, 11, 10, 0.85), rgba(63, 5, 5, 0.6))"
+          "linear-gradient(135deg, rgba(179, 142, 90, 0.85), rgba(44, 44, 44, 0.6))"
       }
     }
   },
