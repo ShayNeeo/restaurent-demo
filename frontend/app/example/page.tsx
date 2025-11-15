@@ -290,67 +290,63 @@ function CarouselStory() {
   const getNextIndex = () => (currentIndex + 1) % carouselImages.length;
 
   return (
-    <div className="relative h-96 flex items-center justify-center">
+    <div className="relative h-96 flex items-center justify-center w-full">
       <style>{`
-        @keyframes slideLeft {
+        @keyframes slideOutLeft {
           from {
             transform: translateX(0);
-            opacity: 1;
           }
           to {
-            transform: translateX(-100%);
+            transform: translateX(-50%);
             opacity: 0;
           }
         }
-        @keyframes slideLeftIn {
+        @keyframes slideInFromRight {
           from {
-            transform: translateX(100%);
-            opacity: 0;
-          }
-          to {
-            transform: translateX(0);
-            opacity: 1;
-          }
-        }
-        @keyframes slideRight {
-          from {
-            transform: translateX(0);
-            opacity: 1;
-          }
-          to {
-            transform: translateX(100%);
-            opacity: 0;
-          }
-        }
-        @keyframes slideRightIn {
-          from {
-            transform: translateX(-100%);
+            transform: translateX(50%);
             opacity: 0;
           }
           to {
             transform: translateX(0);
-            opacity: 1;
           }
         }
-        .carousel-slide-left-out {
-          animation: slideLeft 0.5s ease-in-out forwards;
+        @keyframes slideOutRight {
+          from {
+            transform: translateX(0);
+          }
+          to {
+            transform: translateX(50%);
+            opacity: 0;
+          }
         }
-        .carousel-slide-left-in {
-          animation: slideLeftIn 0.5s ease-in-out forwards;
+        @keyframes slideInFromLeft {
+          from {
+            transform: translateX(-50%);
+            opacity: 0;
+          }
+          to {
+            transform: translateX(0);
+          }
         }
-        .carousel-slide-right-out {
-          animation: slideRight 0.5s ease-in-out forwards;
+        .slide-out-left {
+          animation: slideOutLeft 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
         }
-        .carousel-slide-right-in {
-          animation: slideRightIn 0.5s ease-in-out forwards;
+        .slide-in-from-right {
+          animation: slideInFromRight 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+        .slide-out-right {
+          animation: slideOutRight 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+        .slide-in-from-left {
+          animation: slideInFromLeft 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
         }
       `}</style>
       <div className="absolute inset-0 rounded-[48px] bg-gradient-to-br from-white/80 to-amber-100/60 blur-3xl" />
       
-      {/* Carousel Container */}
-      <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
-        {/* Left blurred image - FIXED */}
-        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1/4 h-2/3 z-10">
+      {/* Carousel Container - Full width layout */}
+      <div className="relative w-full h-full flex items-center justify-center">
+        {/* Left blurred image - FIXED in place */}
+        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1/4 h-2/3 z-10 pointer-events-none">
           <div className="relative w-full h-full rounded-[24px] overflow-hidden shadow-lg blur-sm border border-white/30">
             <Image
               src={carouselImages[getPrevIndex()].src}
@@ -361,12 +357,13 @@ function CarouselStory() {
           </div>
         </div>
 
-        {/* Center main image - SLIDING */}
-        <div className={`absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-1/2 h-full cursor-pointer z-20 ${
-          slideDirection === 'left' ? 'carousel-slide-left-out' : slideDirection === 'right' ? 'carousel-slide-right-out' : ''
-        }`}>
+        {/* Center viewport - clips the sliding center content */}
+        <div className="absolute left-1/4 top-1/2 -translate-y-1/2 w-1/2 h-full z-20 overflow-hidden rounded-[36px]">
+          {/* Current image or exiting image */}
           <div 
-            className="relative w-full h-full rounded-[36px] overflow-hidden border-2 border-white/40 shadow-2xl bg-white/30 backdrop-blur-sm hover:shadow-3xl"
+            className={`relative w-full h-full cursor-pointer rounded-[36px] overflow-hidden border-2 border-white/40 shadow-2xl bg-white/30 backdrop-blur-sm hover:shadow-3xl ${
+              slideDirection === 'left' ? 'slide-out-left' : slideDirection === 'right' ? 'slide-out-right' : ''
+            }`}
             onClick={nextImage}
           >
             <Image
@@ -382,28 +379,27 @@ function CarouselStory() {
               </p>
             </div>
           </div>
+
+          {/* Incoming image */}
+          {slideDirection && (
+            <div 
+              className={`absolute inset-0 w-full h-full rounded-[36px] overflow-hidden border-2 border-white/40 shadow-2xl bg-white/30 backdrop-blur-sm ${
+                slideDirection === 'left' ? 'slide-in-from-right' : 'slide-in-from-left'
+              }`}
+            >
+              <Image
+                src={carouselImages[slideDirection === 'left' ? getNextIndex() : getPrevIndex()].src}
+                alt={carouselImages[slideDirection === 'left' ? getNextIndex() : getPrevIndex()].alt}
+                fill
+                className="object-cover"
+                priority
+              />
+            </div>
+          )}
         </div>
 
-        {/* Next image coming in - SLIDING IN */}
-        <div className={`absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-1/2 h-full z-20 ${
-          slideDirection ? (slideDirection === 'left' ? 'carousel-slide-left-in' : 'carousel-slide-right-in') : 'hidden'
-        }`}>
-          <div 
-            className="relative w-full h-full rounded-[36px] overflow-hidden border-2 border-white/40 shadow-2xl bg-white/30 backdrop-blur-sm"
-            onClick={nextImage}
-          >
-            <Image
-              src={carouselImages[slideDirection === 'left' ? getNextIndex() : getPrevIndex()].src}
-              alt={carouselImages[slideDirection === 'left' ? getNextIndex() : getPrevIndex()].alt}
-              fill
-              className="object-cover"
-              priority
-            />
-          </div>
-        </div>
-
-        {/* Right blurred image - FIXED */}
-        <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1/4 h-2/3 z-10">
+        {/* Right blurred image - FIXED in place */}
+        <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1/4 h-2/3 z-10 pointer-events-none">
           <div className="relative w-full h-full rounded-[24px] overflow-hidden shadow-lg blur-sm border border-white/30">
             <Image
               src={carouselImages[getNextIndex()].src}
