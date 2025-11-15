@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /manage
+
+Sitemap: https://nguyenrestaurent.de/sitemap.xml
+

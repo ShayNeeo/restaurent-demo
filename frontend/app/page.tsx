@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 import type { CSSProperties, ReactNode } from "react";
 import Image from "next/image";
+import Script from "next/script";
 import { NavBar } from "@/components/NavBar";
 import { SiteFooter } from "@/components/SiteFooter";
 
@@ -64,6 +65,63 @@ const productMeta: Record<string, ProductMeta> = {
     description: "Frische Reispapierrollen mit Shrimps, Kräutern und cremigem Erdnuss-Dip.",
     category: "Vorspeisen"
   }
+};
+
+const restaurantSchema = {
+  "@context": "https://schema.org",
+  "@type": "Restaurant",
+  name: "Nguyen Vietnam Restaurant",
+  image: [
+    "https://nguyenrestaurent.de/images/view-1.jpg",
+    "https://nguyenrestaurent.de/images/goi-cuon.jpg"
+  ],
+  url: "https://nguyenrestaurent.de",
+  telephone: "+49 89 28803451",
+  priceRange: "€€",
+  servesCuisine: ["Vietnamese", "Asian Fusion", "Vegetarian Options"],
+  acceptsReservations: "Yes",
+  hasMenu: "https://nguyenrestaurent.de/menu",
+  availableLanguage: [
+    { "@type": "Language", name: "Deutsch" },
+    { "@type": "Language", name: "English" },
+    { "@type": "Language", name: "Tiếng Việt" }
+  ],
+  address: {
+    "@type": "PostalAddress",
+    streetAddress: "Georgenstraße 67",
+    addressLocality: "München",
+    postalCode: "80799",
+    addressCountry: "DE"
+  },
+  geo: {
+    "@type": "GeoCoordinates",
+    latitude: "48.1598",
+    longitude: "11.5812"
+  },
+  sameAs: [
+    "https://nguyenrestaurent.de",
+    "https://www.google.com/maps/place/Nguyen+Vietnam+Restaurant"
+  ],
+  openingHoursSpecification: [
+    {
+      "@type": "OpeningHoursSpecification",
+      dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+      opens: "12:00",
+      closes: "22:30"
+    },
+    {
+      "@type": "OpeningHoursSpecification",
+      dayOfWeek: ["Saturday"],
+      opens: "17:30",
+      closes: "22:30"
+    },
+    {
+      "@type": "OpeningHoursSpecification",
+      dayOfWeek: ["Sunday"],
+      opens: "12:00",
+      closes: "22:30"
+    }
+  ]
 };
 
 function ScrollReveal({ children, className = "" }: { children: ReactNode; className?: string }) {
@@ -669,6 +727,9 @@ export default function HomePage() {
           }
         }
       `}</style>
+      <Script id="restaurant-schema" type="application/ld+json" strategy="afterInteractive">
+        {JSON.stringify(restaurantSchema)}
+      </Script>
 
       <NavBar />
       <main className="flex min-h-screen flex-col bg-gradient-to-b from-amber-50 via-white to-amber-50">
@@ -692,6 +753,27 @@ export default function HomePage() {
               <p className="text-lg sm:text-xl text-slate-700 max-w-2xl mx-auto leading-relaxed font-light">
                 Herzlich willkommen im Herzen von München-Schwabing. Erleben Sie die unverwechselbar leichte vietnamesische Küche in gastfreundlicher Atmosphäre mit aufmerksamen Service und frisch zubereiteten Köstlichkeiten.
               </p>
+
+              <div
+                className="grid gap-3 rounded-3xl bg-white/70 p-6 text-left text-sm leading-relaxed text-slate-700 shadow-soft"
+                aria-label="Mehrsprachige Begrüßung für deutsch-, englisch- und vietnamesischsprachige Gäste"
+              >
+                <p>
+                  <span className="font-semibold text-brand-dark">Deutsch:</span> Entdecken Sie authentische
+                  vietnamesische Spezialitäten wie Pho, Bún und Goi Cuon direkt in München-Schwabing – täglich frisch
+                  gekocht und auch zum Mitnehmen verfügbar.
+                </p>
+                <p>
+                  <span className="font-semibold text-brand-dark">English:</span> Experience a modern Vietnamese
+                  restaurant in Munich where handmade noodles, aromatic broths and vegan-friendly dishes welcome
+                  international guests.
+                </p>
+                <p>
+                  <span className="font-semibold text-brand-dark">Tiếng Việt:</span> Nhà hàng Nguyễn phục vụ thực khách
+                  Việt Nam tại Đức với thực đơn truyền thống, không gian ấm áp và dịch vụ đặt bàn nhanh qua
+                  nguyenrestaurent.de.
+                </p>
+              </div>
 
               <div className="flex gap-4 justify-center pt-8 flex-wrap">
                 <a href="#speisekarte" className="btn-primary">
