@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import QrScanner from "qr-scanner";
 
 interface Product {
   id: string;
@@ -46,6 +47,7 @@ export default function ManagePage() {
   const [totalAmount, setTotalAmount] = useState(0);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [scannerActive, setScannerActive] = useState(false);
+  const scannerRef = useRef<QrScanner | null>(null);
   const router = useRouter();
 
   // Check authentication
@@ -62,6 +64,16 @@ export default function ManagePage() {
     fetchProducts();
     setLoading(false);
   }, [router]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (scannerRef.current) {
+        scannerRef.current.destroy();
+        scannerRef.current = null;
+      }
+    };
+  }, []);
 
   // Fetch products
   const fetchProducts = async () => {
@@ -129,30 +141,51 @@ export default function ManagePage() {
   // Start QR Scanner
   const startQRScanner = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "environment" }
-      });
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
+      if (!videoRef.current) return;
+      
+      // Check if QrScanner is already running
+      if (scannerRef.current) {
+        scannerRef.current.start();
         setScannerActive(true);
+        return;
       }
+
+      // Create new scanner instance
+      const scanner = new QrScanner(
+        videoRef.current,
+        (result) => {
+          console.log("QR Code detected:", result.data);
+          handleManualQRInput(result.data);
+        },
+        {
+          onDecodeError: () => {
+            // Silently ignore decode errors
+          },
+          maxScansPerSecond: 5,
+          preferredCamera: "environment"
+        }
+      );
+
+      scannerRef.current = scanner;
+      await scanner.start();
+      setScannerActive(true);
     } catch (error) {
-      console.error("Error accessing camera:", error);
-      alert("Unable to access camera. Please ensure camera permissions are granted.");
+      console.error("Error starting QR scanner:", error);
+      alert("Unable to start camera. Please ensure camera permissions are granted.");
     }
   };
 
   // Stop QR Scanner
   const stopQRScanner = () => {
-    if (videoRef.current?.srcObject) {
-      const tracks = (videoRef.current.srcObject as MediaStream).getTracks();
-      tracks.forEach((track) => track.stop());
-      setScannerActive(false);
+    if (scannerRef.current) {
+      scannerRef.current.stop();
+      scannerRef.current = null;
     }
+    setScannerActive(false);
     setShowScanner(false);
   };
 
-  // Simulate QR code scanning (in production, use a QR code library)
+  // Handle QR code scanning (automatically triggered by QrScanner)
   const handleManualQRInput = async (qrCode: string) => {
     try {
       const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8080";
