@@ -149,7 +149,8 @@ cd "$ROOT_DIR/backend"
 if [ ! -f .env ]; then
   DATA_DIR="$ROOT_DIR/backend/data"
   mkdir -p "$DATA_DIR"
-  echo "DATABASE_URL=sqlite://./data/app.db" > .env
+  # Use absolute path for database (sqlite:/// + absolute path)
+  echo "DATABASE_URL=sqlite:////$DATA_DIR/app.db" > .env
   echo "JWT_SECRET=$(openssl rand -hex 16 || echo dev_secret)" >> .env
   echo "APP_URL=http://localhost:$INTERNAL_FRONTEND_PORT" >> .env
   echo "# STRIPE_SECRET_KEY=sk_test_xxx" >> .env
@@ -167,9 +168,9 @@ if [ ! -f .env ]; then
 else
   DATA_DIR="$ROOT_DIR/backend/data"
   mkdir -p "$DATA_DIR"
-  # Normalize any sqlite URL to a relative path that works from backend CWD
+  # Normalize any sqlite URL to use absolute path
   if grep -Eq '^DATABASE_URL=sqlite://.*' .env; then
-    sed -i "s|^DATABASE_URL=sqlite://.*$|DATABASE_URL=sqlite://./data/app.db|" .env
+    sed -i "s|^DATABASE_URL=sqlite://.*$|DATABASE_URL=sqlite:////$DATA_DIR/app.db|" .env
   fi
 fi
 echo "[install] Building backend..."
@@ -364,16 +365,13 @@ NGINXCONF
 fi
 
 echo "[install] Stopping any existing processes..."
-# Kill processes by port instead of running full uninstall script
-# (uninstall.sh would prompt for database deletion and other cleanup)
+# Kill processes by name and port
 if command -v pkill >/dev/null 2>&1; then
   pkill -f "restaurent-backend" 2>/dev/null || true
-  pkill -f "node .*dist/server.js" 2>/dev/null || true
   pkill -f "next start" 2>/dev/null || true
-  pkill -f "node .*next/dist/bin/next" 2>/dev/null || true
 fi
 
-# Also try killing by port if available
+# Kill by ports if pkill doesn't work
 if command -v ss >/dev/null 2>&1; then
   # Kill on port 8080 (backend)
   PIDS=$(ss -lntp 2>/dev/null | awk '/:8080 /{print $7}' | sed 's/users:(//' | sed 's/)//' | sed 's/\"//g' | tr ',' '\n' | sed -n 's/^pid=\([0-9]\+\).*$/\1/p' | sort -u)
@@ -381,8 +379,8 @@ if command -v ss >/dev/null 2>&1; then
     kill "$P" 2>/dev/null || true
   done
   
-  # Kill on port 5173 (frontend dev)
-  PIDS=$(ss -lntp 2>/dev/null | awk '/:5173 /{print $7}' | sed 's/users:(//' | sed 's/)//' | sed 's/\"//g' | tr ',' '\n' | sed -n 's/^pid=\([0-9]\+\).*$/\1/p' | sort -u)
+  # Kill on INTERNAL_FRONTEND_PORT (default 5173 or 3000)
+  PIDS=$(ss -lntp 2>/dev/null | awk -v port=":$INTERNAL_FRONTEND_PORT " '$0 ~ port {print $7}' | sed 's/users:(//' | sed 's/)//' | sed 's/\"//g' | tr ',' '\n' | sed -n 's/^pid=\([0-9]\+\).*$/\1/p' | sort -u)
   for P in $PIDS; do
     kill "$P" 2>/dev/null || true
   done
@@ -405,7 +403,8 @@ if [ ! -s "$DATA_DIR/app.db" ] || [ $(stat -f%z "$DATA_DIR/app.db" 2>/dev/null |
 fi
 
 # Use absolute path for database URL to avoid any working directory issues
-DB_URL_ABS="sqlite:///$DATA_DIR/app.db"
+# Format: sqlite:/// + absolute path (4 slashes total: 3 for sqlite:// + 1 for root /)
+DB_URL_ABS="sqlite:////$DATA_DIR/app.db"
 
 echo "[install] Starting backend (detached)..."
 (
@@ -473,15 +472,6 @@ if [ "$IS_FIRST_RUN" = true ]; then
 fi
 
 echo "[install] Starting frontend (detached)..."
-# Ensure port $INTERNAL_FRONTEND_PORT is free (kill any processes bound to it)
-if command -v ss >/dev/null 2>&1; then
-  PIDS=$(ss -lntp 2>/dev/null | awk -v port=":$INTERNAL_FRONTEND_PORT " '$0 ~ port {print $7}' | sed 's/users:(//' | sed 's/)//' | sed 's/\"//g' | tr ',' '\n' | sed -n 's/^pid=\([0-9]\+\).*$/\1/p' | sort -u)
-  for P in $PIDS; do
-    echo "[install] Killing existing process on port $INTERNAL_FRONTEND_PORT (PID: $P)"
-    kill -9 "$P" 2>/dev/null || true
-  done
-  sleep 2  # Wait for port to be released
-fi
 cd "$ROOT_DIR/frontend"
 echo "[install] Frontend starting on port $INTERNAL_FRONTEND_PORT..."
 # Start frontend with explicit PORT environment variable
