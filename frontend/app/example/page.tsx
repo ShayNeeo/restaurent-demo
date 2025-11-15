@@ -412,8 +412,8 @@ function CarouselStory() {
             slideDirection ? (slideDirection === 'left' ? 'fade-in-left' : 'fade-in-right') : 'opacity-0'
           }`}>
             <Image
-              src={carouselImages[slideDirection === 'left' ? (getPrevIndex() - 1 + carouselImages.length) % carouselImages.length : (getPrevIndex() + 1) % carouselImages.length].src}
-              alt={carouselImages[slideDirection === 'left' ? (getPrevIndex() - 1 + carouselImages.length) % carouselImages.length : (getPrevIndex() + 1) % carouselImages.length].alt}
+              src={carouselImages[slideDirection === 'left' ? currentIndex : (getPrevIndex() - 1 + carouselImages.length) % carouselImages.length].src}
+              alt={carouselImages[slideDirection === 'left' ? currentIndex : (getPrevIndex() - 1 + carouselImages.length) % carouselImages.length].alt}
               fill
               className="object-cover"
             />
