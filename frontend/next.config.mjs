@@ -21,8 +21,7 @@ const nextConfig = {
     };
     return config;
   },
-  pageExtensions: ['tsx', 'ts', 'jsx', 'js'],
-  excludeSourceMaps: true,
+  pageExtensions: ['tsx', 'ts', 'jsx', 'js']
 };
 
 export default nextConfig;

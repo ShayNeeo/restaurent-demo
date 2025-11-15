@@ -48,7 +48,7 @@ export const metadata: Metadata = {
     }
   },
   openGraph: {
-    type: "restaurant",
+    type: "website",
     locale: "de_DE",
     alternateLocale: ["en_US", "vi_VN"],
     url: "/",
