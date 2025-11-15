@@ -141,12 +141,31 @@ export default function ManagePage() {
   // Start QR Scanner
   const startQRScanner = async () => {
     try {
-      if (!videoRef.current) return;
+      if (!videoRef.current) {
+        console.error("Video ref not available");
+        alert("Video element not ready. Please try again.");
+        return;
+      }
       
       // Check if QrScanner is already running
       if (scannerRef.current) {
-        scannerRef.current.start();
-        setScannerActive(true);
+        try {
+          await scannerRef.current.start();
+          setScannerActive(true);
+          return;
+        } catch (error) {
+          console.error("Error restarting scanner:", error);
+          scannerRef.current.destroy();
+          scannerRef.current = null;
+        }
+      }
+
+      // Request camera permissions first
+      try {
+        await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+      } catch (permError) {
+        console.error("Camera permission denied:", permError);
+        alert("Camera permission denied. Please enable camera access in your browser settings.");
         return;
       }
 
@@ -158,8 +177,8 @@ export default function ManagePage() {
           handleManualQRInput(result.data);
         },
         {
-          onDecodeError: () => {
-            // Silently ignore decode errors
+          onDecodeError: (error) => {
+            // Silently ignore decode errors - expected when no QR code is visible
           },
           maxScansPerSecond: 5,
           preferredCamera: "environment"
@@ -167,11 +186,14 @@ export default function ManagePage() {
       );
 
       scannerRef.current = scanner;
+      console.log("Starting QR scanner...");
       await scanner.start();
+      console.log("QR scanner started successfully");
       setScannerActive(true);
     } catch (error) {
       console.error("Error starting QR scanner:", error);
-      alert("Unable to start camera. Please ensure camera permissions are granted.");
+      alert(`Unable to start camera: ${error instanceof Error ? error.message : "Unknown error"}`);
+      setScannerActive(false);
     }
   };
 
@@ -518,6 +540,12 @@ export default function ManagePage() {
 
             {/* Total & Checkout */}
             <div className="bg-gradient-to-br from-yellow-600 to-yellow-700 rounded-lg p-6 border border-yellow-500">
+              {scannedQR && (
+                <div className="mb-4 pb-4 border-b border-yellow-500 bg-blue-700 bg-opacity-50 rounded p-3">
+                  <p className="text-blue-100 text-sm">💳 Waiting Coupon Balance:</p>
+                  <p className="text-2xl font-bold text-blue-100">{formatPrice(scannedQR.balance)}</p>
+                </div>
+              )}
               <div className="mb-4">
                 <p className="text-yellow-100 text-sm mb-2">Subtotal:</p>
                 <p className="text-2xl font-bold text-white">
