@@ -248,6 +248,7 @@ function CarouselSection() {
 
 function CarouselStory() {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [isTransitioning, setIsTransitioning] = useState(false);
   
   const carouselImages = [
     { src: "/images/view-1.jpg", alt: "Restaurant View 1" },
@@ -257,12 +258,26 @@ function CarouselStory() {
     { src: "/images/view-5.jpg", alt: "Restaurant View 5" }
   ];
 
+  // Auto-advance carousel every 5 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setIsTransitioning(true);
+      setCurrentIndex((prev) => (prev + 1) % carouselImages.length);
+      setTimeout(() => setIsTransitioning(false), 500);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
   const nextImage = () => {
+    setIsTransitioning(true);
     setCurrentIndex((prev) => (prev + 1) % carouselImages.length);
+    setTimeout(() => setIsTransitioning(false), 500);
   };
 
   const prevImage = () => {
+    setIsTransitioning(true);
     setCurrentIndex((prev) => (prev - 1 + carouselImages.length) % carouselImages.length);
+    setTimeout(() => setIsTransitioning(false), 500);
   };
 
   const getPrevIndex = () => (currentIndex - 1 + carouselImages.length) % carouselImages.length;
@@ -270,12 +285,58 @@ function CarouselStory() {
 
   return (
     <div className="relative h-96 flex items-center justify-center">
+      <style>{`
+        @keyframes fadeInScale {
+          from {
+            opacity: 0;
+            transform: scale(0.95);
+          }
+          to {
+            opacity: 1;
+            transform: scale(1);
+          }
+        }
+        @keyframes slideInFromLeft {
+          from {
+            opacity: 0;
+            transform: translateX(-30px);
+          }
+          to {
+            opacity: 0.4;
+            transform: translateX(0);
+          }
+        }
+        @keyframes slideInFromRight {
+          from {
+            opacity: 0;
+            transform: translateX(30px);
+          }
+          to {
+            opacity: 0.4;
+            transform: translateX(0);
+          }
+        }
+        @keyframes pulse-glow {
+          0%, 100% {
+            box-shadow: 0 0 20px rgba(230, 126, 34, 0.3), 0 10px 40px rgba(0, 0, 0, 0.1);
+          }
+          50% {
+            box-shadow: 0 0 40px rgba(230, 126, 34, 0.6), 0 10px 50px rgba(0, 0, 0, 0.15);
+          }
+        }
+        .carousel-transitioning {
+          animation: fadeInScale 0.5s ease-out;
+        }
+        .carousel-pulse {
+          animation: pulse-glow 0.6s ease-in-out;
+        }
+      `}</style>
       <div className="absolute inset-0 rounded-[48px] bg-gradient-to-br from-white/80 to-amber-100/60 blur-3xl" />
       
       {/* Carousel Container */}
       <div className="relative w-full h-full flex items-center justify-center">
         {/* Left blurred image */}
-        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1/4 h-2/3 opacity-40">
+        <div className={`absolute left-0 top-1/2 -translate-y-1/2 w-1/4 h-2/3 transition-all duration-500 ${isTransitioning ? 'carousel-transitioning' : ''}`}>
           <div className="relative w-full h-full rounded-[24px] overflow-hidden shadow-lg blur-sm border border-white/30">
             <Image
               src={carouselImages[getPrevIndex()].src}
@@ -287,7 +348,7 @@ function CarouselStory() {
         </div>
 
         {/* Center main image */}
-        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-1/2 h-full cursor-pointer z-20">
+        <div className={`absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-1/2 h-full cursor-pointer z-20 transition-all duration-500 ${isTransitioning ? 'carousel-pulse' : ''}`}>
           <div 
             className="relative w-full h-full rounded-[36px] overflow-hidden border-2 border-white/40 shadow-2xl bg-white/30 backdrop-blur-sm transition-all duration-500 hover:-translate-y-2 hover:shadow-3xl"
             onClick={nextImage}
@@ -296,7 +357,7 @@ function CarouselStory() {
               src={carouselImages[currentIndex].src}
               alt={carouselImages[currentIndex].alt}
               fill
-              className="object-cover transition-all duration-500"
+              className={`object-cover transition-all duration-500 ${isTransitioning ? 'opacity-90' : 'opacity-100'}`}
               priority
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent opacity-0 hover:opacity-100 transition-opacity duration-500 flex items-center justify-center">
@@ -308,7 +369,7 @@ function CarouselStory() {
         </div>
 
         {/* Right blurred image */}
-        <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1/4 h-2/3 opacity-40">
+        <div className={`absolute right-0 top-1/2 -translate-y-1/2 w-1/4 h-2/3 transition-all duration-500 ${isTransitioning ? 'carousel-transitioning' : ''}`}>
           <div className="relative w-full h-full rounded-[24px] overflow-hidden shadow-lg blur-sm border border-white/30">
             <Image
               src={carouselImages[getNextIndex()].src}
@@ -320,19 +381,38 @@ function CarouselStory() {
         </div>
       </div>
 
-      {/* Navigation Dots */}
+      {/* Navigation Dots with Auto-play indicator */}
       <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-30">
         {carouselImages.map((_, index) => (
           <button
             key={index}
-            onClick={() => setCurrentIndex(index)}
-            className={`h-2.5 rounded-full transition-all duration-500 ${
+            onClick={() => {
+              setIsTransitioning(true);
+              setCurrentIndex(index);
+              setTimeout(() => setIsTransitioning(false), 500);
+            }}
+            className={`h-2.5 rounded-full transition-all duration-500 relative ${
               index === currentIndex
-                ? "bg-brand w-8"
+                ? "bg-brand w-8 shadow-lg"
                 : "bg-white/40 w-2.5 hover:bg-white/60"
             }`}
             aria-label={`Go to image ${index + 1}`}
-          />
+          >
+            {index === currentIndex && (
+              <style>{`
+                @keyframes progress-bar {
+                  from { width: 100%; }
+                  to { width: 0; }
+                }
+                .progress-indicator {
+                  animation: progress-bar 5s linear infinite;
+                }
+              `}</style>
+            )}
+            {index === currentIndex && (
+              <div className="absolute inset-0 bg-brand/30 rounded-full progress-indicator" />
+            )}
+          </button>
         ))}
       </div>
 
