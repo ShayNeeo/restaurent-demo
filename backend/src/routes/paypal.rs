@@ -287,13 +287,16 @@ async fn paypal_gift_return(Extension(state): Extension<Arc<AppState>>, Query(pa
                 let bonus = ((base_amount as f64) * 0.10).round() as i64;
                 let total_value = base_amount + bonus;
                 let code = Uuid::new_v4().to_string().replace('-', "");
+                let gift_id = Uuid::new_v4().to_string();
                 
                 tracing::info!("Creating gift code: {}, value: {}¢ (base: {}¢ + bonus: {}¢)", code, total_value, base_amount, bonus);
                 
-                let _ = sqlx::query(r#"INSERT INTO gift_codes (code, value_cents, remaining_cents, purchaser_email) VALUES (?, ?, ?, ?)"#)
+                let _ = sqlx::query(r#"INSERT INTO gift_codes (id, code, value_cents, remaining_cents, purchaser_email, customer_email) VALUES (?, ?, ?, ?, ?, ?)"#)
+                    .bind(&gift_id)
                     .bind(&code)
                     .bind(total_value)
                     .bind(total_value)
+                    .bind(&email)
                     .bind(&email)
                     .execute(&state.pool)
                     .await;

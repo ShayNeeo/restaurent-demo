@@ -27,5 +27,6 @@ rand = "0.8"
 anyhow = "1.0"
 chrono = { version = "0.4", features = ["serde", "clock"] }
 tower = { version = "0.4", features = ["make", "util"] }
+urlencoding = "2.1"
 
 

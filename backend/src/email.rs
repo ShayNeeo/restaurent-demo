@@ -346,6 +346,9 @@ pub fn order_confirmation_html(order_id: &str, email: &str, items_html: &str, su
 
 #[allow(dead_code)]
 pub fn gift_coupon_html(code: &str, value: f64, _email: &str, app_url: &str) -> String {
+    // Generate QR code URL using external QR code service
+    let qr_url = format!("https://api.qrserver.com/v1/create-qr-code/?size=200x200&data={}", urlencoding::encode(code));
+    
     format!(
         r#"<!DOCTYPE html>
 <html>
@@ -392,6 +395,18 @@ pub fn gift_coupon_html(code: &str, value: f64, _email: &str, app_url: &str) -> 
             padding: 30px;
             margin: 30px 0;
             text-align: center;
+        }}
+        .qr-code {{
+            margin: 20px 0;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            display: inline-block;
+        }}
+        .qr-code img {{
+            width: 200px;
+            height: 200px;
+            display: block;
         }}
         .coupon-label {{
             color: #999;
@@ -509,6 +524,9 @@ pub fn gift_coupon_html(code: &str, value: f64, _email: &str, app_url: &str) -> 
 
             <div class="coupon-display">
                 <span class="coupon-label">Your Coupon Code</span>
+                <div class="qr-code">
+                    <img src="{}" alt="QR Code for gift coupon" />
+                </div>
                 <div class="coupon-code">{}</div>
                 <div class="coupon-value">Value: €{:.2}</div>
             </div>
@@ -545,6 +563,7 @@ pub fn gift_coupon_html(code: &str, value: f64, _email: &str, app_url: &str) -> 
     </div>
 </body>
 </html>"#,
+        qr_url,
         code,
         value,
         value / 1.1,  // base amount
