@@ -237,18 +237,19 @@ if [ -n "${DOMAIN:-}" ] && [ "$APT_AVAILABLE" = true ]; then
     TMP_SITE="$(mktemp)"
     cat <<'NGINXSSLCONF' > "$TMP_SITE"
 server {
-    listen 80 default_server;
-    listen [::]:80 default_server;
-    server_name __DOMAIN__ __WWW_DOMAIN__ _;
+    listen 80;
+    listen [::]:80;
+    server_name __DOMAIN__ __WWW_DOMAIN__;
     
     # Redirect HTTP to HTTPS
     return 301 https://$host$request_uri;
 }
 
 server {
-    listen 443 ssl http2 default_server;
-    listen [::]:443 ssl http2 default_server;
-    server_name __DOMAIN__ __WWW_DOMAIN__ _;
+    listen 443 ssl;
+    listen [::]:443 ssl;
+    http2 on;
+    server_name __DOMAIN__ __WWW_DOMAIN__;
     
     ssl_certificate __CERT_PATH__;
     ssl_certificate_key __KEY_PATH__;
@@ -285,9 +286,9 @@ NGINXSSLCONF
     TMP_SITE="$(mktemp)"
     cat <<'NGINXCONF' > "$TMP_SITE"
 server {
-    listen 80 default_server;
-    listen [::]:80 default_server;
-    server_name __DOMAIN__ __WWW_DOMAIN__ _;
+    listen 80;
+    listen [::]:80;
+    server_name __DOMAIN__ __WWW_DOMAIN__;
 
     location /api/ {
         proxy_pass http://127.0.0.1:8080;
