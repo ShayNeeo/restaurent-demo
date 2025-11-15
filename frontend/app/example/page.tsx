@@ -292,50 +292,159 @@ function CarouselStory() {
   return (
     <div className="relative h-96 flex items-center justify-center w-full">
       <style>{`
-        @keyframes carouselSlideLeft {
+        @keyframes slideOutLeft {
           from {
             transform: translateX(0);
+            opacity: 1;
           }
           to {
-            transform: translateX(-25%);
+            transform: translateX(-50%);
+            opacity: 0;
           }
         }
-        @keyframes carouselSlideRight {
+        @keyframes slideInFromRight {
+          from {
+            transform: translateX(50%);
+            opacity: 0;
+          }
+          to {
+            transform: translateX(0);
+            opacity: 1;
+          }
+        }
+        @keyframes slideOutRight {
           from {
             transform: translateX(0);
+            opacity: 1;
           }
           to {
-            transform: translateX(25%);
+            transform: translateX(50%);
+            opacity: 0;
           }
         }
-        .carousel-sliding-left {
-          animation: carouselSlideLeft 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        @keyframes slideInFromLeft {
+          from {
+            transform: translateX(-50%);
+            opacity: 0;
+          }
+          to {
+            transform: translateX(0);
+            opacity: 1;
+          }
         }
-        .carousel-sliding-right {
-          animation: carouselSlideRight 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        @keyframes fadeOutLeft {
+          from {
+            opacity: 1;
+          }
+          to {
+            opacity: 0;
+          }
+        }
+        @keyframes fadeInLeft {
+          from {
+            opacity: 0;
+          }
+          to {
+            opacity: 1;
+          }
+        }
+        @keyframes fadeOutRight {
+          from {
+            opacity: 1;
+          }
+          to {
+            opacity: 0;
+          }
+        }
+        @keyframes fadeInRight {
+          from {
+            opacity: 0;
+          }
+          to {
+            opacity: 1;
+          }
+        }
+        .slide-out-left {
+          animation: slideOutLeft 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+        .slide-in-from-right {
+          animation: slideInFromRight 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+        .slide-out-right {
+          animation: slideOutRight 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+        .slide-in-from-left {
+          animation: slideInFromLeft 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+        .fade-out-left {
+          animation: fadeOutLeft 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+        .fade-in-left {
+          animation: fadeInLeft 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+        .fade-out-right {
+          animation: fadeOutRight 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+        .fade-in-right {
+          animation: fadeInRight 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
         }
       `}</style>
       <div className="absolute inset-0 rounded-[48px] bg-gradient-to-br from-white/80 to-amber-100/60 blur-3xl" />
       
-      {/* Carousel Strip - Everything slides together */}
-      <div className={`absolute w-full h-full flex items-center justify-center ${
-        slideDirection === 'left' ? 'carousel-sliding-left' : slideDirection === 'right' ? 'carousel-sliding-right' : ''
-      }`}>
-        {/* Left blurred image */}
+      {/* Carousel Container */}
+      <div className="relative w-full h-full flex items-center justify-center">
+        {/* Left blurred image - ANIMATED */}
         <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1/4 h-2/3 z-10 pointer-events-none">
-          <div className="relative w-full h-full rounded-[24px] overflow-hidden shadow-lg blur-sm border border-white/30">
-            <Image
-              src={carouselImages[getPrevIndex()].src}
-              alt={carouselImages[getPrevIndex()].alt}
-              fill
-              className="object-cover"
-            />
-          </div>
+          {/* Current left image fading out */}
+          {slideDirection && (
+            <div className={`absolute inset-0 rounded-[24px] overflow-hidden shadow-lg blur-sm border border-white/30 ${
+              slideDirection === 'left' ? 'fade-out-left' : 'fade-out-right'
+            }`}>
+              <Image
+                src={carouselImages[getPrevIndex()].src}
+                alt={carouselImages[getPrevIndex()].alt}
+                fill
+                className="object-cover"
+              />
+            </div>
+          )}
+          
+          {/* Next left image fading in */}
+          {slideDirection && (
+            <div className={`absolute inset-0 rounded-[24px] overflow-hidden shadow-lg blur-sm border border-white/30 ${
+              slideDirection === 'left' ? 'fade-in-left' : 'fade-in-right'
+            }`}>
+              <Image
+                src={carouselImages[slideDirection === 'left' ? (getPrevIndex() - 1 + carouselImages.length) % carouselImages.length : (getPrevIndex() + 1) % carouselImages.length].src}
+                alt={carouselImages[slideDirection === 'left' ? (getPrevIndex() - 1 + carouselImages.length) % carouselImages.length : (getPrevIndex() + 1) % carouselImages.length].alt}
+                fill
+                className="object-cover"
+              />
+            </div>
+          )}
+
+          {/* Static view when not animating */}
+          {!slideDirection && (
+            <div className="relative w-full h-full rounded-[24px] overflow-hidden shadow-lg blur-sm border border-white/30">
+              <Image
+                src={carouselImages[getPrevIndex()].src}
+                alt={carouselImages[getPrevIndex()].alt}
+                fill
+                className="object-cover"
+              />
+            </div>
+          )}
         </div>
 
-        {/* Center main image */}
-        <div className="absolute left-1/4 top-1/2 -translate-y-1/2 w-1/2 h-full z-20 cursor-pointer" onClick={nextImage}>
-          <div className="relative w-full h-full rounded-[36px] overflow-hidden border-2 border-white/40 shadow-2xl bg-white/30 backdrop-blur-sm hover:shadow-3xl transition-shadow duration-300">
+        {/* Center main image - SLIDING */}
+        <div className="absolute left-1/4 top-1/2 -translate-y-1/2 w-1/2 h-full z-20">
+          {/* Current center image */}
+          <div 
+            className={`absolute inset-0 cursor-pointer rounded-[36px] overflow-hidden border-2 border-white/40 shadow-2xl bg-white/30 backdrop-blur-sm hover:shadow-3xl transition-shadow duration-300 ${
+              slideDirection === 'left' ? 'slide-out-left' : slideDirection === 'right' ? 'slide-out-right' : ''
+            }`}
+            onClick={nextImage}
+          >
             <Image
               src={carouselImages[currentIndex].src}
               alt={carouselImages[currentIndex].alt}
@@ -349,18 +458,66 @@ function CarouselStory() {
               </p>
             </div>
           </div>
+
+          {/* Next center image coming in */}
+          {slideDirection && (
+            <div 
+              className={`absolute inset-0 rounded-[36px] overflow-hidden border-2 border-white/40 shadow-2xl bg-white/30 backdrop-blur-sm ${
+                slideDirection === 'left' ? 'slide-in-from-right' : 'slide-in-from-left'
+              }`}
+            >
+              <Image
+                src={carouselImages[slideDirection === 'left' ? getNextIndex() : getPrevIndex()].src}
+                alt={carouselImages[slideDirection === 'left' ? getNextIndex() : getPrevIndex()].alt}
+                fill
+                className="object-cover"
+                priority
+              />
+            </div>
+          )}
         </div>
 
-        {/* Right blurred image */}
+        {/* Right blurred image - ANIMATED */}
         <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1/4 h-2/3 z-10 pointer-events-none">
-          <div className="relative w-full h-full rounded-[24px] overflow-hidden shadow-lg blur-sm border border-white/30">
-            <Image
-              src={carouselImages[getNextIndex()].src}
-              alt={carouselImages[getNextIndex()].alt}
-              fill
-              className="object-cover"
-            />
-          </div>
+          {/* Current right image fading out */}
+          {slideDirection && (
+            <div className={`absolute inset-0 rounded-[24px] overflow-hidden shadow-lg blur-sm border border-white/30 ${
+              slideDirection === 'left' ? 'fade-out-right' : 'fade-out-left'
+            }`}>
+              <Image
+                src={carouselImages[getNextIndex()].src}
+                alt={carouselImages[getNextIndex()].alt}
+                fill
+                className="object-cover"
+              />
+            </div>
+          )}
+
+          {/* Next right image fading in */}
+          {slideDirection && (
+            <div className={`absolute inset-0 rounded-[24px] overflow-hidden shadow-lg blur-sm border border-white/30 ${
+              slideDirection === 'left' ? 'fade-in-right' : 'fade-in-left'
+            }`}>
+              <Image
+                src={carouselImages[slideDirection === 'left' ? (getNextIndex() + 1) % carouselImages.length : (getNextIndex() - 1 + carouselImages.length) % carouselImages.length].src}
+                alt={carouselImages[slideDirection === 'left' ? (getNextIndex() + 1) % carouselImages.length : (getNextIndex() - 1 + carouselImages.length) % carouselImages.length].alt}
+                fill
+                className="object-cover"
+              />
+            </div>
+          )}
+
+          {/* Static view when not animating */}
+          {!slideDirection && (
+            <div className="relative w-full h-full rounded-[24px] overflow-hidden shadow-lg blur-sm border border-white/30">
+              <Image
+                src={carouselImages[getNextIndex()].src}
+                alt={carouselImages[getNextIndex()].alt}
+                fill
+                className="object-cover"
+              />
+            </div>
+          )}
         </div>
       </div>
 
