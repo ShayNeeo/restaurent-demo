@@ -1,16 +1,18 @@
-use axum::{routing::get, Json, Router, Extension, extract::Path};
-use serde::Serialize;
+use axum::{routing::{get, post}, Json, Router, Extension, extract::Path, http::StatusCode};
+use serde::{Serialize, Deserialize};
 use std::sync::Arc;
 use sqlx::Row;
+use uuid::Uuid;
 
 use crate::state::AppState;
 
-#[derive(Serialize)]
+#[derive(Serialize, Deserialize)]
 pub struct OrderItem {
     pub product_id: String,
     pub quantity: i64,
     pub unit_amount: i64,
-    pub name: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub name: Option<String>,
 }
 
 #[derive(Serialize)]
@@ -24,8 +26,85 @@ pub struct OrderDetails {
     pub created_at: String,
 }
 
+#[derive(Deserialize)]
+pub struct CreateOrderRequest {
+    pub customer_email: String,
+    pub items: Vec<OrderItem>,
+    pub total_amount: i64,
+    pub qr_code_used: Option<String>,
+    pub discount_applied: Option<i64>,
+}
+
+#[derive(Serialize)]
+pub struct CreateOrderResponse {
+    pub id: String,
+    pub status: String,
+}
+
 pub fn router() -> Router {
-    Router::new().route("/api/orders/:id", get(get_order))
+    Router::new()
+        .route("/api/orders", post(create_order))
+        .route("/api/orders/:id", get(get_order))
+}
+
+async fn create_order(
+    Extension(state): Extension<Arc<AppState>>,
+    Json(payload): Json<CreateOrderRequest>,
+) -> Result<Json<CreateOrderResponse>, StatusCode> {
+    let order_id = Uuid::new_v4().to_string();
+    let now = chrono::Utc::now().to_rfc3339();
+
+    // Prepare items JSON
+    let items_json = serde_json::to_string(&serde_json::json!({
+        "items": payload.items,
+        "discount_applied": payload.discount_applied.unwrap_or(0),
+    }))
+    .unwrap_or_else(|_| "{}".to_string());
+
+    // Insert order
+    if let Err(e) = sqlx::query(
+        r#"
+        INSERT INTO orders (id, email, total_cents, coupon_code, items_json, created_at, status)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+        "#,
+    )
+    .bind(&order_id)
+    .bind(&payload.customer_email)
+    .bind(payload.total_amount)
+    .bind(&payload.qr_code_used)
+    .bind(&items_json)
+    .bind(&now)
+    .bind("pending")
+    .execute(&state.pool)
+    .await
+    {
+        tracing::error!("Failed to insert order: {:?}", e);
+        return Err(StatusCode::INTERNAL_SERVER_ERROR);
+    }
+
+    // Insert order items
+    for item in &payload.items {
+        if let Err(e) = sqlx::query(
+            r#"INSERT INTO order_items (id, order_id, product_id, quantity, unit_amount) VALUES (?, ?, ?, ?, ?)"#,
+        )
+        .bind(Uuid::new_v4().to_string())
+        .bind(&order_id)
+        .bind(&item.product_id)
+        .bind(item.quantity)
+        .bind(item.unit_amount)
+        .execute(&state.pool)
+        .await
+        {
+            tracing::error!("Failed to insert order item: {:?}", e);
+        }
+    }
+
+    tracing::info!("Order created: {}", order_id);
+
+    Ok(Json(CreateOrderResponse {
+        id: order_id,
+        status: "pending".to_string(),
+    }))
 }
 
 async fn get_order(Extension(state): Extension<Arc<AppState>>, Path(id): Path<String>) -> Result<Json<OrderDetails>, axum::http::StatusCode> {
@@ -95,7 +174,7 @@ async fn get_order(Extension(state): Extension<Arc<AppState>>, Path(id): Path<St
             product_id,
             quantity,
             unit_amount,
-            name,
+            name: Some(name),
         }
     }).collect();
 
@@ -120,7 +199,7 @@ async fn get_order(Extension(state): Extension<Arc<AppState>>, Path(id): Path<St
                         product_id,
                         quantity,
                         unit_amount,
-                        name,
+                        name: Some(name),
                     });
                 }
                 tracing::info!("Parsed {} items from items_json", items.len());

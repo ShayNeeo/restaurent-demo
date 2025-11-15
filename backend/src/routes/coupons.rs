@@ -1,4 +1,4 @@
-use axum::{routing::post, Json, Router, Extension};
+use axum::{routing::post, Json, Router, Extension, http::StatusCode};
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 use sqlx::Row;
@@ -16,8 +16,23 @@ pub struct CartItem { pub product_id: String, pub name: String, pub unit_amount:
 #[derive(Serialize)]
 pub struct ApplyCouponResponse { pub valid: bool, pub amount_off: Option<i64>, pub percent_off: Option<i64> }
 
+#[derive(Serialize)]
+pub struct ValidateQRResponse {
+    pub id: String,
+    pub code: String,
+    pub balance: i64,
+    pub customer_email: String,
+}
+
+#[derive(Deserialize)]
+pub struct ValidateQRRequest {
+    pub code: String,
+}
+
 pub fn router() -> Router {
-    Router::new().route("/api/coupons/apply", post(apply))
+    Router::new()
+        .route("/api/coupons/apply", post(apply))
+        .route("/api/coupons/validate", post(validate_qr))
 }
 
 async fn apply(Extension(state): Extension<Arc<AppState>>, Json(payload): Json<ApplyCouponRequest>) -> Json<ApplyCouponResponse> {
@@ -63,6 +78,66 @@ async fn apply(Extension(state): Extension<Arc<AppState>>, Json(payload): Json<A
     }
 
     Json(ApplyCouponResponse { valid: false, amount_off: None, percent_off: None })
+}
+
+async fn validate_qr(
+    Extension(state): Extension<Arc<AppState>>,
+    Json(payload): Json<ValidateQRRequest>,
+) -> Result<Json<ValidateQRResponse>, StatusCode> {
+    let code = payload.code.trim();
+    let code_lower = code.to_lowercase();
+
+    // Check if it's a gift code (UUID format)
+    if let Ok(Some(row)) = sqlx::query(
+        r#"SELECT id, code, remaining_cents as balance, customer_email FROM gift_codes WHERE code = ? COLLATE NOCASE"#
+    )
+    .bind(&code)
+    .fetch_optional(&state.pool)
+    .await
+    {
+        let id: String = row.try_get("id").unwrap_or_default();
+        let code: String = row.try_get("code").unwrap_or_default();
+        let balance: i64 = row.try_get("balance").unwrap_or(0);
+        let customer_email: String = row.try_get("customer_email").unwrap_or_default();
+
+        if balance > 0 {
+            return Ok(Json(ValidateQRResponse {
+                id,
+                code,
+                balance,
+                customer_email,
+            }));
+        }
+    }
+
+    // Check regular coupons
+    if let Ok(Some(row)) = sqlx::query(
+        r#"SELECT id, code, remaining_uses, amount_off, percent_off FROM coupons WHERE code = ?"#
+    )
+    .bind(&code_lower.to_uppercase())
+    .fetch_optional(&state.pool)
+    .await
+    {
+        let remaining: i64 = row.try_get("remaining_uses").unwrap_or(0);
+        if remaining > 0 {
+            let id: String = row.try_get("id").unwrap_or_default();
+            let code: String = row.try_get("code").unwrap_or_default();
+            // For regular coupons, use amount_off as balance if available
+            let balance: i64 = row
+                .try_get::<i64, _>("amount_off")
+                .unwrap_or(0)
+                .max(row.try_get::<i64, _>("percent_off").unwrap_or(0));
+
+            return Ok(Json(ValidateQRResponse {
+                id,
+                code,
+                balance,
+                customer_email: "manager@restaurant.local".to_string(),
+            }));
+        }
+    }
+
+    Err(StatusCode::NOT_FOUND)
 }
 
 

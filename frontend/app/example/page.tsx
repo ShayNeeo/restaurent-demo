@@ -94,6 +94,271 @@ function ScrollReveal({ children, className = "" }: { children: ReactNode; class
   );
 }
 
+function CarouselSection() {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  
+  const carouselImages = [
+    { src: "/images/view-1.jpg", alt: "Restaurant View 1" },
+    { src: "/images/view-2.jpg", alt: "Restaurant View 2" },
+    { src: "/images/view-3.jpg", alt: "Restaurant View 3" },
+    { src: "/images/view-4.jpg", alt: "Restaurant View 4" },
+    { src: "/images/view-5.jpg", alt: "Restaurant View 5" }
+  ];
+
+  const nextImage = () => {
+    setCurrentIndex((prev) => (prev + 1) % carouselImages.length);
+  };
+
+  const prevImage = () => {
+    setCurrentIndex((prev) => (prev - 1 + carouselImages.length) % carouselImages.length);
+  };
+
+  const getPrevIndex = () => (currentIndex - 1 + carouselImages.length) % carouselImages.length;
+  const getNextIndex = () => (currentIndex + 1) % carouselImages.length;
+
+  return (
+    <section className="relative overflow-hidden py-20 sm:py-32 bg-gradient-to-b from-white via-amber-50/60 to-white">
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute -top-24 right-12 h-64 w-64 rounded-full bg-brand/10 blur-3xl" />
+        <div className="absolute bottom-0 left-1/3 h-72 w-72 rounded-full bg-brand-accent/10 blur-3xl" />
+        <div className="absolute top-1/2 left-0 h-40 w-40 -translate-x-1/2 -translate-y-1/2 rounded-full bg-amber-100/30 blur-3xl" />
+      </div>
+
+      <div className="relative z-10 mx-auto max-w-7xl px-6">
+        <div className="grid items-center gap-16 lg:grid-cols-[0.9fr,1.1fr]">
+          <ScrollReveal className="space-y-8">
+            <p className="text-xs uppercase tracking-[0.35rem] font-semibold text-brand/70">
+              Unsere Speisen-Galerie
+            </p>
+            <div className="text-4xl sm:text-5xl lg:text-6xl font-display font-bold leading-tight text-brand-dark space-y-4">
+              <span className="block">Wir sind ein Kollektiv von</span>
+              <span className="block text-brand">Köchinnen, Denkern und</span>
+              <span className="block">Kreativen, die Geschmack gestalten,</span>
+              <span className="block">Vertrauen verdienen und Momente veredeln.</span>
+            </div>
+            <p className="text-lg text-slate-600 max-w-xl">
+              Jede Komposition entsteht aus frischen Kräutern, aromatischen Brühen und saisonalen Zutaten,
+              liebevoll arrangiert, um unsere Gäste zu berühren. Diese Galerie zeigt eine Auswahl unserer
+              Lieblingskreationen – statisch festgehalten, doch voller lebendiger Geschichten.
+            </p>
+            <div className="flex flex-wrap gap-4">
+              <a href="#speisekarte" className="btn-primary">
+                Speisekarte entdecken
+              </a>
+              <a href="tel:+498928803451" className="btn-light">
+                Tisch reservieren
+              </a>
+            </div>
+          </ScrollReveal>
+
+          <ScrollReveal>
+            <div className="relative h-[520px] sm:h-[640px] flex items-center justify-center">
+              <div className="absolute inset-0 rounded-[48px] bg-gradient-to-br from-white/80 to-amber-100/60 blur-3xl" />
+              
+              {/* Carousel Container */}
+              <div className="relative w-full h-full flex items-center justify-center">
+                {/* Left blurred image */}
+                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1/4 h-2/3 opacity-40">
+                  <div className="relative w-full h-full rounded-[24px] overflow-hidden shadow-lg blur-sm border border-white/30">
+                    <Image
+                      src={carouselImages[getPrevIndex()].src}
+                      alt={carouselImages[getPrevIndex()].alt}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                </div>
+
+                {/* Center main image */}
+                <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-1/2 h-full cursor-pointer z-20">
+                  <div 
+                    className="relative w-full h-full rounded-[36px] overflow-hidden border-2 border-white/40 shadow-2xl bg-white/30 backdrop-blur-sm transition-all duration-500 hover:-translate-y-2 hover:shadow-3xl"
+                    onClick={nextImage}
+                  >
+                    <Image
+                      src={carouselImages[currentIndex].src}
+                      alt={carouselImages[currentIndex].alt}
+                      fill
+                      className="object-cover transition-all duration-500"
+                      priority
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent opacity-0 hover:opacity-100 transition-opacity duration-500 flex items-center justify-center">
+                      <p className="text-white text-sm font-semibold bg-black/40 px-4 py-2 rounded-full">
+                        Click to next
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right blurred image */}
+                <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1/4 h-2/3 opacity-40">
+                  <div className="relative w-full h-full rounded-[24px] overflow-hidden shadow-lg blur-sm border border-white/30">
+                    <Image
+                      src={carouselImages[getNextIndex()].src}
+                      alt={carouselImages[getNextIndex()].alt}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Navigation Dots */}
+              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-30">
+                {carouselImages.map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setCurrentIndex(index)}
+                    className={`h-2.5 rounded-full transition-all duration-500 ${
+                      index === currentIndex
+                        ? "bg-brand w-8"
+                        : "bg-white/40 w-2.5 hover:bg-white/60"
+                    }`}
+                    aria-label={`Go to image ${index + 1}`}
+                  />
+                ))}
+              </div>
+
+              {/* Navigation Arrows */}
+              <button
+                onClick={prevImage}
+                className="absolute left-2 top-1/2 -translate-y-1/2 z-30 p-2 rounded-full bg-brand/80 hover:bg-brand text-white shadow-lg transition-all duration-300 hover:scale-110"
+                aria-label="Previous image"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              <button
+                onClick={nextImage}
+                className="absolute right-2 top-1/2 -translate-y-1/2 z-30 p-2 rounded-full bg-brand/80 hover:bg-brand text-white shadow-lg transition-all duration-300 hover:scale-110"
+                aria-label="Next image"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </div>
+          </ScrollReveal>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function CarouselStory() {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  
+  const carouselImages = [
+    { src: "/images/view-1.jpg", alt: "Restaurant View 1" },
+    { src: "/images/view-2.jpg", alt: "Restaurant View 2" },
+    { src: "/images/view-3.jpg", alt: "Restaurant View 3" },
+    { src: "/images/view-4.jpg", alt: "Restaurant View 4" },
+    { src: "/images/view-5.jpg", alt: "Restaurant View 5" }
+  ];
+
+  const nextImage = () => {
+    setCurrentIndex((prev) => (prev + 1) % carouselImages.length);
+  };
+
+  const prevImage = () => {
+    setCurrentIndex((prev) => (prev - 1 + carouselImages.length) % carouselImages.length);
+  };
+
+  const getPrevIndex = () => (currentIndex - 1 + carouselImages.length) % carouselImages.length;
+  const getNextIndex = () => (currentIndex + 1) % carouselImages.length;
+
+  return (
+    <div className="relative h-96 flex items-center justify-center">
+      <div className="absolute inset-0 rounded-[48px] bg-gradient-to-br from-white/80 to-amber-100/60 blur-3xl" />
+      
+      {/* Carousel Container */}
+      <div className="relative w-full h-full flex items-center justify-center">
+        {/* Left blurred image */}
+        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1/4 h-2/3 opacity-40">
+          <div className="relative w-full h-full rounded-[24px] overflow-hidden shadow-lg blur-sm border border-white/30">
+            <Image
+              src={carouselImages[getPrevIndex()].src}
+              alt={carouselImages[getPrevIndex()].alt}
+              fill
+              className="object-cover"
+            />
+          </div>
+        </div>
+
+        {/* Center main image */}
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-1/2 h-full cursor-pointer z-20">
+          <div 
+            className="relative w-full h-full rounded-[36px] overflow-hidden border-2 border-white/40 shadow-2xl bg-white/30 backdrop-blur-sm transition-all duration-500 hover:-translate-y-2 hover:shadow-3xl"
+            onClick={nextImage}
+          >
+            <Image
+              src={carouselImages[currentIndex].src}
+              alt={carouselImages[currentIndex].alt}
+              fill
+              className="object-cover transition-all duration-500"
+              priority
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent opacity-0 hover:opacity-100 transition-opacity duration-500 flex items-center justify-center">
+              <p className="text-white text-sm font-semibold bg-black/40 px-4 py-2 rounded-full">
+                Click to next
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Right blurred image */}
+        <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1/4 h-2/3 opacity-40">
+          <div className="relative w-full h-full rounded-[24px] overflow-hidden shadow-lg blur-sm border border-white/30">
+            <Image
+              src={carouselImages[getNextIndex()].src}
+              alt={carouselImages[getNextIndex()].alt}
+              fill
+              className="object-cover"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Navigation Dots */}
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-30">
+        {carouselImages.map((_, index) => (
+          <button
+            key={index}
+            onClick={() => setCurrentIndex(index)}
+            className={`h-2.5 rounded-full transition-all duration-500 ${
+              index === currentIndex
+                ? "bg-brand w-8"
+                : "bg-white/40 w-2.5 hover:bg-white/60"
+            }`}
+            aria-label={`Go to image ${index + 1}`}
+          />
+        ))}
+      </div>
+
+      {/* Navigation Arrows */}
+      <button
+        onClick={prevImage}
+        className="absolute left-2 top-1/2 -translate-y-1/2 z-30 p-2 rounded-full bg-brand/80 hover:bg-brand text-white shadow-lg transition-all duration-300 hover:scale-110"
+        aria-label="Previous image"
+      >
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+        </svg>
+      </button>
+      <button
+        onClick={nextImage}
+        className="absolute right-2 top-1/2 -translate-y-1/2 z-30 p-2 rounded-full bg-brand/80 hover:bg-brand text-white shadow-lg transition-all duration-300 hover:scale-110"
+        aria-label="Next image"
+      >
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+        </svg>
+      </button>
+    </div>
+  );
+}
+
 export default function ExamplePage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -275,14 +540,7 @@ export default function ExamplePage() {
               </ScrollReveal>
               
               <ScrollReveal>
-                <div className="relative h-96 rounded-3xl overflow-hidden shadow-lg">
-                  <Image
-                    src="/images/view-5.jpg"
-                    alt="NGUYEN Restaurant Schwabing"
-                    fill
-                    className="object-cover hover:scale-105 transition-transform duration-700"
-                  />
-                </div>
+                <CarouselStory />
               </ScrollReveal>
             </div>
           </div>
