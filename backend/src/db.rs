@@ -30,6 +30,7 @@ async fn ensure_legacy_schema(pool: &SqlitePool) -> anyhow::Result<()> {
     ensure_orders_currency(pool).await?;
     ensure_orders_status(pool).await?;
     ensure_gift_codes_id(pool).await?;
+    ensure_gift_codes_emails(pool).await?;
     Ok(())
 }
 
@@ -75,6 +76,20 @@ async fn ensure_gift_codes_id(pool: &SqlitePool) -> anyhow::Result<()> {
     sqlx::query(r#"CREATE UNIQUE INDEX IF NOT EXISTS idx_gift_codes_id ON gift_codes(id)"#)
         .execute(pool)
         .await?;
+    Ok(())
+}
+
+async fn ensure_gift_codes_emails(pool: &SqlitePool) -> anyhow::Result<()> {
+    if !column_exists(pool, "gift_codes", "purchaser_email").await? {
+        sqlx::query(r#"ALTER TABLE gift_codes ADD COLUMN purchaser_email TEXT"#)
+            .execute(pool)
+            .await?;
+    }
+    if !column_exists(pool, "gift_codes", "customer_email").await? {
+        sqlx::query(r#"ALTER TABLE gift_codes ADD COLUMN customer_email TEXT"#)
+            .execute(pool)
+            .await?;
+    }
     Ok(())
 }
 
