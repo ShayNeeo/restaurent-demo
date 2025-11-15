@@ -416,11 +416,20 @@ async fn list_gift_coupons(Extension(state): Extension<Arc<AppState>>, headers: 
     if !is_admin_user(&email, &state).await { return Err(axum::http::StatusCode::FORBIDDEN); }
     
     // Handle case where table might not exist
-    let gift_coupons = match sqlx::query_as::<_, GiftCodeInfo>("SELECT code, value_cents, remaining_cents, purchaser_email, created_at FROM gift_codes ORDER BY created_at DESC LIMIT 200")
+    // Note: id column exists in new schema but we only select the display columns
+    let gift_coupons = match sqlx::query_as::<_, GiftCodeInfo>(
+        r#"SELECT code, value_cents, remaining_cents, purchaser_email, created_at 
+           FROM gift_codes 
+           ORDER BY created_at DESC 
+           LIMIT 200"#
+    )
         .fetch_all(&state.pool)
         .await {
             Ok(data) => data,
-            Err(_) => Vec::new(), // Table might not exist
+            Err(e) => {
+                tracing::error!("Failed to fetch gift codes: {:?}", e);
+                Vec::new() // Table might not exist or has different schema
+            },
         };
     
     Ok(Json(GiftCouponsResponse { gift_coupons }))
