@@ -75,6 +75,24 @@ export default function ManagePage() {
     };
   }, []);
 
+  // Start scanner when video element is ready
+  useEffect(() => {
+    if (showScanner && videoRef.current && !scannerActive) {
+      // Use setTimeout to ensure video element is mounted and visible
+      const timer = setTimeout(() => {
+        startQRScanner();
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [showScanner, scannerActive]);
+
+  // Recalculate total whenever items or coupon changes
+  useEffect(() => {
+    const subtotal = orderItems.reduce((sum, item) => sum + item.product.unit_amount * item.quantity, 0);
+    const discount = appliedCoupon ? (subtotal * appliedCoupon.discount) / 100 : 0;
+    setTotalAmount(Math.max(0, subtotal - discount));
+  }, [orderItems, appliedCoupon]);
+
   // Fetch products
   const fetchProducts = async () => {
     try {
@@ -100,13 +118,11 @@ export default function ManagePage() {
       }
       return [...prev, { product, quantity: 1 }];
     });
-    calculateTotal();
   };
 
   // Remove item from order
   const removeFromOrder = (productId: string) => {
     setOrderItems((prev) => prev.filter((item) => item.product.id !== productId));
-    calculateTotal();
   };
 
   // Update item quantity
@@ -120,7 +136,6 @@ export default function ManagePage() {
         item.product.id === productId ? { ...item, quantity } : item
       )
     );
-    calculateTotal();
   };
 
   // Calculate total
@@ -239,7 +254,6 @@ export default function ManagePage() {
   // Apply discount coupon
   const applyDiscount = (discountPercent: number) => {
     setAppliedCoupon({ code: scannedQR?.code || "", discount: discountPercent });
-    calculateTotal();
   };
 
   // Process checkout
@@ -347,10 +361,7 @@ export default function ManagePage() {
                 <h2 className="text-2xl font-bold text-yellow-400">QR Code Scanner</h2>
                 {!showScanner ? (
                   <button
-                    onClick={() => {
-                      setShowScanner(true);
-                      startQRScanner();
-                    }}
+                    onClick={() => setShowScanner(true)}
                     className="bg-yellow-500 hover:bg-yellow-600 text-black font-bold py-2 px-4 rounded-lg transition"
                   >
                     Start Scanner
@@ -526,10 +537,7 @@ export default function ManagePage() {
                     20% Discount
                   </button>
                   <button
-                    onClick={() => {
-                      setAppliedCoupon(null);
-                      calculateTotal();
-                    }}
+                    onClick={() => setAppliedCoupon(null)}
                     className="w-full py-2 rounded-lg font-semibold bg-gray-700 hover:bg-gray-600 text-gray-300 transition"
                   >
                     Clear Discount
