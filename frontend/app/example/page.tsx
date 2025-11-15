@@ -395,45 +395,29 @@ function CarouselStory() {
       <div className="relative w-full h-full flex items-center justify-center">
         {/* Left blurred image - ANIMATED */}
         <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1/4 h-2/3 z-10 pointer-events-none">
-          {/* Current left image fading out */}
-          {slideDirection && (
-            <div className={`absolute inset-0 rounded-[24px] overflow-hidden shadow-lg blur-sm border border-white/30 ${
-              slideDirection === 'left' ? 'fade-out-left' : 'fade-out-right'
-            }`}>
-              <Image
-                src={carouselImages[getPrevIndex()].src}
-                alt={carouselImages[getPrevIndex()].alt}
-                fill
-                className="object-cover"
-              />
-            </div>
-          )}
+          {/* Current left image */}
+          <div className={`absolute inset-0 rounded-[24px] overflow-hidden shadow-lg blur-sm border border-white/30 ${
+            slideDirection ? (slideDirection === 'left' ? 'fade-out-left' : 'fade-out-right') : ''
+          }`}>
+            <Image
+              src={carouselImages[getPrevIndex()].src}
+              alt={carouselImages[getPrevIndex()].alt}
+              fill
+              className="object-cover"
+            />
+          </div>
           
-          {/* Next left image fading in */}
-          {slideDirection && (
-            <div className={`absolute inset-0 rounded-[24px] overflow-hidden shadow-lg blur-sm border border-white/30 ${
-              slideDirection === 'left' ? 'fade-in-left' : 'fade-in-right'
-            }`}>
-              <Image
-                src={carouselImages[slideDirection === 'left' ? (getPrevIndex() - 1 + carouselImages.length) % carouselImages.length : (getPrevIndex() + 1) % carouselImages.length].src}
-                alt={carouselImages[slideDirection === 'left' ? (getPrevIndex() - 1 + carouselImages.length) % carouselImages.length : (getPrevIndex() + 1) % carouselImages.length].alt}
-                fill
-                className="object-cover"
-              />
-            </div>
-          )}
-
-          {/* Static view when not animating */}
-          {!slideDirection && (
-            <div className="relative w-full h-full rounded-[24px] overflow-hidden shadow-lg blur-sm border border-white/30">
-              <Image
-                src={carouselImages[getPrevIndex()].src}
-                alt={carouselImages[getPrevIndex()].alt}
-                fill
-                className="object-cover"
-              />
-            </div>
-          )}
+          {/* Next left image */}
+          <div className={`absolute inset-0 rounded-[24px] overflow-hidden shadow-lg blur-sm border border-white/30 ${
+            slideDirection ? (slideDirection === 'left' ? 'fade-in-left' : 'fade-in-right') : 'opacity-0'
+          }`}>
+            <Image
+              src={carouselImages[slideDirection === 'left' ? (getPrevIndex() - 1 + carouselImages.length) % carouselImages.length : (getPrevIndex() + 1) % carouselImages.length].src}
+              alt={carouselImages[slideDirection === 'left' ? (getPrevIndex() - 1 + carouselImages.length) % carouselImages.length : (getPrevIndex() + 1) % carouselImages.length].alt}
+              fill
+              className="object-cover"
+            />
+          </div>
         </div>
 
         {/* Center main image - SLIDING */}
@@ -479,45 +463,29 @@ function CarouselStory() {
 
         {/* Right blurred image - ANIMATED */}
         <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1/4 h-2/3 z-10 pointer-events-none">
-          {/* Current right image fading out */}
-          {slideDirection && (
-            <div className={`absolute inset-0 rounded-[24px] overflow-hidden shadow-lg blur-sm border border-white/30 ${
-              slideDirection === 'left' ? 'fade-out-right' : 'fade-out-left'
-            }`}>
-              <Image
-                src={carouselImages[getNextIndex()].src}
-                alt={carouselImages[getNextIndex()].alt}
-                fill
-                className="object-cover"
-              />
-            </div>
-          )}
+          {/* Current right image */}
+          <div className={`absolute inset-0 rounded-[24px] overflow-hidden shadow-lg blur-sm border border-white/30 ${
+            slideDirection ? (slideDirection === 'left' ? 'fade-out-right' : 'fade-out-left') : ''
+          }`}>
+            <Image
+              src={carouselImages[getNextIndex()].src}
+              alt={carouselImages[getNextIndex()].alt}
+              fill
+              className="object-cover"
+            />
+          </div>
 
-          {/* Next right image fading in */}
-          {slideDirection && (
-            <div className={`absolute inset-0 rounded-[24px] overflow-hidden shadow-lg blur-sm border border-white/30 ${
-              slideDirection === 'left' ? 'fade-in-right' : 'fade-in-left'
-            }`}>
-              <Image
-                src={carouselImages[slideDirection === 'left' ? (getNextIndex() + 1) % carouselImages.length : (getNextIndex() - 1 + carouselImages.length) % carouselImages.length].src}
-                alt={carouselImages[slideDirection === 'left' ? (getNextIndex() + 1) % carouselImages.length : (getNextIndex() - 1 + carouselImages.length) % carouselImages.length].alt}
-                fill
-                className="object-cover"
-              />
-            </div>
-          )}
-
-          {/* Static view when not animating */}
-          {!slideDirection && (
-            <div className="relative w-full h-full rounded-[24px] overflow-hidden shadow-lg blur-sm border border-white/30">
-              <Image
-                src={carouselImages[getNextIndex()].src}
-                alt={carouselImages[getNextIndex()].alt}
-                fill
-                className="object-cover"
-              />
-            </div>
-          )}
+          {/* Next right image */}
+          <div className={`absolute inset-0 rounded-[24px] overflow-hidden shadow-lg blur-sm border border-white/30 ${
+            slideDirection ? (slideDirection === 'left' ? 'fade-in-right' : 'fade-in-left') : 'opacity-0'
+          }`}>
+            <Image
+              src={carouselImages[slideDirection === 'left' ? (getNextIndex() + 1) % carouselImages.length : (getNextIndex() - 1 + carouselImages.length) % carouselImages.length].src}
+              alt={carouselImages[slideDirection === 'left' ? (getNextIndex() + 1) % carouselImages.length : (getNextIndex() - 1 + carouselImages.length) % carouselImages.length].alt}
+              fill
+              className="object-cover"
+            />
+          </div>
         </div>
       </div>
 
