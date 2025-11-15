@@ -292,60 +292,36 @@ function CarouselStory() {
   return (
     <div className="relative h-96 flex items-center justify-center w-full">
       <style>{`
-        @keyframes slideOutLeft {
+        @keyframes carouselSlideLeft {
           from {
             transform: translateX(0);
           }
           to {
-            transform: translateX(-50%);
-            opacity: 0;
+            transform: translateX(-25%);
           }
         }
-        @keyframes slideInFromRight {
-          from {
-            transform: translateX(50%);
-            opacity: 0;
-          }
-          to {
-            transform: translateX(0);
-          }
-        }
-        @keyframes slideOutRight {
+        @keyframes carouselSlideRight {
           from {
             transform: translateX(0);
           }
           to {
-            transform: translateX(50%);
-            opacity: 0;
+            transform: translateX(25%);
           }
         }
-        @keyframes slideInFromLeft {
-          from {
-            transform: translateX(-50%);
-            opacity: 0;
-          }
-          to {
-            transform: translateX(0);
-          }
+        .carousel-sliding-left {
+          animation: carouselSlideLeft 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
         }
-        .slide-out-left {
-          animation: slideOutLeft 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-        }
-        .slide-in-from-right {
-          animation: slideInFromRight 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-        }
-        .slide-out-right {
-          animation: slideOutRight 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-        }
-        .slide-in-from-left {
-          animation: slideInFromLeft 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        .carousel-sliding-right {
+          animation: carouselSlideRight 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
         }
       `}</style>
       <div className="absolute inset-0 rounded-[48px] bg-gradient-to-br from-white/80 to-amber-100/60 blur-3xl" />
       
-      {/* Carousel Container - Full width layout */}
-      <div className="relative w-full h-full flex items-center justify-center">
-        {/* Left blurred image - FIXED in place */}
+      {/* Carousel Strip - Everything slides together */}
+      <div className={`absolute w-full h-full flex items-center justify-center ${
+        slideDirection === 'left' ? 'carousel-sliding-left' : slideDirection === 'right' ? 'carousel-sliding-right' : ''
+      }`}>
+        {/* Left blurred image */}
         <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1/4 h-2/3 z-10 pointer-events-none">
           <div className="relative w-full h-full rounded-[24px] overflow-hidden shadow-lg blur-sm border border-white/30">
             <Image
@@ -357,15 +333,9 @@ function CarouselStory() {
           </div>
         </div>
 
-        {/* Center viewport - clips the sliding center content */}
-        <div className="absolute left-1/4 top-1/2 -translate-y-1/2 w-1/2 h-full z-20 overflow-hidden rounded-[36px]">
-          {/* Current image or exiting image */}
-          <div 
-            className={`relative w-full h-full cursor-pointer rounded-[36px] overflow-hidden border-2 border-white/40 shadow-2xl bg-white/30 backdrop-blur-sm hover:shadow-3xl ${
-              slideDirection === 'left' ? 'slide-out-left' : slideDirection === 'right' ? 'slide-out-right' : ''
-            }`}
-            onClick={nextImage}
-          >
+        {/* Center main image */}
+        <div className="absolute left-1/4 top-1/2 -translate-y-1/2 w-1/2 h-full z-20 cursor-pointer" onClick={nextImage}>
+          <div className="relative w-full h-full rounded-[36px] overflow-hidden border-2 border-white/40 shadow-2xl bg-white/30 backdrop-blur-sm hover:shadow-3xl transition-shadow duration-300">
             <Image
               src={carouselImages[currentIndex].src}
               alt={carouselImages[currentIndex].alt}
@@ -379,26 +349,9 @@ function CarouselStory() {
               </p>
             </div>
           </div>
-
-          {/* Incoming image */}
-          {slideDirection && (
-            <div 
-              className={`absolute inset-0 w-full h-full rounded-[36px] overflow-hidden border-2 border-white/40 shadow-2xl bg-white/30 backdrop-blur-sm ${
-                slideDirection === 'left' ? 'slide-in-from-right' : 'slide-in-from-left'
-              }`}
-            >
-              <Image
-                src={carouselImages[slideDirection === 'left' ? getNextIndex() : getPrevIndex()].src}
-                alt={carouselImages[slideDirection === 'left' ? getNextIndex() : getPrevIndex()].alt}
-                fill
-                className="object-cover"
-                priority
-              />
-            </div>
-          )}
         </div>
 
-        {/* Right blurred image - FIXED in place */}
+        {/* Right blurred image */}
         <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1/4 h-2/3 z-10 pointer-events-none">
           <div className="relative w-full h-full rounded-[24px] overflow-hidden shadow-lg blur-sm border border-white/30">
             <Image
