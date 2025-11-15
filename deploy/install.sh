@@ -143,6 +143,7 @@ echo "[install] Fixing npm vulnerabilities..."
 npm audit fix --force --audit-level=moderate 2>/dev/null || true
 
 echo "[install] Building Next.js frontend..."
+echo "[install] Note: old-page.tsx is excluded from build (reserved for non-deployment use)"
 npm run build
 
 cd "$ROOT_DIR/backend"

@@ -14,6 +14,15 @@ const nextConfig = {
       },
     ],
   },
+  webpack: (config, { isServer }) => {
+    config.watchOptions = {
+      ...config.watchOptions,
+      ignored: ['**/old-page.tsx', '**/.next/**', '**/node_modules/**'],
+    };
+    return config;
+  },
+  pageExtensions: ['tsx', 'ts', 'jsx', 'js'],
+  excludeSourceMaps: true,
 };
 
 export default nextConfig;
