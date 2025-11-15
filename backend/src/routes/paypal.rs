@@ -24,6 +24,14 @@ pub fn router() -> Router {
         .route("/api/paypal/gift/cancel", get(|| async { "CANCEL" }))
 }
 
+fn frontend_url(state: &AppState, path: &str) -> String {
+    format!(
+        "{}/{}",
+        state.app_url.trim_end_matches('/'),
+        path.trim_start_matches('/')
+    )
+}
+
 async fn paypal_return(Extension(state): Extension<Arc<AppState>>, _headers: HeaderMap, Query(params): Query<ReturnParams>) -> Redirect {
     if let Some(order_id) = params.token {
         tracing::info!("PayPal return callback received for order_id: {}", order_id);
@@ -109,7 +117,8 @@ async fn paypal_return(Extension(state): Extension<Arc<AppState>>, _headers: Hea
                                     }
                                     Err(e) => {
                                         tracing::error!("Failed to create order record {}: {:?}", order_db_id, e);
-                                        return Redirect::to("/thank-you");
+                                        let redirect_url = frontend_url(&state, "/thank-you");
+                                        return Redirect::to(&redirect_url);
                                     }
                                 }
 
@@ -225,7 +234,8 @@ async fn paypal_return(Extension(state): Extension<Arc<AppState>>, _headers: Hea
                                     }
                                 }
 
-                                return Redirect::to(&format!("/thank-you/{}", order_db_id));
+                                let redirect_url = frontend_url(&state, &format!("/thank-you/{}", order_db_id));
+                                return Redirect::to(&redirect_url);
                             } else {
                                 tracing::warn!("PayPal order {} completed but no pending_orders entry found in database", order_id);
                                 // Still create an order from the PayPal response even if not in pending_orders
@@ -245,7 +255,8 @@ async fn paypal_return(Extension(state): Extension<Arc<AppState>>, _headers: Hea
                                     tracing::info!("Fallback order record created: {}", order_db_id);
                                 }
                                 
-                                return Redirect::to(&format!("/thank-you/{}", order_db_id));
+                                let redirect_url = frontend_url(&state, &format!("/thank-you/{}", order_db_id));
+                                return Redirect::to(&redirect_url);
                             }
                         }
                         Err(e) => {
@@ -265,7 +276,8 @@ async fn paypal_return(Extension(state): Extension<Arc<AppState>>, _headers: Hea
     }
     
     tracing::info!("PayPal return: redirecting to generic /thank-you (order was not finalized)");
-    Redirect::to("/thank-you")
+    let redirect_url = frontend_url(&state, "/thank-you");
+    Redirect::to(&redirect_url)
 }
 
 async fn paypal_gift_return(Extension(state): Extension<Arc<AppState>>, Query(params): Query<ReturnParams>) -> Redirect {
@@ -378,7 +390,8 @@ async fn paypal_gift_return(Extension(state): Extension<Arc<AppState>>, Query(pa
                     .await;
 
                 tracing::info!("Gift coupon order finalized. Redirecting to /thank-you/{}", order_db_id);
-                return Redirect::to(&format!("/thank-you/{}", order_db_id));
+                let redirect_url = frontend_url(&state, &format!("/thank-you/{}", order_db_id));
+                return Redirect::to(&redirect_url);
             } else {
                 tracing::warn!("PayPal gift order {} has status '{}', not COMPLETED", order_id, captured.status);
             }
@@ -390,7 +403,8 @@ async fn paypal_gift_return(Extension(state): Extension<Arc<AppState>>, Query(pa
     }
     
     tracing::info!("PayPal gift return: redirecting to generic /thank-you (order was not finalized)");
-    Redirect::to("/thank-you")
+    let redirect_url = frontend_url(&state, "/thank-you");
+    Redirect::to(&redirect_url)
 }
 
 

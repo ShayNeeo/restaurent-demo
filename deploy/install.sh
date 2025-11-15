@@ -153,6 +153,7 @@ if [ ! -f .env ]; then
   echo "DATABASE_URL=sqlite:////$DATA_DIR/app.db" > .env
   echo "JWT_SECRET=$(openssl rand -hex 16 || echo dev_secret)" >> .env
   echo "APP_URL=http://localhost:$INTERNAL_FRONTEND_PORT" >> .env
+  echo "BACKEND_PUBLIC_URL=$BACKEND_URL" >> .env
   echo "# STRIPE_SECRET_KEY=sk_test_xxx" >> .env
   echo "# STRIPE_WEBHOOK_SECRET=whsec_xxx" >> .env
   echo "SMTP_HOST=smtp-relay.brevo.com" >> .env
@@ -171,6 +172,11 @@ else
   # Normalize any sqlite URL to use absolute path
   if grep -Eq '^DATABASE_URL=sqlite://.*' .env; then
     sed -i "s|^DATABASE_URL=sqlite://.*$|DATABASE_URL=sqlite:////$DATA_DIR/app.db|" .env
+  fi
+  if grep -q "^BACKEND_PUBLIC_URL=" .env; then
+    sed -i "s|^BACKEND_PUBLIC_URL=.*|BACKEND_PUBLIC_URL=$BACKEND_URL|" .env
+  else
+    echo "BACKEND_PUBLIC_URL=$BACKEND_URL" >> .env
   fi
 fi
 echo "[install] Building backend..."

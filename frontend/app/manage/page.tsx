@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import QrScanner from "qr-scanner";
+import { getBackendApiUrl } from "@/lib/api";
 
 interface Product {
   id: string;
@@ -88,16 +89,21 @@ export default function ManagePage() {
 
   // Recalculate total whenever items or coupon changes
   useEffect(() => {
-    const subtotal = orderItems.reduce((sum, item) => sum + item.product.unit_amount * item.quantity, 0);
-    const discount = appliedCoupon ? (subtotal * appliedCoupon.discount) / 100 : 0;
+    const subtotal = orderItems.reduce(
+      (sum, item) => sum + item.product.unit_amount * item.quantity,
+      0
+    );
+    const discountRaw = appliedCoupon
+      ? (subtotal * appliedCoupon.discount) / 100
+      : 0;
+    const discount = Math.round(discountRaw);
     setTotalAmount(Math.max(0, subtotal - discount));
   }, [orderItems, appliedCoupon]);
 
   // Fetch products
   const fetchProducts = async () => {
     try {
-      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8080";
-      const response = await fetch(`${backendUrl}/api/products`);
+      const response = await fetch(getBackendApiUrl("/products"));
       if (response.ok) {
         const data = await response.json();
         setProducts(data.products || []);
@@ -225,10 +231,9 @@ export default function ManagePage() {
   // Handle QR code scanning (automatically triggered by QrScanner)
   const handleManualQRInput = async (qrCode: string) => {
     try {
-      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8080";
       const jwt = localStorage.getItem("restaurant_jwt_v1");
       
-      const response = await fetch(`${backendUrl}/api/coupons/validate`, {
+      const response = await fetch(getBackendApiUrl("/coupons/validate"), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -269,8 +274,15 @@ export default function ManagePage() {
     }
 
     try {
-      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8080";
       const jwt = localStorage.getItem("restaurant_jwt_v1");
+
+      const subtotalCents = orderItems.reduce(
+        (sum, item) => sum + item.product.unit_amount * item.quantity,
+        0
+      );
+      const discountCents = appliedCoupon
+        ? Math.round((subtotalCents * appliedCoupon.discount) / 100)
+        : 0;
 
       const orderData = {
         customer_email: customerEmail,
@@ -281,10 +293,10 @@ export default function ManagePage() {
         })),
         total_amount: totalAmount,
         qr_code_used: scannedQR?.code,
-        discount_applied: appliedCoupon?.discount || 0
+        discount_applied: discountCents > 0 ? discountCents : undefined
       };
 
-      const response = await fetch(`${backendUrl}/api/orders`, {
+      const response = await fetch(getBackendApiUrl("/orders"), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -297,7 +309,7 @@ export default function ManagePage() {
         const order = await response.json();
         
         // Send email to customer for PayPal checkout
-        await fetch(`${backendUrl}/api/email/send-checkout`, {
+        await fetch(getBackendApiUrl("/email/send-checkout"), {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

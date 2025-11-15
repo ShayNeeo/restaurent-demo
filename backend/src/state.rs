@@ -5,6 +5,7 @@ pub struct AppState {
     pub pool: SqlitePool,
     pub jwt_secret: String,
     pub app_url: String,
+    pub backend_url: String,
     pub smtp_host: Option<String>,
     pub smtp_port: Option<u16>,
     pub smtp_username: Option<String>,

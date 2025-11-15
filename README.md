@@ -146,7 +146,9 @@ Deploy scripts
 
 Environment
 - Frontend `.env`: `PORT`, `NEXT_PUBLIC_BACKEND_URL`.
-- Backend `.env`: `DATABASE_URL`, `JWT_SECRET`, `APP_URL`, PayPal: `PAYPAL_CLIENT_ID`, `PAYPAL_SECRET`, optional `PAYPAL_API_BASE`, `PAYPAL_WEBHOOK_ID`; Stripe (optional): `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`; Email: `SMTP_HOST`, `SMTP_PORT`, `SMTP_USERNAME`, `SMTP_PASSWORD`, `SMTP_FROM`.
+- Backend `.env`: `DATABASE_URL`, `JWT_SECRET`, `APP_URL`, `BACKEND_PUBLIC_URL`, PayPal: `PAYPAL_CLIENT_ID`, `PAYPAL_SECRET`, optional `PAYPAL_API_BASE`, `PAYPAL_WEBHOOK_ID`; Stripe (optional): `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`; Email: `SMTP_HOST`, `SMTP_PORT`, `SMTP_USERNAME`, `SMTP_PASSWORD`, `SMTP_FROM`.
+
+`APP_URL` should point to the public frontend (used in emails and redirects), while `BACKEND_PUBLIC_URL` must be the publicly accessible origin of the Rust API (used for PayPal callbacks). In simple single-domain setups you can set both to the same base URL.
 
 Cloudflare Proxied Setup (Recommended - No Certbot Needed!)
 - When using Cloudflare proxy (🔒), **certbot cannot validate** because your IP is masked

@@ -24,6 +24,14 @@ pub struct PayPalOrderLink { pub rel: String, pub href: String }
 #[derive(Deserialize)]
 pub struct PayPalOrderResp { pub id: String, pub links: Vec<PayPalOrderLink> }
 
+fn join_url(base: &str, path: &str) -> String {
+    format!(
+        "{}/{}",
+        base.trim_end_matches('/'),
+        path.trim_start_matches('/')
+    )
+}
+
 pub async fn get_paypal_access_token(state: &AppState) -> Result<String> {
     let client_id = state.paypal_client_id.as_ref().ok_or_else(|| anyhow::anyhow!("missing paypal client id"))?;
     let secret = state.paypal_secret.as_ref().ok_or_else(|| anyhow::anyhow!("missing paypal secret"))?;
@@ -40,6 +48,8 @@ pub async fn get_paypal_access_token(state: &AppState) -> Result<String> {
 pub async fn create_paypal_order(state: &AppState, value_eur: i64, return_path: &str, cancel_path: &str, description: Option<String>) -> Result<PayPalOrderResp> {
     let bearer = get_paypal_access_token(state).await?;
     let url = format!("{}/v2/checkout/orders", state.paypal_api_base);
+    let return_url = join_url(&state.backend_url, return_path);
+    let cancel_url = join_url(&state.backend_url, cancel_path);
     let body = PayPalOrderCreate {
         intent: "CAPTURE".into(),
         purchase_units: vec![PayPalPurchaseUnit {
@@ -47,8 +57,8 @@ pub async fn create_paypal_order(state: &AppState, value_eur: i64, return_path: 
             description,
         }],
         application_context: PayPalAppCtx {
-            return_url: format!("{}{}", state.app_url, return_path),
-            cancel_url: format!("{}{}", state.app_url, cancel_path),
+            return_url,
+            cancel_url,
         }
     };
     let resp = reqwest::Client::new()
