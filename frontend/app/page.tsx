@@ -1019,7 +1019,7 @@ export default function HomePage() {
                 rel="noopener noreferrer"
                 className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-brand to-brand-accent text-white px-8 py-4 font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
               >
-                🎁 Gutscheinkarte anschauen
+                Gutscheinkarte anschauen
               </a>
             </ScrollReveal>
           </div>
