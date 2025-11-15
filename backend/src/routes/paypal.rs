@@ -94,7 +94,7 @@ async fn paypal_return(Extension(state): Extension<Arc<AppState>>, _headers: Hea
                                 let order_db_id = Uuid::new_v4().to_string();
                                 tracing::info!("Creating order record: {}", order_db_id);
                                 
-                                match sqlx::query(r#"INSERT INTO orders (id, email, total_cents, currency, coupon_code, items_json) VALUES (?, ?, ?, ?, ?, ?)"#)
+                                match sqlx::query(r#"INSERT INTO orders (id, email, total_cents, currency, coupon_code, items_json, status) VALUES (?, ?, ?, ?, ?, ?, 'completed')"#)
                                     .bind(&order_db_id)
                                     .bind(&email)
                                     .bind(amount_cents)
@@ -232,13 +232,18 @@ async fn paypal_return(Extension(state): Extension<Arc<AppState>>, _headers: Hea
                                 let order_db_id = Uuid::new_v4().to_string();
                                 tracing::info!("Creating order from PayPal callback without pending entry: {}", order_db_id);
                                 
-                                let _ = sqlx::query(r#"INSERT INTO orders (id, email, total_cents, items_json) VALUES (?, ?, ?, ?)"#)
+                                if let Err(e) = sqlx::query(r#"INSERT INTO orders (id, email, total_cents, items_json, status) VALUES (?, ?, ?, ?, 'completed')"#)
                                     .bind(&order_db_id)
                                     .bind("noemail@example.com")
                                     .bind(0)
                                     .bind(serde_json::json!({"cart": []}).to_string())
                                     .execute(&state.pool)
-                                    .await;
+                                    .await
+                                {
+                                    tracing::error!("Failed to insert fallback order: {:?}", e);
+                                } else {
+                                    tracing::info!("Fallback order record created: {}", order_db_id);
+                                }
                                 
                                 return Redirect::to(&format!("/thank-you/{}", order_db_id));
                             }
@@ -328,13 +333,18 @@ async fn paypal_gift_return(Extension(state): Extension<Arc<AppState>>, Query(pa
                 
                 tracing::info!("Creating order record for gift purchase: {} with items_json: {}", order_db_id, gift_json);
                 
-                let _ = sqlx::query(r#"INSERT INTO orders (id, email, total_cents, currency, items_json) VALUES (?, ?, ?, 'EUR', ?)"#)
+                if let Err(e) = sqlx::query(r#"INSERT INTO orders (id, email, total_cents, currency, items_json, status) VALUES (?, ?, ?, 'EUR', ?, 'completed')"#)
                     .bind(&order_db_id)
                     .bind(&email)
                     .bind(total_value)
                     .bind(&gift_json)
                     .execute(&state.pool)
-                    .await;
+                    .await
+                {
+                    tracing::error!("Failed to insert order for gift purchase: {:?}", e);
+                } else {
+                    tracing::info!("Order record created successfully for gift purchase: {}", order_db_id);
+                }
                 
                 // if we stored a pending email, send confirmation
                 if let Ok(row) = sqlx::query(r#"SELECT email FROM pending_gifts WHERE order_id = ?"#)
