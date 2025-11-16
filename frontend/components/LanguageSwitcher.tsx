@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 const languages = [
   { code: "de", label: "Deutsch", flag: "🇩🇪" },
@@ -15,6 +15,7 @@ export function LanguageSwitcher() {
   const [currentLang, setCurrentLang] = useState("de");
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const listenerRef = useRef<((event: MouseEvent) => void) | null>(null);
 
   useEffect(() => {
     // Detect current language from pathname
@@ -25,11 +26,13 @@ export function LanguageSwitcher() {
     } else {
       setCurrentLang("de");
     }
+    // Close dropdown when route changes
+    setIsOpen(false);
   }, [pathname]);
 
   useEffect(() => {
-    // Close dropdown when clicking outside
-    function handleClickOutside(event: MouseEvent) {
+    // Create click outside handler
+    const handleClickOutside = (event: MouseEvent) => {
       if (
         dropdownRef.current &&
         event.target instanceof Node &&
@@ -37,13 +40,33 @@ export function LanguageSwitcher() {
       ) {
         setIsOpen(false);
       }
+    };
+
+    // Only manage listener when dropdown is open
+    if (isOpen && !listenerRef.current) {
+      listenerRef.current = handleClickOutside;
+      document.addEventListener("mousedown", handleClickOutside);
+    } else if (!isOpen && listenerRef.current) {
+      const listener = listenerRef.current;
+      try {
+        document.removeEventListener("mousedown", listener);
+      } catch (e) {
+        // Silently fail if listener doesn't exist
+      }
+      listenerRef.current = null;
     }
 
-    // Only add listener when dropdown is open
-    if (isOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-      return () => document.removeEventListener("mousedown", handleClickOutside);
-    }
+    // Cleanup on unmount
+    return () => {
+      if (listenerRef.current) {
+        try {
+          document.removeEventListener("mousedown", listenerRef.current);
+        } catch (e) {
+          // Silently fail if listener doesn't exist
+        }
+        listenerRef.current = null;
+      }
+    };
   }, [isOpen]);
 
   const handleLanguageChange = (langCode: string) => {
