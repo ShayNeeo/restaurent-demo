@@ -1,7 +1,5 @@
-User-agent: *
-Allow: /
-Disallow: /admin
-Disallow: /manage
-
+Disallow: /admin/
+Disallow: /manage/
+Disallow: /checkout/
+Disallow: /thank-you/
 Sitemap: https://nguyenrestaurent.de/sitemap.xml
-
