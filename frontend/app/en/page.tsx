@@ -562,7 +562,7 @@ export default function EnglishHomePage() {
           }
         }
       `}</style>
-      <Script id="restaurant-schema" type="application/ld+json" strategy="afterInteractive">
+      <Script id="restaurant-schema-en" type="application/ld+json" strategy="afterInteractive">
         {JSON.stringify(restaurantSchema)}
       </Script>
 

@@ -727,7 +727,7 @@ export default function HomePage() {
           }
         }
       `}</style>
-      <Script id="restaurant-schema" type="application/ld+json" strategy="afterInteractive">
+      <Script id="restaurant-schema-de" type="application/ld+json" strategy="afterInteractive">
         {JSON.stringify(restaurantSchema)}
       </Script>
 
