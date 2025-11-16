@@ -16,8 +16,8 @@ const config: Config = {
         }
       },
       fontFamily: {
-        sans: ["var(--font-montserrat)", "sans-serif"],
-        display: ["var(--font-kaushan)", "cursive"]
+        sans: ["var(--font-dm-sans)", "sans-serif"],
+        display: ["var(--font-forum)", "serif"]
       },
       boxShadow: {
         soft: "0 10px 30px rgba(179, 142, 90, 0.12)"

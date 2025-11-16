@@ -1,20 +1,20 @@
 import "./globals.css";
 
 import type { Metadata } from "next";
-import { Kaushan_Script, Montserrat } from "next/font/google";
+import { DM_Sans, Forum } from "next/font/google";
 import { CartProvider } from "@/components/cart/CartContext";
 import { CartDrawer } from "@/components/cart/CartDrawer";
 import { Preloader } from "@/components/Preloader";
 
-const montserrat = Montserrat({
+const dmSans = DM_Sans({
   subsets: ["latin"],
-  variable: "--font-montserrat",
+  variable: "--font-dm-sans",
   weight: ["300", "400", "500", "600", "700"]
 });
 
-const kaushan = Kaushan_Script({
+const forum = Forum({
   subsets: ["latin"],
-  variable: "--font-kaushan",
+  variable: "--font-forum",
   weight: ["400"]
 });
 
@@ -102,7 +102,7 @@ export default function RootLayout({
   return (
     <html lang="de">
       <body
-        className={`${montserrat.variable} ${kaushan.variable} bg-brand-light text-slate-900 antialiased`}
+        className={`${dmSans.variable} ${forum.variable} bg-brand-light text-slate-900 antialiased`}
       >
         <CartProvider>
           <Preloader />
