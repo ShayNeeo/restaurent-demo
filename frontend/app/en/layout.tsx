@@ -1,20 +1,20 @@
 import "../globals.css";
 import type { Metadata } from "next";
-import { DM_Sans, Forum } from "next/font/google";
+import { Inter, Playfair_Display } from "next/font/google";
 import { CartProvider } from "@/components/cart/CartContext";
 import { CartDrawer } from "@/components/cart/CartDrawer";
 import { Preloader } from "@/components/Preloader";
 
-const dmSans = DM_Sans({
-  subsets: ["latin"],
+const inter = Inter({
+  subsets: ["latin", "vietnamese"],
   variable: "--font-dm-sans",
   weight: ["300", "400", "500", "600", "700"]
 });
 
-const forum = Forum({
-  subsets: ["latin"],
+const playfairDisplay = Playfair_Display({
+  subsets: ["latin", "vietnamese"],
   variable: "--font-forum",
-  weight: ["400"]
+  weight: ["400", "700"]
 });
 
 export const metadata: Metadata = {
@@ -118,7 +118,7 @@ export default function EnglishLayout({
   return (
     <html lang="en">
       <body
-        className={`${dmSans.variable} ${forum.variable} bg-brand-light text-slate-900 antialiased`}
+        className={`${inter.variable} ${playfairDisplay.variable} bg-brand-light text-slate-900 antialiased`}
       >
         <CartProvider>
           <Preloader />
