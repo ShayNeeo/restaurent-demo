@@ -1,21 +1,4 @@
-import "../globals.css";
 import type { Metadata } from "next";
-import { Inter, Playfair_Display } from "next/font/google";
-import { CartProvider } from "@/components/cart/CartContext";
-import { CartDrawer } from "@/components/cart/CartDrawer";
-import { Preloader } from "@/components/Preloader";
-
-const inter = Inter({
-  subsets: ["latin", "vietnamese"],
-  variable: "--font-dm-sans",
-  weight: ["300", "400", "500", "600", "700"]
-});
-
-const playfairDisplay = Playfair_Display({
-  subsets: ["latin", "vietnamese"],
-  variable: "--font-forum",
-  weight: ["400", "700"]
-});
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://nguyenrestaurant.de"),
@@ -115,17 +98,5 @@ export default function VietnameseLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return (
-    <html lang="vi">
-      <body
-        className={`${inter.variable} ${playfairDisplay.variable} bg-brand-light text-slate-900 antialiased`}
-      >
-        <CartProvider>
-          <Preloader />
-          <CartDrawer />
-          {children}
-        </CartProvider>
-      </body>
-    </html>
-  );
+  return children;
 }
