@@ -2,4 +2,4 @@ Disallow: /admin/
 Disallow: /manage/
 Disallow: /checkout/
 Disallow: /thank-you/
-Sitemap: https://nguyenrestaurent.de/sitemap.xml
+Sitemap: https://nguyenrestaurant.de/sitemap.xml

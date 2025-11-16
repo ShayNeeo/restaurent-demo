@@ -4,199 +4,199 @@
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
 
   <url>
-    <loc>https://nguyenrestaurent.de/</loc>
+    <loc>https://nguyenrestaurant.de/</loc>
     <lastmod>2025-11-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
-    <xhtml:link rel="alternate" hreflang="de" href="https://nguyenrestaurent.de/" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://nguyenrestaurent.de/en" />
-    <xhtml:link rel="alternate" hreflang="vi" href="https://nguyenrestaurent.de/vi" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://nguyenrestaurant.de/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://nguyenrestaurant.de/en" />
+    <xhtml:link rel="alternate" hreflang="vi" href="https://nguyenrestaurant.de/vi" />
     <image:image>
-      <image:loc>https://nguyenrestaurent.de/images/view-1.jpg</image:loc>
+      <image:loc>https://nguyenrestaurant.de/images/view-1.jpg</image:loc>
       <image:title>Restaurant View 1</image:title>
     </image:image>
     <image:image>
-      <image:loc>https://nguyenrestaurent.de/images/view-2.jpg</image:loc>
+      <image:loc>https://nguyenrestaurant.de/images/view-2.jpg</image:loc>
       <image:title>Restaurant View 2</image:title>
     </image:image>
     <image:image>
-      <image:loc>https://nguyenrestaurent.de/images/view-3.jpg</image:loc>
+      <image:loc>https://nguyenrestaurant.de/images/view-3.jpg</image:loc>
       <image:title>Restaurant View 3</image:title>
     </image:image>
     <image:image>
-      <image:loc>https://nguyenrestaurent.de/images/view-4.jpg</image:loc>
+      <image:loc>https://nguyenrestaurant.de/images/view-4.jpg</image:loc>
       <image:title>Restaurant View 4</image:title>
     </image:image>
   </url>
   <url>
-    <loc>https://nguyenrestaurent.de/en</loc>
+    <loc>https://nguyenrestaurant.de/en</loc>
     <lastmod>2025-11-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
-    <xhtml:link rel="alternate" hreflang="de" href="https://nguyenrestaurent.de/" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://nguyenrestaurent.de/en" />
-    <xhtml:link rel="alternate" hreflang="vi" href="https://nguyenrestaurent.de/vi" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://nguyenrestaurant.de/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://nguyenrestaurant.de/en" />
+    <xhtml:link rel="alternate" hreflang="vi" href="https://nguyenrestaurant.de/vi" />
   </url>
   <url>
-    <loc>https://nguyenrestaurent.de/vi</loc>
+    <loc>https://nguyenrestaurant.de/vi</loc>
     <lastmod>2025-11-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
-    <xhtml:link rel="alternate" hreflang="de" href="https://nguyenrestaurent.de/" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://nguyenrestaurent.de/en" />
-    <xhtml:link rel="alternate" hreflang="vi" href="https://nguyenrestaurent.de/vi" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://nguyenrestaurant.de/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://nguyenrestaurant.de/en" />
+    <xhtml:link rel="alternate" hreflang="vi" href="https://nguyenrestaurant.de/vi" />
   </url>
 
   <url>
-    <loc>https://nguyenrestaurent.de/menu</loc>
+    <loc>https://nguyenrestaurant.de/menu</loc>
     <lastmod>2025-11-10</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
-    <xhtml:link rel="alternate" hreflang="de" href="https://nguyenrestaurent.de/menu" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://nguyenrestaurent.de/en/menu" />
-    <xhtml:link rel="alternate" hreflang="vi" href="https://nguyenrestaurent.de/vi/menu" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://nguyenrestaurant.de/menu" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://nguyenrestaurant.de/en/menu" />
+    <xhtml:link rel="alternate" hreflang="vi" href="https://nguyenrestaurant.de/vi/menu" />
     <image:image>
-      <image:loc>https://nguyenrestaurent.de/images/pho-chay.jpg</image:loc>
+      <image:loc>https://nguyenrestaurant.de/images/pho-chay.jpg</image:loc>
       <image:title>Pho Chay - Vegetarian Pho</image:title>
     </image:image>
     <image:image>
-      <image:loc>https://nguyenrestaurent.de/images/goi-cuon.jpg</image:loc>
+      <image:loc>https://nguyenrestaurant.de/images/goi-cuon.jpg</image:loc>
       <image:title>Goi Cuon - Spring Rolls</image:title>
     </image:image>
     <image:image>
-      <image:loc>https://nguyenrestaurent.de/images/bo-kho-goi-cuon.jpg</image:loc>
+      <image:loc>https://nguyenrestaurant.de/images/bo-kho-goi-cuon.jpg</image:loc>
       <image:title>Bo Kho - Beef Stew</image:title>
     </image:image>
     <image:image>
-      <image:loc>https://nguyenrestaurent.de/images/bun-thit-xao.jpg</image:loc>
+      <image:loc>https://nguyenrestaurant.de/images/bun-thit-xao.jpg</image:loc>
       <image:title>Bun Thit Xao - Grilled Meat Noodles</image:title>
     </image:image>
     <image:image>
-      <image:loc>https://nguyenrestaurent.de/images/curry.jpg</image:loc>
+      <image:loc>https://nguyenrestaurant.de/images/curry.jpg</image:loc>
       <image:title>Curry - Vietnamese Curry</image:title>
     </image:image>
     <image:image>
-      <image:loc>https://nguyenrestaurent.de/images/khai-vi-starter.jpg</image:loc>
+      <image:loc>https://nguyenrestaurant.de/images/khai-vi-starter.jpg</image:loc>
       <image:title>Khai Vi - Starter Platter</image:title>
     </image:image>
     <image:image>
-      <image:loc>https://nguyenrestaurent.de/images/fried-gyoza.jpg</image:loc>
+      <image:loc>https://nguyenrestaurant.de/images/fried-gyoza.jpg</image:loc>
       <image:title>Fried Gyoza - Fried Dumplings</image:title>
     </image:image>
     <image:image>
-      <image:loc>https://nguyenrestaurent.de/images/steamed-gyoza.jpg</image:loc>
+      <image:loc>https://nguyenrestaurant.de/images/steamed-gyoza.jpg</image:loc>
       <image:title>Steamed Gyoza - Steamed Dumplings</image:title>
     </image:image>
   </url>
   <url>
-    <loc>https://nguyenrestaurent.de/en/menu</loc>
+    <loc>https://nguyenrestaurant.de/en/menu</loc>
     <lastmod>2025-11-10</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
-    <xhtml:link rel="alternate" hreflang="de" href="https://nguyenrestaurent.de/menu" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://nguyenrestaurent.de/en/menu" />
-    <xhtml:link rel="alternate" hreflang="vi" href="https://nguyenrestaurent.de/vi/menu" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://nguyenrestaurant.de/menu" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://nguyenrestaurant.de/en/menu" />
+    <xhtml:link rel="alternate" hreflang="vi" href="https://nguyenrestaurant.de/vi/menu" />
     <image:image>
-      <image:loc>https://nguyenrestaurent.de/images/pho-chay.jpg</image:loc>
+      <image:loc>https://nguyenrestaurant.de/images/pho-chay.jpg</image:loc>
       <image:title>Pho Chay - Vegetarian Pho</image:title>
     </image:image>
     <image:image>
-      <image:loc>https://nguyenrestaurent.de/images/goi-cuon.jpg</image:loc>
+      <image:loc>https://nguyenrestaurant.de/images/goi-cuon.jpg</image:loc>
       <image:title>Goi Cuon - Spring Rolls</image:title>
     </image:image>
     <image:image>
-      <image:loc>https://nguyenrestaurent.de/images/bo-kho-goi-cuon.jpg</image:loc>
+      <image:loc>https://nguyenrestaurant.de/images/bo-kho-goi-cuon.jpg</image:loc>
       <image:title>Bo Kho - Beef Stew</image:title>
     </image:image>
     <image:image>
-      <image:loc>https://nguyenrestaurent.de/images/bun-thit-xao.jpg</image:loc>
+      <image:loc>https://nguyenrestaurant.de/images/bun-thit-xao.jpg</image:loc>
       <image:title>Bun Thit Xao - Grilled Meat Noodles</image:title>
     </image:image>
     <image:image>
-      <image:loc>https://nguyenrestaurent.de/images/curry.jpg</image:loc>
+      <image:loc>https://nguyenrestaurant.de/images/curry.jpg</image:loc>
       <image:title>Curry - Vietnamese Curry</image:title>
     </image:image>
     <image:image>
-      <image:loc>https://nguyenrestaurent.de/images/khai-vi-starter.jpg</image:loc>
+      <image:loc>https://nguyenrestaurant.de/images/khai-vi-starter.jpg</image:loc>
       <image:title>Khai Vi - Starter Platter</image:title>
     </image:image>
     <image:image>
-      <image:loc>https://nguyenrestaurent.de/images/fried-gyoza.jpg</image:loc>
+      <image:loc>https://nguyenrestaurant.de/images/fried-gyoza.jpg</image:loc>
       <image:title>Fried Gyoza - Fried Dumplings</image:title>
     </image:image>
     <image:image>
-      <image:loc>https://nguyenrestaurent.de/images/steamed-gyoza.jpg</image:loc>
+      <image:loc>https://nguyenrestaurant.de/images/steamed-gyoza.jpg</image:loc>
       <image:title>Steamed Gyoza - Steamed Dumplings</image:title>
     </image:image>
   </url>
   <url>
-    <loc>https://nguyenrestaurent.de/vi/menu</loc>
+    <loc>https://nguyenrestaurant.de/vi/menu</loc>
     <lastmod>2025-11-10</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
-    <xhtml:link rel="alternate" hreflang="de" href="https://nguyenrestaurent.de/menu" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://nguyenrestaurent.de/en/menu" />
-    <xhtml:link rel="alternate" hreflang="vi" href="https://nguyenrestaurent.de/vi/menu" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://nguyenrestaurant.de/menu" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://nguyenrestaurant.de/en/menu" />
+    <xhtml:link rel="alternate" hreflang="vi" href="https://nguyenrestaurant.de/vi/menu" />
     <image:image>
-      <image:loc>https://nguyenrestaurent.de/images/pho-chay.jpg</image:loc>
+      <image:loc>https://nguyenrestaurant.de/images/pho-chay.jpg</image:loc>
       <image:title>Pho Chay - Vegetarian Pho</image:title>
     </image:image>
     <image:image>
-      <image:loc>https://nguyenrestaurent.de/images/goi-cuon.jpg</image:loc>
+      <image:loc>https://nguyenrestaurant.de/images/goi-cuon.jpg</image:loc>
       <image:title>Goi Cuon - Spring Rolls</image:title>
     </image:image>
     <image:image>
-      <image:loc>https://nguyenrestaurent.de/images/bo-kho-goi-cuon.jpg</image:loc>
+      <image:loc>https://nguyenrestaurant.de/images/bo-kho-goi-cuon.jpg</image:loc>
       <image:title>Bo Kho - Beef Stew</image:title>
     </image:image>
     <image:image>
-      <image:loc>https://nguyenrestaurent.de/images/bun-thit-xao.jpg</image:loc>
+      <image:loc>https://nguyenrestaurant.de/images/bun-thit-xao.jpg</image:loc>
       <image:title>Bun Thit Xao - Grilled Meat Noodles</image:title>
     </image:image>
     <image:image>
-      <image:loc>https://nguyenrestaurent.de/images/curry.jpg</image:loc>
+      <image:loc>https://nguyenrestaurant.de/images/curry.jpg</image:loc>
       <image:title>Curry - Vietnamese Curry</image:title>
     </image:image>
     <image:image>
-      <image:loc>https://nguyenrestaurent.de/images/khai-vi-starter.jpg</image:loc>
+      <image:loc>https://nguyenrestaurant.de/images/khai-vi-starter.jpg</image:loc>
       <image:title>Khai Vi - Starter Platter</image:title>
     </image:image>
     <image:image>
-      <image:loc>https://nguyenrestaurent.de/images/fried-gyoza.jpg</image:loc>
+      <image:loc>https://nguyenrestaurant.de/images/fried-gyoza.jpg</image:loc>
       <image:title>Fried Gyoza - Fried Dumplings</image:title>
     </image:image>
     <image:image>
-      <image:loc>https://nguyenrestaurent.de/images/steamed-gyoza.jpg</image:loc>
+      <image:loc>https://nguyenrestaurant.de/images/steamed-gyoza.jpg</image:loc>
       <image:title>Steamed Gyoza - Steamed Dumplings</image:title>
     </image:image>
   </url>
 
   <url>
-    <loc>https://nguyenrestaurent.de/coupon</loc>
+    <loc>https://nguyenrestaurant.de/coupon</loc>
     <lastmod>2025-11-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
-    <xhtml:link rel="alternate" hreflang="de" href="https://nguyenrestaurent.de/coupon" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://nguyenrestaurent.de/en/coupon" />
-    <xhtml:link rel="alternate" hreflang="vi" href="https://nguyenrestaurent.de/vi/coupon" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://nguyenrestaurant.de/coupon" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://nguyenrestaurant.de/en/coupon" />
+    <xhtml:link rel="alternate" hreflang="vi" href="https://nguyenrestaurant.de/vi/coupon" />
   </url>
   <url>
-    <loc>https://nguyenrestaurent.de/en/coupon</loc>
+    <loc>https://nguyenrestaurant.de/en/coupon</loc>
     <lastmod>2025-11-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
-    <xhtml:link rel="alternate" hreflang="de" href="https://nguyenrestaurent.de/coupon" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://nguyenrestaurent.de/en/coupon" />
-    <xhtml:link rel="alternate" hreflang="vi" href="https://nguyenrestaurent.de/vi/coupon" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://nguyenrestaurant.de/coupon" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://nguyenrestaurant.de/en/coupon" />
+    <xhtml:link rel="alternate" hreflang="vi" href="https://nguyenrestaurant.de/vi/coupon" />
   </url>
   <url>
-    <loc>https://nguyenrestaurent.de/vi/coupon</loc>
+    <loc>https://nguyenrestaurant.de/vi/coupon</loc>
     <lastmod>2025-11-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
-    <xhtml:link rel="alternate" hreflang="de" href="https://nguyenrestaurent.de/coupon" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://nguyenrestaurent.de/en/coupon" />
-    <xhtml:link rel="alternate" hreflang="vi" href="https://nguyenrestaurent.de/vi/coupon" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://nguyenrestaurant.de/coupon" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://nguyenrestaurant.de/en/coupon" />
+    <xhtml:link rel="alternate" hreflang="vi" href="https://nguyenrestaurant.de/vi/coupon" />
   </url>
 
 </urlset>

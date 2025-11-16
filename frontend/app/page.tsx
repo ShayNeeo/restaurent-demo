@@ -72,15 +72,15 @@ const restaurantSchema = {
   "@type": "Restaurant",
   name: "Nguyen Vietnam Restaurant",
   image: [
-    "https://nguyenrestaurent.de/images/view-1.jpg",
-    "https://nguyenrestaurent.de/images/goi-cuon.jpg"
+    "https://nguyenrestaurant.de/images/view-1.jpg",
+    "https://nguyenrestaurant.de/images/goi-cuon.jpg"
   ],
-  url: "https://nguyenrestaurent.de",
+  url: "https://nguyenrestaurant.de",
   telephone: "+49 89 28803451",
   priceRange: "€€",
   servesCuisine: ["Vietnamese", "Asian Fusion", "Vegetarian Options"],
   acceptsReservations: "Yes",
-  hasMenu: "https://nguyenrestaurent.de/menu",
+  hasMenu: "https://nguyenrestaurant.de/menu",
   availableLanguage: [
     { "@type": "Language", name: "Deutsch" },
     { "@type": "Language", name: "English" },
@@ -99,7 +99,7 @@ const restaurantSchema = {
     longitude: "11.5812"
   },
   sameAs: [
-    "https://nguyenrestaurent.de",
+    "https://nguyenrestaurant.de",
     "https://www.google.com/maps/place/Nguyen+Vietnam+Restaurant"
   ],
   openingHoursSpecification: [
@@ -771,7 +771,7 @@ export default function HomePage() {
                 <p>
                   <span className="font-semibold text-brand-dark">Tiếng Việt:</span> Nhà hàng Nguyễn phục vụ thực khách
                   Việt Nam tại Đức với thực đơn truyền thống, không gian ấm áp và dịch vụ đặt bàn nhanh qua
-                  nguyenrestaurent.de.
+                  nguyenrestaurant.de.
                 </p>
               </div>
 

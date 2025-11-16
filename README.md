@@ -53,15 +53,15 @@ Quick start (production deployment with Cloudflare)
 
 **One-liner deployment:**
 ```bash
-export DOMAIN=saigon.ovh SETUP_CERTBOT=false ADMIN_EMAIL=admin@saigon.ovh && bash deploy/install.sh
+export DOMAIN=nguyenrestaurant.de SETUP_CERTBOT=false ADMIN_EMAIL=admin@nguyenrestaurant.de && bash deploy/install.sh
 ```
 
 **Or step-by-step:**
 ```bash
 # 1. Set configuration
-export DOMAIN=saigon.ovh
+export DOMAIN=nguyenrestaurant.de
 export SETUP_CERTBOT=false              # Skip certbot - Cloudflare handles SSL
-export ADMIN_EMAIL=admin@saigon.ovh     # For certificates & admin setup
+export ADMIN_EMAIL=admin@nguyenrestaurant.de     # For certificates & admin setup
 export INTERNAL_FRONTEND_PORT=3000      # (optional, defaults to 3000)
 
 # 2. Run installer (will prompt for admin password interactively)

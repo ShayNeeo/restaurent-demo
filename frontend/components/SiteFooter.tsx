@@ -10,7 +10,7 @@ export function SiteFooter() {
         </div>
         <div className="flex flex-col gap-2 text-sm text-white/70 sm:flex-row sm:items-center sm:gap-6">
           <a
-            href="https://nguyenrestaurent.de/impressum"
+            href="https://nguyenrestaurant.de/impressum"
             target="_blank"
             rel="noreferrer"
             className="transition hover:text-white"
@@ -18,7 +18,7 @@ export function SiteFooter() {
             Impressum
           </a>
           <a
-            href="https://nguyenrestaurent.de/datenschutz"
+            href="https://nguyenrestaurant.de/datenschutz"
             target="_blank"
             rel="noreferrer"
             className="transition hover:text-white"

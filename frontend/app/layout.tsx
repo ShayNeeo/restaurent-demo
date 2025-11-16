@@ -19,7 +19,7 @@ const kaushan = Kaushan_Script({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://nguyenrestaurent.de"),
+  metadataBase: new URL("https://nguyenrestaurant.de"),
   title: {
     default: "NGUYEN Vietnam Restaurant | München-Schwabing",
     template: "%s | NGUYEN Vietnam Restaurant"
