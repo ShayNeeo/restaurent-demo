@@ -1,5 +1,4 @@
-import "./globals.css";
-
+import "../globals.css";
 import type { Metadata } from "next";
 import { DM_Sans, Forum } from "next/font/google";
 import { CartProvider } from "@/components/cart/CartContext";
@@ -21,25 +20,25 @@ const forum = Forum({
 export const metadata: Metadata = {
   metadataBase: new URL("https://nguyenrestaurant.de"),
   title: {
-    default: "NGUYEN Vietnam Restaurant | München-Schwabing",
-    template: "%s | NGUYEN Vietnam Restaurant"
+    default: "Nhà hàng Nguyễn München | Tiếng Việt",
+    template: "%s | Nhà hàng Nguyễn"
   },
   description:
-    "Nguyen Vietnam Restaurant in München-Schwabing serviert authentische vietnamesische Küche für deutsch-, englisch- und vietnamesischsprachige Gäste. Reservierungen unter +49 89 28803451.",
+    "Thưởng thức ẩm thực Việt Nam chính hiệu tại Nhà hàng Nguyễn ở quận Schwabing, München. Thực đơn truyền thống, không gian ấm áp và dịch vụ đặt bàn nhanh.",
   keywords: [
-    "Nguyen Restaurant",
-    "vietnamesisches restaurant münchen",
-    "authentic vietnamese food germany",
-    "pho münchen schwabing",
-    "vietnamesische speisekarte",
-    "vietnamesisches restaurant vietnamese restaurant munich"
+    "Nhà hàng Nguyễn",
+    "nhà hàng Việt Nam München",
+    "ẩm thực Việt chính hiệu",
+    "Phở München Schwabing",
+    "thực đơn Việt Nam",
+    "nhà hàng Việt Nam Đức"
   ],
   category: "Restaurant",
-  authors: [{ name: "Nguyen Vietnam Restaurant" }],
-  creator: "Nguyen Vietnam Restaurant",
-  publisher: "Nguyen Vietnam Restaurant",
+  authors: [{ name: "Nhà hàng Nguyễn" }],
+  creator: "Nhà hàng Nguyễn",
+  publisher: "Nhà hàng Nguyễn",
   alternates: {
-    canonical: "https://nguyenrestaurant.de/",
+    canonical: "https://nguyenrestaurant.de/vi",
     languages: {
       "de-DE": "https://nguyenrestaurant.de/",
       en: "https://nguyenrestaurant.de/en",
@@ -49,28 +48,28 @@ export const metadata: Metadata = {
   },
   openGraph: {
     type: "website",
-    locale: "de_DE",
-    alternateLocale: ["en_US", "vi_VN"],
-    url: "https://nguyenrestaurant.de/",
-    siteName: "Nguyen Vietnam Restaurant München",
-    title: "Nguyen Vietnam Restaurant | Authentische vietnamesische Küche in München",
+    locale: "vi_VN",
+    alternateLocale: ["de_DE", "en_US"],
+    url: "https://nguyenrestaurant.de/vi",
+    siteName: "Nhà hàng Nguyễn München",
+    title: "Nhà hàng Nguyễn | Ẩm thực Việt Nam chính hiệu tại München",
     description:
-      "Reservieren Sie Ihren Tisch bei Nguyen Vietnam Restaurant in München-Schwabing – authentische vietnamesische Küche für Gäste aus Deutschland, Europa und Vietnam.",
+      "Đặt bàn tại Nhà hàng Nguyễn ở München-Schwabing – ẩm thực Việt Nam chính hiệu cho khách từ Đức, Châu Âu và Việt Nam.",
     images: [
       {
         url: "/images/view-2.jpg",
         width: 663,
         height: 510,
-        alt: "Nguyen Vietnam Restaurant München-Schwabing"
+        alt: "Nhà hàng Nguyễn München-Schwabing"
       }
     ]
   },
   twitter: {
     card: "summary_large_image",
     site: "@nguyenrestaurent",
-    title: "Nguyen Vietnam Restaurant München",
+    title: "Nhà hàng Nguyễn München",
     description:
-      "Authentische vietnamesische Küche im Herzen von München-Schwabing – willkommen bei Nguyen Vietnam Restaurant.",
+      "Ẩm thực Việt Nam chính hiệu tại trung tâm quận Schwabing, München – chào mừng đến Nhà hàng Nguyễn.",
     images: ["/images/view-2.jpg"]
   },
   robots: {
@@ -96,7 +95,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Nguyen Vietnam Restaurant"
+    title: "Nhà hàng Nguyễn"
   },
   formatDetection: {
     telephone: false
@@ -111,13 +110,13 @@ export const metadata: Metadata = {
   }
 };
 
-export default function RootLayout({
-  children
-}: Readonly<{
+export default function VietnameseLayout({
+  children,
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
-    <html lang="de">
+    <html lang="vi">
       <body
         className={`${dmSans.variable} ${forum.variable} bg-brand-light text-slate-900 antialiased`}
       >
@@ -130,4 +129,3 @@ export default function RootLayout({
     </html>
   );
 }
-

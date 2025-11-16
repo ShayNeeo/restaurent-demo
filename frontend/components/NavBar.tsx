@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { CartButton } from "./cart/CartButton";
+import { LanguageSwitcher } from "./LanguageSwitcher";
 
 const navLinks = [
   { label: "Über uns", href: "#geschichten" },
@@ -52,7 +53,7 @@ export function NavBar() {
             Nguyen Restaurant
           </Link>
 
-          <nav className="hidden items-center gap-6 text-sm font-medium text-white sm:flex">
+          <nav className="hidden items-center gap-4 text-sm font-medium text-white sm:flex">
             {navLinks.map((link) => (
               <a
                 key={link.href}
@@ -68,6 +69,7 @@ export function NavBar() {
             >
               089 28803451
             </a>
+            <LanguageSwitcher />
             <CartButton />
           </nav>
 
@@ -139,6 +141,9 @@ export function NavBar() {
         >
           Gutscheine
         </a>
+        <div className="flex justify-center border-t border-white/10 pt-4">
+          <LanguageSwitcher />
+        </div>
       </nav>
     </>
   );

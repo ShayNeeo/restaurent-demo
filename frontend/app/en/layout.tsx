@@ -1,5 +1,4 @@
-import "./globals.css";
-
+import "../globals.css";
 import type { Metadata } from "next";
 import { DM_Sans, Forum } from "next/font/google";
 import { CartProvider } from "@/components/cart/CartContext";
@@ -21,25 +20,25 @@ const forum = Forum({
 export const metadata: Metadata = {
   metadataBase: new URL("https://nguyenrestaurant.de"),
   title: {
-    default: "NGUYEN Vietnam Restaurant | München-Schwabing",
-    template: "%s | NGUYEN Vietnam Restaurant"
+    default: "Nguyen Vietnam Restaurant Munich | English",
+    template: "%s | Nguyen Vietnam Restaurant"
   },
   description:
-    "Nguyen Vietnam Restaurant in München-Schwabing serviert authentische vietnamesische Küche für deutsch-, englisch- und vietnamesischsprachige Gäste. Reservierungen unter +49 89 28803451.",
+    "Discover Nguyen Vietnam Restaurant in Munich-Schwabing. Experience authentic Vietnamese cuisine with English-friendly staff, handmade noodles, aromatic broths and vegan-friendly dishes.",
   keywords: [
-    "Nguyen Restaurant",
-    "vietnamesisches restaurant münchen",
-    "authentic vietnamese food germany",
-    "pho münchen schwabing",
-    "vietnamesische speisekarte",
-    "vietnamesisches restaurant vietnamese restaurant munich"
+    "Nguyen Restaurant Munich",
+    "Vietnamese restaurant Munich",
+    "authentic Vietnamese food Germany",
+    "Pho Munich Schwabing",
+    "Vietnamese menu",
+    "Vietnam restaurant Munich English"
   ],
   category: "Restaurant",
   authors: [{ name: "Nguyen Vietnam Restaurant" }],
   creator: "Nguyen Vietnam Restaurant",
   publisher: "Nguyen Vietnam Restaurant",
   alternates: {
-    canonical: "https://nguyenrestaurant.de/",
+    canonical: "https://nguyenrestaurant.de/en",
     languages: {
       "de-DE": "https://nguyenrestaurant.de/",
       en: "https://nguyenrestaurant.de/en",
@@ -49,28 +48,28 @@ export const metadata: Metadata = {
   },
   openGraph: {
     type: "website",
-    locale: "de_DE",
-    alternateLocale: ["en_US", "vi_VN"],
-    url: "https://nguyenrestaurant.de/",
-    siteName: "Nguyen Vietnam Restaurant München",
-    title: "Nguyen Vietnam Restaurant | Authentische vietnamesische Küche in München",
+    locale: "en_US",
+    alternateLocale: ["de_DE", "vi_VN"],
+    url: "https://nguyenrestaurant.de/en",
+    siteName: "Nguyen Vietnam Restaurant Munich",
+    title: "Nguyen Vietnam Restaurant | Authentic Vietnamese Cuisine in Munich",
     description:
-      "Reservieren Sie Ihren Tisch bei Nguyen Vietnam Restaurant in München-Schwabing – authentische vietnamesische Küche für Gäste aus Deutschland, Europa und Vietnam.",
+      "Reserve your table at Nguyen Vietnam Restaurant in Munich-Schwabing – authentic Vietnamese cuisine for guests from Germany, Europe and Vietnam.",
     images: [
       {
         url: "/images/view-2.jpg",
         width: 663,
         height: 510,
-        alt: "Nguyen Vietnam Restaurant München-Schwabing"
+        alt: "Nguyen Vietnam Restaurant Munich-Schwabing"
       }
     ]
   },
   twitter: {
     card: "summary_large_image",
     site: "@nguyenrestaurent",
-    title: "Nguyen Vietnam Restaurant München",
+    title: "Nguyen Vietnam Restaurant Munich",
     description:
-      "Authentische vietnamesische Küche im Herzen von München-Schwabing – willkommen bei Nguyen Vietnam Restaurant.",
+      "Authentic Vietnamese cuisine in the heart of Munich-Schwabing – welcome to Nguyen Vietnam Restaurant.",
     images: ["/images/view-2.jpg"]
   },
   robots: {
@@ -104,20 +103,20 @@ export const metadata: Metadata = {
   manifest: "/site.webmanifest",
   other: {
     "geo.position": "48.1598;11.5812",
-    "geo.placename": "München",
+    "geo.placename": "Munich",
     "geo.region": "DE-BY",
     "msapplication-TileColor": "#A0644E",
     "msapplication-config": "/browserconfig.xml"
   }
 };
 
-export default function RootLayout({
-  children
-}: Readonly<{
+export default function EnglishLayout({
+  children,
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
-    <html lang="de">
+    <html lang="en">
       <body
         className={`${dmSans.variable} ${forum.variable} bg-brand-light text-slate-900 antialiased`}
       >
@@ -130,4 +129,3 @@ export default function RootLayout({
     </html>
   );
 }
-

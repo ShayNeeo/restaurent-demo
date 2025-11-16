@@ -754,26 +754,6 @@ export default function HomePage() {
                 Herzlich willkommen im Herzen von München-Schwabing. Erleben Sie die unverwechselbar leichte vietnamesische Küche in gastfreundlicher Atmosphäre mit aufmerksamen Service und frisch zubereiteten Köstlichkeiten.
               </p>
 
-              <div
-                className="grid gap-3 rounded-3xl bg-white/70 p-6 text-left text-sm leading-relaxed text-slate-700 shadow-soft"
-                aria-label="Mehrsprachige Begrüßung für deutsch-, englisch- und vietnamesischsprachige Gäste"
-              >
-                <p>
-                  <span className="font-semibold text-brand-dark">Deutsch:</span> Entdecken Sie authentische
-                  vietnamesische Spezialitäten wie Pho, Bún und Goi Cuon direkt in München-Schwabing – täglich frisch
-                  gekocht und auch zum Mitnehmen verfügbar.
-                </p>
-                <p>
-                  <span className="font-semibold text-brand-dark">English:</span> Experience a modern Vietnamese
-                  restaurant in Munich where handmade noodles, aromatic broths and vegan-friendly dishes welcome
-                  international guests.
-                </p>
-                <p>
-                  <span className="font-semibold text-brand-dark">Tiếng Việt:</span> Nhà hàng Nguyễn phục vụ thực khách
-                  Việt Nam tại Đức với thực đơn truyền thống, không gian ấm áp và dịch vụ đặt bàn nhanh qua
-                  nguyenrestaurant.de.
-                </p>
-              </div>
 
               <div className="flex gap-4 justify-center pt-8 flex-wrap">
                 <a href="#speisekarte" className="btn-primary">
