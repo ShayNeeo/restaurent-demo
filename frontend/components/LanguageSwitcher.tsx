@@ -15,7 +15,7 @@ export function LanguageSwitcher() {
   const [currentLang, setCurrentLang] = useState("de");
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const listenerRef = useRef<((event: MouseEvent) => void) | null>(null);
+  const isOpenRef = useRef(isOpen);
 
   useEffect(() => {
     // Detect current language from pathname
@@ -31,43 +31,29 @@ export function LanguageSwitcher() {
   }, [pathname]);
 
   useEffect(() => {
-    // Create click outside handler
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        event.target instanceof Node &&
-        !dropdownRef.current.contains(event.target)
-      ) {
-        setIsOpen(false);
-      }
-    };
-
-    // Only manage listener when dropdown is open
-    if (isOpen && !listenerRef.current) {
-      listenerRef.current = handleClickOutside;
-      document.addEventListener("mousedown", handleClickOutside);
-    } else if (!isOpen && listenerRef.current) {
-      const listener = listenerRef.current;
-      try {
-        document.removeEventListener("mousedown", listener);
-      } catch (e) {
-        // Silently fail if listener doesn't exist
-      }
-      listenerRef.current = null;
-    }
-
-    // Cleanup on unmount
-    return () => {
-      if (listenerRef.current) {
-        try {
-          document.removeEventListener("mousedown", listenerRef.current);
-        } catch (e) {
-          // Silently fail if listener doesn't exist
-        }
-        listenerRef.current = null;
-      }
-    };
+    isOpenRef.current = isOpen;
   }, [isOpen]);
+
+  const handleDocumentClick = useCallback((event: MouseEvent) => {
+    if (!isOpenRef.current) {
+      return;
+    }
+    const targetNode = event.target;
+    if (
+      dropdownRef.current &&
+      targetNode instanceof Node &&
+      !dropdownRef.current.contains(targetNode)
+    ) {
+      setIsOpen(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    document.addEventListener("mousedown", handleDocumentClick);
+    return () => {
+      document.removeEventListener("mousedown", handleDocumentClick);
+    };
+  }, [handleDocumentClick]);
 
   const handleLanguageChange = (langCode: string) => {
     if (langCode === currentLang) {
