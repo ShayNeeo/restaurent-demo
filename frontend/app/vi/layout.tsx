@@ -73,7 +73,13 @@ export const metadata: Metadata = {
       { url: "/favicon.ico", type: "image/x-icon" }
     ],
     apple: "/apple-touch-icon.png",
-    shortcut: "/favicon.ico"
+    shortcut: "/favicon.ico",
+    other: [
+      {
+        rel: "apple-touch-icon-precomposed",
+        url: "/apple-touch-icon.png"
+      }
+    ]
   },
   appleWebApp: {
     capable: true,
