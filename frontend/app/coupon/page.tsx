@@ -1,8 +1,48 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import Script from "next/script";
 import { useCart } from "@/components/cart/CartContext";
 import { getBackendUrl } from "@/lib/api";
+
+const faqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: [
+    {
+      "@type": "Question",
+      name: "Wie funktionieren Geschenkgutscheine?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Geschenkgutscheine sind digital und werden nach Zahlung per E-Mail verschickt. Sie erhalten automatisch 10% Bonusguthaben on top."
+      }
+    },
+    {
+      "@type": "Question",
+      name: "Wo kann ich Gutscheincodes einlösen?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Codes lassen sich sowohl vor Ort als auch bei Onlinebestellungen einlösen. Geben Sie den Code einfach beim Checkout ein."
+      }
+    },
+    {
+      "@type": "Question",
+      name: "Gibt es einen Mindestbetrag für Geschenkgutscheine?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Ja, der Mindestbetrag für Geschenkgutscheine beträgt 10 €. Sie können auch individuelle Beträge zwischen 10 € und 500 € wählen."
+      }
+    },
+    {
+      "@type": "Question",
+      name: "Wie lange sind Gutscheine gültig?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Geschenkgutscheine bleiben unbegrenzt gültig. Restwerte werden automatisch gespeichert und können bei der nächsten Bestellung eingelöst werden."
+      }
+    }
+  ]
+};
 
 function formatCurrency(value: number) {
   return new Intl.NumberFormat("de-DE", {
@@ -132,7 +172,11 @@ export default function CouponPage() {
   };
 
   return (
-    <main className="bg-brand-light/70 pt-24 pb-20">
+    <>
+      <Script id="faq-schema" type="application/ld+json" strategy="afterInteractive">
+        {JSON.stringify(faqSchema)}
+      </Script>
+      <main className="bg-brand-light/70 pt-24 pb-20">
       <section className="mx-auto w-full max-w-5xl px-6">
         <header className="text-center">
           <span className="badge bg-brand/10 text-brand">Gutscheine</span>
@@ -308,6 +352,7 @@ export default function CouponPage() {
         </section>
       </section>
     </main>
+    </>
   );
 }
 

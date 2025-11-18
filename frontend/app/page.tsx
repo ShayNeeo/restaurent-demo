@@ -69,18 +69,25 @@ const productMeta: Record<string, ProductMeta> = {
 
 const restaurantSchema = {
   "@context": "https://schema.org",
-  "@type": "Restaurant",
-  name: "Nguyen Vietnam Restaurant",
+  "@type": ["Restaurant", "LocalBusiness", "FoodEstablishment"],
+  name: "NGUYEN Vietnam Restaurant",
+  alternateName: "Nguyen Restaurant München",
+  description: "Authentische vietnamesische Küche in München-Schwabing seit 1996. Familiengeführtes Restaurant mit frisch zubereiteten Gerichten.",
   image: [
     "https://nguyenrestaurant.de/images/view-1.jpg",
+    "https://nguyenrestaurant.de/images/view-2.jpg",
+    "https://nguyenrestaurant.de/images/view-3.jpg",
+    "https://nguyenrestaurant.de/images/view-4.jpg",
+    "https://nguyenrestaurant.de/images/pho-chay.jpg",
     "https://nguyenrestaurant.de/images/goi-cuon.jpg"
   ],
   url: "https://nguyenrestaurant.de",
   telephone: "+49 89 28803451",
   priceRange: "€€",
   servesCuisine: ["Vietnamese", "Asian Fusion", "Vegetarian Options"],
-  acceptsReservations: "Yes",
+  acceptsReservations: "True",
   hasMenu: "https://nguyenrestaurant.de/menu",
+  menu: "https://nguyenrestaurant.de/menu",
   availableLanguage: [
     { "@type": "Language", name: "Deutsch" },
     { "@type": "Language", name: "English" },
@@ -90,14 +97,20 @@ const restaurantSchema = {
     "@type": "PostalAddress",
     streetAddress: "Georgenstraße 67",
     addressLocality: "München",
+    addressRegion: "Bayern",
     postalCode: "80799",
     addressCountry: "DE"
   },
   geo: {
     "@type": "GeoCoordinates",
-    latitude: "48.1598",
-    longitude: "11.5812"
+    latitude: 48.1598,
+    longitude: 11.5812
   },
+  areaServed: {
+    "@type": "City",
+    name: "München"
+  },
+  foundingDate: "1996",
   sameAs: [
     "https://nguyenrestaurant.de",
     "https://www.google.com/maps/place/Nguyen+Vietnam+Restaurant"
@@ -121,7 +134,9 @@ const restaurantSchema = {
       opens: "12:00",
       closes: "22:30"
     }
-  ]
+  ],
+  paymentAccepted: "Cash, Credit Card, PayPal",
+  currenciesAccepted: "EUR"
 };
 
 function ScrollReveal({ children, className = "" }: { children: ReactNode; className?: string }) {
@@ -729,6 +744,20 @@ export default function HomePage() {
       `}</style>
       <Script id="restaurant-schema-de" type="application/ld+json" strategy="afterInteractive">
         {JSON.stringify(restaurantSchema)}
+      </Script>
+      <Script id="breadcrumb-schema-de" type="application/ld+json" strategy="afterInteractive">
+        {JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "BreadcrumbList",
+          itemListElement: [
+            {
+              "@type": "ListItem",
+              position: 1,
+              name: "Startseite",
+              item: "https://nguyenrestaurant.de/"
+            }
+          ]
+        })}
       </Script>
 
       <NavBar />

@@ -1,7 +1,29 @@
+# Allow all search engines
 User-agent: *
+Allow: /
 Disallow: /admin/
 Disallow: /manage/
 Disallow: /checkout/
 Disallow: /thank-you/
+Disallow: /api/
 
+# Googlebot specific rules
+User-agent: Googlebot
+Allow: /
+Disallow: /admin/
+Disallow: /manage/
+Disallow: /checkout/
+Disallow: /thank-you/
+Disallow: /api/
+
+# Bingbot
+User-agent: Bingbot
+Allow: /
+Disallow: /admin/
+Disallow: /manage/
+Disallow: /checkout/
+Disallow: /thank-you/
+Disallow: /api/
+
+# Sitemap location
 Sitemap: https://nguyenrestaurant.de/sitemap.xml

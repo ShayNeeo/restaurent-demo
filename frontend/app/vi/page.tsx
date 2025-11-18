@@ -69,18 +69,25 @@ const productMeta: Record<string, ProductMeta> = {
 
 const restaurantSchema = {
   "@context": "https://schema.org",
-  "@type": "Restaurant",
-  name: "Nhà hàng Nguyễn",
+  "@type": ["Restaurant", "LocalBusiness", "FoodEstablishment"],
+  name: "Nhà hàng NGUYEN",
+  alternateName: "Nguyen Restaurant München",
+  description: "Ẩm thực Việt Nam chính hiệu tại München-Schwabing từ năm 1996. Nhà hàng gia đình với các món ăn được chế biến tươi ngon.",
   image: [
     "https://nguyenrestaurant.de/images/view-1.jpg",
+    "https://nguyenrestaurant.de/images/view-2.jpg",
+    "https://nguyenrestaurant.de/images/view-3.jpg",
+    "https://nguyenrestaurant.de/images/view-4.jpg",
+    "https://nguyenrestaurant.de/images/pho-chay.jpg",
     "https://nguyenrestaurant.de/images/goi-cuon.jpg"
   ],
   url: "https://nguyenrestaurant.de/vi",
   telephone: "+49 89 28803451",
   priceRange: "€€",
   servesCuisine: ["Vietnamese", "Asian Fusion", "Vegetarian Options"],
-  acceptsReservations: "Yes",
+  acceptsReservations: "True",
   hasMenu: "https://nguyenrestaurant.de/vi/menu",
+  menu: "https://nguyenrestaurant.de/vi/menu",
   availableLanguage: [
     { "@type": "Language", name: "Deutsch" },
     { "@type": "Language", name: "English" },
@@ -90,14 +97,20 @@ const restaurantSchema = {
     "@type": "PostalAddress",
     streetAddress: "Georgenstraße 67",
     addressLocality: "München",
+    addressRegion: "Bayern",
     postalCode: "80799",
     addressCountry: "DE"
   },
   geo: {
     "@type": "GeoCoordinates",
-    latitude: "48.1598",
-    longitude: "11.5812"
+    latitude: 48.1598,
+    longitude: 11.5812
   },
+  areaServed: {
+    "@type": "City",
+    name: "München"
+  },
+  foundingDate: "1996",
   sameAs: [
     "https://nguyenrestaurant.de/vi",
     "https://www.google.com/maps/place/Nguyen+Vietnam+Restaurant"
@@ -121,7 +134,9 @@ const restaurantSchema = {
       opens: "12:00",
       closes: "22:30"
     }
-  ]
+  ],
+  paymentAccepted: "Cash, Credit Card, PayPal",
+  currenciesAccepted: "EUR"
 };
 
 function ScrollReveal({ children, className = "" }: { children: ReactNode; className?: string }) {
@@ -564,6 +579,20 @@ export default function VietnameseHomePage() {
       `}</style>
       <Script id="restaurant-schema-vi" type="application/ld+json" strategy="afterInteractive">
         {JSON.stringify(restaurantSchema)}
+      </Script>
+      <Script id="breadcrumb-schema-vi" type="application/ld+json" strategy="afterInteractive">
+        {JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "BreadcrumbList",
+          itemListElement: [
+            {
+              "@type": "ListItem",
+              position: 1,
+              name: "Trang chủ",
+              item: "https://nguyenrestaurant.de/vi"
+            }
+          ]
+        })}
       </Script>
 
       <NavBar />

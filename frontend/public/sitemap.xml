@@ -1,0 +1,354 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+
+  <!-- Homepage - German (Primary) -->
+  <url>
+    <loc>https://nguyenrestaurant.de/</loc>
+    <lastmod>2025-11-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="de" href="https://nguyenrestaurant.de/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://nguyenrestaurant.de/en" />
+    <xhtml:link rel="alternate" hreflang="vi" href="https://nguyenrestaurant.de/vi" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://nguyenrestaurant.de/" />
+    <image:image>
+      <image:loc>https://nguyenrestaurant.de/images/view-1.jpg</image:loc>
+      <image:title>NGUYEN Vietnam Restaurant München - Restaurant Interior View 1</image:title>
+      <image:caption>Authentic Vietnamese restaurant atmosphere in Munich-Schwabing</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://nguyenrestaurant.de/images/view-2.jpg</image:loc>
+      <image:title>NGUYEN Vietnam Restaurant München - Restaurant Interior View 2</image:title>
+      <image:caption>Traditional Vietnamese dining experience in Munich</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://nguyenrestaurant.de/images/view-3.jpg</image:loc>
+      <image:title>NGUYEN Vietnam Restaurant München - Restaurant Interior View 3</image:title>
+      <image:caption>Warm and welcoming atmosphere at NGUYEN Restaurant</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://nguyenrestaurant.de/images/view-4.jpg</image:loc>
+      <image:title>NGUYEN Vietnam Restaurant München - Restaurant Interior View 4</image:title>
+      <image:caption>Family-run Vietnamese restaurant since 1996</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://nguyenrestaurant.de/images/view-5.jpg</image:loc>
+      <image:title>NGUYEN Vietnam Restaurant München - Restaurant Interior View 5</image:title>
+      <image:caption>Authentic Vietnamese cuisine in Munich-Schwabing</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://nguyenrestaurant.de/images/view-6.jpg</image:loc>
+      <image:title>NGUYEN Vietnam Restaurant München - Restaurant Interior View 6</image:title>
+      <image:caption>Vietnamese restaurant with traditional decor in Munich</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://nguyenrestaurant.de/images/view-7.jpg</image:loc>
+      <image:title>NGUYEN Vietnam Restaurant München - Restaurant Interior View 7</image:title>
+      <image:caption>Cozy dining space at NGUYEN Vietnam Restaurant</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://nguyenrestaurant.de/images/view-8.jpg</image:loc>
+      <image:title>NGUYEN Vietnam Restaurant München - Restaurant Interior View 8</image:title>
+      <image:caption>Experience authentic Vietnamese food in Munich</image:caption>
+    </image:image>
+  </url>
+
+  <!-- Homepage - English -->
+  <url>
+    <loc>https://nguyenrestaurant.de/en</loc>
+    <lastmod>2025-11-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.95</priority>
+    <xhtml:link rel="alternate" hreflang="de" href="https://nguyenrestaurant.de/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://nguyenrestaurant.de/en" />
+    <xhtml:link rel="alternate" hreflang="vi" href="https://nguyenrestaurant.de/vi" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://nguyenrestaurant.de/" />
+    <image:image>
+      <image:loc>https://nguyenrestaurant.de/images/view-1.jpg</image:loc>
+      <image:title>NGUYEN Vietnam Restaurant Munich - Restaurant Interior View 1</image:title>
+      <image:caption>Authentic Vietnamese restaurant atmosphere in Munich-Schwabing</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://nguyenrestaurant.de/images/view-2.jpg</image:loc>
+      <image:title>NGUYEN Vietnam Restaurant Munich - Restaurant Interior View 2</image:title>
+      <image:caption>Traditional Vietnamese dining experience in Munich</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://nguyenrestaurant.de/images/view-3.jpg</image:loc>
+      <image:title>NGUYEN Vietnam Restaurant Munich - Restaurant Interior View 3</image:title>
+      <image:caption>Warm and welcoming atmosphere at NGUYEN Restaurant</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://nguyenrestaurant.de/images/view-4.jpg</image:loc>
+      <image:title>NGUYEN Vietnam Restaurant Munich - Restaurant Interior View 4</image:title>
+      <image:caption>Family-run Vietnamese restaurant since 1996</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://nguyenrestaurant.de/images/view-5.jpg</image:loc>
+      <image:title>NGUYEN Vietnam Restaurant Munich - Restaurant Interior View 5</image:title>
+      <image:caption>Authentic Vietnamese cuisine in Munich-Schwabing</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://nguyenrestaurant.de/images/view-6.jpg</image:loc>
+      <image:title>NGUYEN Vietnam Restaurant Munich - Restaurant Interior View 6</image:title>
+      <image:caption>Vietnamese restaurant with traditional decor in Munich</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://nguyenrestaurant.de/images/view-7.jpg</image:loc>
+      <image:title>NGUYEN Vietnam Restaurant Munich - Restaurant Interior View 7</image:title>
+      <image:caption>Cozy dining space at NGUYEN Vietnam Restaurant</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://nguyenrestaurant.de/images/view-8.jpg</image:loc>
+      <image:title>NGUYEN Vietnam Restaurant Munich - Restaurant Interior View 8</image:title>
+      <image:caption>Experience authentic Vietnamese food in Munich</image:caption>
+    </image:image>
+  </url>
+
+  <!-- Homepage - Vietnamese -->
+  <url>
+    <loc>https://nguyenrestaurant.de/vi</loc>
+    <lastmod>2025-11-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.95</priority>
+    <xhtml:link rel="alternate" hreflang="de" href="https://nguyenrestaurant.de/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://nguyenrestaurant.de/en" />
+    <xhtml:link rel="alternate" hreflang="vi" href="https://nguyenrestaurant.de/vi" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://nguyenrestaurant.de/" />
+    <image:image>
+      <image:loc>https://nguyenrestaurant.de/images/view-1.jpg</image:loc>
+      <image:title>Nhà hàng NGUYEN München - Không gian nhà hàng 1</image:title>
+      <image:caption>Không gian nhà hàng Việt Nam chính hiệu tại München-Schwabing</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://nguyenrestaurant.de/images/view-2.jpg</image:loc>
+      <image:title>Nhà hàng NGUYEN München - Không gian nhà hàng 2</image:title>
+      <image:caption>Trải nghiệm ẩm thực Việt Nam truyền thống tại München</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://nguyenrestaurant.de/images/view-3.jpg</image:loc>
+      <image:title>Nhà hàng NGUYEN München - Không gian nhà hàng 3</image:title>
+      <image:caption>Không gian ấm cúng và thân thiện tại Nhà hàng NGUYEN</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://nguyenrestaurant.de/images/view-4.jpg</image:loc>
+      <image:title>Nhà hàng NGUYEN München - Không gian nhà hàng 4</image:title>
+      <image:caption>Nhà hàng Việt Nam gia đình từ năm 1996</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://nguyenrestaurant.de/images/view-5.jpg</image:loc>
+      <image:title>Nhà hàng NGUYEN München - Không gian nhà hàng 5</image:title>
+      <image:caption>Ẩm thực Việt Nam chính hiệu tại München-Schwabing</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://nguyenrestaurant.de/images/view-6.jpg</image:loc>
+      <image:title>Nhà hàng NGUYEN München - Không gian nhà hàng 6</image:title>
+      <image:caption>Nhà hàng Việt Nam với trang trí truyền thống tại München</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://nguyenrestaurant.de/images/view-7.jpg</image:loc>
+      <image:title>Nhà hàng NGUYEN München - Không gian nhà hàng 7</image:title>
+      <image:caption>Không gian ăn uống ấm cúng tại Nhà hàng NGUYEN</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://nguyenrestaurant.de/images/view-8.jpg</image:loc>
+      <image:title>Nhà hàng NGUYEN München - Không gian nhà hàng 8</image:title>
+      <image:caption>Thưởng thức ẩm thực Việt Nam chính hiệu tại München</image:caption>
+    </image:image>
+  </url>
+
+  <!-- Menu Page - German -->
+  <url>
+    <loc>https://nguyenrestaurant.de/menu</loc>
+    <lastmod>2025-11-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="de" href="https://nguyenrestaurant.de/menu" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://nguyenrestaurant.de/en/menu" />
+    <xhtml:link rel="alternate" hreflang="vi" href="https://nguyenrestaurant.de/vi/menu" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://nguyenrestaurant.de/menu" />
+    <image:image>
+      <image:loc>https://nguyenrestaurant.de/images/pho-chay.jpg</image:loc>
+      <image:title>Pho Chay - Vegetarisches Pho | NGUYEN Vietnam Restaurant</image:title>
+      <image:caption>Traditionelles vegetarisches Pho mit frischen Kräutern und Gemüse</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://nguyenrestaurant.de/images/goi-cuon.jpg</image:loc>
+      <image:title>Goi Cuon - Frühlingsrollen | NGUYEN Vietnam Restaurant</image:title>
+      <image:caption>Frische vietnamesische Frühlingsrollen mit Garnelen und Kräutern</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://nguyenrestaurant.de/images/bo-kho-goi-cuon.jpg</image:loc>
+      <image:title>Bo Kho - Vietnamesischer Rindereintopf | NGUYEN Vietnam Restaurant</image:title>
+      <image:caption>Würziger vietnamesischer Rindereintopf mit aromatischen Gewürzen</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://nguyenrestaurant.de/images/bun-thit-xao.jpg</image:loc>
+      <image:title>Bun Thit Xao - Gegrillte Fleischnudeln | NGUYEN Vietnam Restaurant</image:title>
+      <image:caption>Traditionelle vietnamesische Nudeln mit gegrilltem Fleisch</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://nguyenrestaurant.de/images/curry.jpg</image:loc>
+      <image:title>Curry - Vietnamesisches Curry | NGUYEN Vietnam Restaurant</image:title>
+      <image:caption>Köstliches vietnamesisches Curry mit Kokosmilch und Gewürzen</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://nguyenrestaurant.de/images/khai-vi-starter.jpg</image:loc>
+      <image:title>Khai Vi - Vorspeisenplatte | NGUYEN Vietnam Restaurant</image:title>
+      <image:caption>Vielfältige Auswahl vietnamesischer Vorspeisen</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://nguyenrestaurant.de/images/fried-gyoza.jpg</image:loc>
+      <image:title>Frittierte Gyoza - Frittierte Teigtaschen | NGUYEN Vietnam Restaurant</image:title>
+      <image:caption>Knusprige frittierte vietnamesische Teigtaschen</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://nguyenrestaurant.de/images/steamed-gyoza.jpg</image:loc>
+      <image:title>Gedämpfte Gyoza - Gedämpfte Teigtaschen | NGUYEN Vietnam Restaurant</image:title>
+      <image:caption>Zarte gedämpfte vietnamesische Teigtaschen</image:caption>
+    </image:image>
+  </url>
+
+  <!-- Menu Page - English -->
+  <url>
+    <loc>https://nguyenrestaurant.de/en/menu</loc>
+    <lastmod>2025-11-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="de" href="https://nguyenrestaurant.de/menu" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://nguyenrestaurant.de/en/menu" />
+    <xhtml:link rel="alternate" hreflang="vi" href="https://nguyenrestaurant.de/vi/menu" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://nguyenrestaurant.de/menu" />
+    <image:image>
+      <image:loc>https://nguyenrestaurant.de/images/pho-chay.jpg</image:loc>
+      <image:title>Pho Chay - Vegetarian Pho | NGUYEN Vietnam Restaurant</image:title>
+      <image:caption>Traditional vegetarian pho with fresh herbs and vegetables</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://nguyenrestaurant.de/images/goi-cuon.jpg</image:loc>
+      <image:title>Goi Cuon - Spring Rolls | NGUYEN Vietnam Restaurant</image:title>
+      <image:caption>Fresh Vietnamese spring rolls with shrimp and herbs</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://nguyenrestaurant.de/images/bo-kho-goi-cuon.jpg</image:loc>
+      <image:title>Bo Kho - Vietnamese Beef Stew | NGUYEN Vietnam Restaurant</image:title>
+      <image:caption>Spicy Vietnamese beef stew with aromatic spices</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://nguyenrestaurant.de/images/bun-thit-xao.jpg</image:loc>
+      <image:title>Bun Thit Xao - Grilled Meat Noodles | NGUYEN Vietnam Restaurant</image:title>
+      <image:caption>Traditional Vietnamese noodles with grilled meat</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://nguyenrestaurant.de/images/curry.jpg</image:loc>
+      <image:title>Curry - Vietnamese Curry | NGUYEN Vietnam Restaurant</image:title>
+      <image:caption>Delicious Vietnamese curry with coconut milk and spices</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://nguyenrestaurant.de/images/khai-vi-starter.jpg</image:loc>
+      <image:title>Khai Vi - Starter Platter | NGUYEN Vietnam Restaurant</image:title>
+      <image:caption>Diverse selection of Vietnamese starters</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://nguyenrestaurant.de/images/fried-gyoza.jpg</image:loc>
+      <image:title>Fried Gyoza - Fried Dumplings | NGUYEN Vietnam Restaurant</image:title>
+      <image:caption>Crispy fried Vietnamese dumplings</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://nguyenrestaurant.de/images/steamed-gyoza.jpg</image:loc>
+      <image:title>Steamed Gyoza - Steamed Dumplings | NGUYEN Vietnam Restaurant</image:title>
+      <image:caption>Tender steamed Vietnamese dumplings</image:caption>
+    </image:image>
+  </url>
+
+  <!-- Menu Page - Vietnamese -->
+  <url>
+    <loc>https://nguyenrestaurant.de/vi/menu</loc>
+    <lastmod>2025-11-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="de" href="https://nguyenrestaurant.de/menu" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://nguyenrestaurant.de/en/menu" />
+    <xhtml:link rel="alternate" hreflang="vi" href="https://nguyenrestaurant.de/vi/menu" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://nguyenrestaurant.de/menu" />
+    <image:image>
+      <image:loc>https://nguyenrestaurant.de/images/pho-chay.jpg</image:loc>
+      <image:title>Phở Chay - Phở Chay | Nhà hàng NGUYEN</image:title>
+      <image:caption>Phở chay truyền thống với rau thơm và rau củ tươi</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://nguyenrestaurant.de/images/goi-cuon.jpg</image:loc>
+      <image:title>Gỏi Cuốn - Gỏi Cuốn | Nhà hàng NGUYEN</image:title>
+      <image:caption>Gỏi cuốn tươi với tôm và rau thơm</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://nguyenrestaurant.de/images/bo-kho-goi-cuon.jpg</image:loc>
+      <image:title>Bò Kho - Bò Kho | Nhà hàng NGUYEN</image:title>
+      <image:caption>Bò kho cay với gia vị thơm</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://nguyenrestaurant.de/images/bun-thit-xao.jpg</image:loc>
+      <image:title>Bún Thịt Xào - Bún Thịt Nướng | Nhà hàng NGUYEN</image:title>
+      <image:caption>Bún truyền thống với thịt nướng</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://nguyenrestaurant.de/images/curry.jpg</image:loc>
+      <image:title>Cà Ri - Cà Ri Việt Nam | Nhà hàng NGUYEN</image:title>
+      <image:caption>Cà ri Việt Nam ngon với nước cốt dừa và gia vị</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://nguyenrestaurant.de/images/khai-vi-starter.jpg</image:loc>
+      <image:title>Khai Vị - Đĩa Khai Vị | Nhà hàng NGUYEN</image:title>
+      <image:caption>Lựa chọn đa dạng các món khai vị Việt Nam</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://nguyenrestaurant.de/images/fried-gyoza.jpg</image:loc>
+      <image:title>Gyoza Chiên - Bánh Bao Chiên | Nhà hàng NGUYEN</image:title>
+      <image:caption>Bánh bao chiên giòn kiểu Việt Nam</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://nguyenrestaurant.de/images/steamed-gyoza.jpg</image:loc>
+      <image:title>Gyoza Hấp - Bánh Bao Hấp | Nhà hàng NGUYEN</image:title>
+      <image:caption>Bánh bao hấp mềm kiểu Việt Nam</image:caption>
+    </image:image>
+  </url>
+
+  <!-- Coupon Page - German -->
+  <url>
+    <loc>https://nguyenrestaurant.de/coupon</loc>
+    <lastmod>2025-11-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="de" href="https://nguyenrestaurant.de/coupon" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://nguyenrestaurant.de/en/coupon" />
+    <xhtml:link rel="alternate" hreflang="vi" href="https://nguyenrestaurant.de/vi/coupon" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://nguyenrestaurant.de/coupon" />
+  </url>
+
+  <!-- Coupon Page - English -->
+  <url>
+    <loc>https://nguyenrestaurant.de/en/coupon</loc>
+    <lastmod>2025-11-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="de" href="https://nguyenrestaurant.de/coupon" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://nguyenrestaurant.de/en/coupon" />
+    <xhtml:link rel="alternate" hreflang="vi" href="https://nguyenrestaurant.de/vi/coupon" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://nguyenrestaurant.de/coupon" />
+  </url>
+
+  <!-- Coupon Page - Vietnamese -->
+  <url>
+    <loc>https://nguyenrestaurant.de/vi/coupon</loc>
+    <lastmod>2025-11-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="de" href="https://nguyenrestaurant.de/coupon" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://nguyenrestaurant.de/en/coupon" />
+    <xhtml:link rel="alternate" hreflang="vi" href="https://nguyenrestaurant.de/vi/coupon" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://nguyenrestaurant.de/coupon" />
+  </url>
+
+</urlset>
