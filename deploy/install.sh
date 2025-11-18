@@ -137,10 +137,10 @@ echo "[install] Installing frontend deps (Next.js)..."
 rm -f package-lock.json
 
 echo "[install] Running npm install..."
-npm install
+npm install --legacy-peer-deps
 
 echo "[install] Fixing npm vulnerabilities..."
-npm audit fix --force --audit-level=moderate 2>/dev/null || true
+npm audit fix --force --legacy-peer-deps --audit-level=moderate 2>/dev/null || true
 
 echo "[install] Building Next.js frontend..."
 echo "[install] Note: old-page.tsx is excluded from build (reserved for non-deployment use)"
