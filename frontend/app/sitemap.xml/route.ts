@@ -2,8 +2,8 @@ import { NextResponse } from 'next/server';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 
-export const dynamic = 'force-static';
-export const revalidate = 3600;
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export async function GET() {
   try {
@@ -18,8 +18,9 @@ export async function GET() {
       status: 200,
       headers: {
         'Content-Type': 'application/xml; charset=utf-8',
-        'Cache-Control': 'public, max-age=3600, s-maxage=3600',
+        'Cache-Control': 'no-cache, no-store, must-revalidate, max-age=0',
         'X-Content-Type-Options': 'nosniff',
+        'Vary': 'Accept',
       },
     });
   } catch (error) {
