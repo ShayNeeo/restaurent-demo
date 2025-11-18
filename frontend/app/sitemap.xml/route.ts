@@ -7,7 +7,7 @@ export const revalidate = 3600;
 
 export async function GET() {
   try {
-    const sitemapPath = join(process.cwd(), 'public', 'sitemap.xml');
+    const sitemapPath = join(process.cwd(), 'public', 'sitemap.xml.template');
     const sitemapContent = readFileSync(sitemapPath, 'utf-8');
     
     // Ensure the content is properly formatted XML (remove any BOM or extra whitespace)
