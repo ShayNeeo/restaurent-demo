@@ -25,6 +25,9 @@ const config: Config = {
       backgroundImage: {
         "hero-overlay":
           "linear-gradient(135deg, rgba(179, 142, 90, 0.85), rgba(44, 44, 44, 0.6))"
+      },
+      animation: {
+        "pulse-slow": "pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite",
       }
     }
   },
