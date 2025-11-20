@@ -351,4 +351,12 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://nguyenrestaurant.de/coupon" />
   </url>
 
+  <!-- Example Page (New Design) -->
+  <url>
+    <loc>https://nguyenrestaurant.de/example</loc>
+    <lastmod>2025-11-20</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+  </url>
+
 </urlset>

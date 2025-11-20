@@ -13,6 +13,13 @@ const config: Config = {
           accent: "#CC8866",
           light: "#F7F7F0",
           dark: "#2C2C2C"
+        },
+        mai: {
+          cream: "#FDF8EE", // The warm background
+          peach: "#E6A696", // The hero gradient color
+          dark: "#282824", // The text color
+          gray: "#8A8A8A",
+          pill: "#F4F0E6"
         }
       },
       fontFamily: {
