@@ -1,11 +1,10 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
-import type { CSSProperties, ReactNode } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
-import { NavBar } from "@/components/NavBar";
-import { SiteFooter } from "@/components/SiteFooter";
+import Link from "next/link";
 
+// --- Types ---
 interface ProductsResponse {
   products: Product[];
 }
@@ -66,497 +65,185 @@ const productMeta: Record<string, ProductMeta> = {
   }
 };
 
-function ScrollReveal({ children, className = "" }: { children: ReactNode; className?: string }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const [isVisible, setIsVisible] = useState(false);
+// --- Components ---
 
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        setIsVisible(entry.isIntersecting);
-      },
-      { threshold: 0.1 }
-    );
-
-    if (ref.current) observer.observe(ref.current);
-    return () => observer.disconnect();
-  }, []);
-
+function MicrosoftHeader() {
   return (
-    <div
-      ref={ref}
-      className={`transition-all duration-1000 ease-out ${
-        isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
-      } ${className}`}
-    >
-      {children}
-    </div>
+    <header className="flex items-center justify-between px-[5%] h-[54px] bg-white border-b border-gray-200 sticky top-0 z-50">
+      <div className="flex items-center gap-6">
+        <div className="flex items-center gap-2 font-semibold text-lg tracking-tight text-slate-800">
+          <div className="w-6 h-6 bg-[#0078D4] grid grid-cols-2 gap-[2px] p-[2px]">
+            <div className="bg-white/90"></div>
+            <div className="bg-white/90"></div>
+            <div className="bg-white/90"></div>
+            <div className="bg-white/90"></div>
+          </div>
+          <span>Microsoft AI</span>
+        </div>
+        <nav className="hidden md:flex items-center gap-4 text-[13px] text-slate-600 font-medium">
+          <Link href="#" className="hover:underline hover:text-slate-900">Nguyen Restaurant</Link>
+          <Link href="#" className="hover:underline hover:text-slate-900">Menu</Link>
+          <Link href="#" className="hover:underline hover:text-slate-900">Reservations</Link>
+          <Link href="#" className="hover:underline hover:text-slate-900">About Us</Link>
+        </nav>
+      </div>
+      <div className="flex items-center gap-4 text-[13px]">
+        <span className="hidden sm:inline hover:underline cursor-pointer">Search</span>
+        <span className="hidden sm:inline hover:underline cursor-pointer">Sign In</span>
+      </div>
+    </header>
   );
 }
 
-function CarouselSection() {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  
-  const carouselImages = [
-    { src: "/images/view-1.jpg", alt: "Restaurant View 1" },
-    { src: "/images/view-2.jpg", alt: "Restaurant View 2" },
-    { src: "/images/view-3.jpg", alt: "Restaurant View 3" },
-    { src: "/images/view-4.jpg", alt: "Restaurant View 4" },
-    { src: "/images/view-5.jpg", alt: "Restaurant View 5" }
-  ];
-
-  const nextImage = () => {
-    setCurrentIndex((prev) => (prev + 1) % carouselImages.length);
-  };
-
-  const prevImage = () => {
-    setCurrentIndex((prev) => (prev - 1 + carouselImages.length) % carouselImages.length);
-  };
-
-  const getPrevIndex = () => (currentIndex - 1 + carouselImages.length) % carouselImages.length;
-  const getNextIndex = () => (currentIndex + 1) % carouselImages.length;
-
+function HeroSection() {
   return (
-    <section className="relative overflow-hidden py-20 sm:py-32 bg-gradient-to-b from-brand-light via-brand-light to-brand-light">
-      <div className="pointer-events-none absolute inset-0">
-        <div className="absolute -top-24 right-12 h-64 w-64 rounded-full bg-brand/10 blur-3xl" />
-        <div className="absolute bottom-0 left-1/3 h-72 w-72 rounded-full bg-brand-accent/10 blur-3xl" />
-        <div className="absolute top-1/2 left-0 h-40 w-40 -translate-x-1/2 -translate-y-1/2 rounded-full bg-brand-accent/30 blur-3xl" />
-      </div>
-
-      <div className="relative z-10 mx-auto max-w-7xl px-6">
-        <div className="grid items-center gap-16 lg:grid-cols-[0.9fr,1.1fr]">
-          <ScrollReveal className="space-y-8">
-            <p className="text-xs uppercase tracking-[0.35rem] font-semibold text-brand/70">
-              Unsere Speisen-Galerie
-            </p>
-            <div className="text-4xl sm:text-5xl lg:text-6xl font-display font-bold leading-tight text-brand-dark space-y-4">
-              <span className="block">Wir sind ein Kollektiv von</span>
-              <span className="block text-brand">Köchinnen, Denkern und</span>
-              <span className="block">Kreativen, die Geschmack gestalten,</span>
-              <span className="block">Vertrauen verdienen und Momente veredeln.</span>
-            </div>
-            <p className="text-lg text-slate-600 max-w-xl">
-              Jede Komposition entsteht aus frischen Kräutern, aromatischen Brühen und saisonalen Zutaten,
-              liebevoll arrangiert, um unsere Gäste zu berühren. Diese Galerie zeigt eine Auswahl unserer
-              Lieblingskreationen – statisch festgehalten, doch voller lebendiger Geschichten.
-            </p>
-            <div className="flex flex-wrap gap-4">
-              <a href="#speisekarte" className="btn-primary">
-                Speisekarte entdecken
-              </a>
-              <a href="tel:+498928803451" className="btn-light">
-                Tisch reservieren
-              </a>
-            </div>
-          </ScrollReveal>
-
-          <ScrollReveal>
-            <div className="relative h-[520px] sm:h-[640px] flex items-center justify-center">
-              <div className="absolute inset-0 rounded-[48px] bg-gradient-to-br from-brand-light/80 to-brand-accent/30 blur-3xl" />
-              
-              {/* Carousel Container */}
-              <div className="relative w-full h-full flex items-center justify-center">
-                {/* Left blurred image */}
-                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1/4 h-2/3 opacity-40">
-                  <div className="relative w-full h-full rounded-[24px] overflow-hidden shadow-lg blur-sm border border-brand-light/30">
-                    <Image
-                      src={carouselImages[getPrevIndex()].src}
-                      alt={carouselImages[getPrevIndex()].alt}
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
-                </div>
-
-                {/* Center main image */}
-                <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-1/2 h-full cursor-pointer z-20">
-                  <div 
-                    className="relative w-full h-full rounded-[36px] overflow-hidden border-2 border-brand-light/40 shadow-2xl bg-brand-light/30 backdrop-blur-sm transition-all duration-500 hover:-translate-y-2 hover:shadow-3xl"
-                    onClick={nextImage}
-                  >
-                    <Image
-                      src={carouselImages[currentIndex].src}
-                      alt={carouselImages[currentIndex].alt}
-                      fill
-                      className="object-cover transition-all duration-500"
-                      priority
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent opacity-0 hover:opacity-100 transition-opacity duration-500 flex items-center justify-center">
-                      <p className="text-white text-sm font-semibold bg-black/40 px-4 py-2 rounded-full">
-                        Click to next
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Right blurred image */}
-                <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1/4 h-2/3 opacity-40">
-                  <div className="relative w-full h-full rounded-[24px] overflow-hidden shadow-lg blur-sm border border-brand-light/30">
-                    <Image
-                      src={carouselImages[getNextIndex()].src}
-                      alt={carouselImages[getNextIndex()].alt}
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Navigation Dots */}
-              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-30">
-                {carouselImages.map((_, index) => (
-                  <button
-                    key={index}
-                    onClick={() => setCurrentIndex(index)}
-                    className={`h-2.5 rounded-full transition-all duration-500 ${
-                      index === currentIndex
-                        ? "bg-brand w-8"
-                        : "bg-brand-light/40 w-2.5 hover:bg-brand-light/60"
-                    }`}
-                    aria-label={`Go to image ${index + 1}`}
-                  />
-                ))}
-              </div>
-
-              {/* Navigation Arrows */}
-              <button
-                onClick={prevImage}
-                className="absolute left-2 top-1/2 -translate-y-1/2 z-30 p-2 rounded-full bg-brand/80 hover:bg-brand text-white shadow-lg transition-all duration-300 hover:scale-110"
-                aria-label="Previous image"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                </svg>
-              </button>
-              <button
-                onClick={nextImage}
-                className="absolute right-2 top-1/2 -translate-y-1/2 z-30 p-2 rounded-full bg-brand/80 hover:bg-brand text-white shadow-lg transition-all duration-300 hover:scale-110"
-                aria-label="Next image"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
-            </div>
-          </ScrollReveal>
+    <section className="relative bg-[#f2f2f2] overflow-hidden">
+      <div className="max-w-[1600px] mx-auto grid md:grid-cols-2 min-h-[500px] items-center">
+        <div className="p-12 md:p-24 flex flex-col justify-center space-y-6 z-10">
+          <div className="inline-block bg-[#ffb900] text-black text-xs font-bold px-3 py-1 uppercase tracking-wider w-fit">
+            New Experience
+          </div>
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-[#242424] leading-tight tracking-tight">
+            NGUYEN <br /> Vietnam Restaurant
+          </h1>
+          <p className="text-lg text-slate-700 max-w-md leading-relaxed">
+            Experience authentic Vietnamese cuisine in the heart of Munich. Fresh ingredients, traditional recipes, and a warm atmosphere.
+          </p>
+          <div className="pt-4">
+            <a href="#menu" className="inline-block bg-[#0078D4] hover:bg-[#006cbe] text-white font-semibold px-6 py-3 text-sm transition-colors shadow-sm">
+              Explore Menu
+            </a>
+          </div>
+        </div>
+        <div className="relative h-full min-h-[400px] w-full">
+          <Image
+            src="/images/view-2.jpg"
+            alt="Restaurant Interior"
+            fill
+            className="object-cover"
+            priority
+          />
         </div>
       </div>
     </section>
   );
 }
 
-function CarouselStory() {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [slideDirection, setSlideDirection] = useState<'left' | 'right' | null>(null);
-  
-  const carouselImages = [
-    { src: "/images/view-1.jpg", alt: "Restaurant View 1" },
-    { src: "/images/view-2.jpg", alt: "Restaurant View 2" },
-    { src: "/images/view-3.jpg", alt: "Restaurant View 3" },
-    { src: "/images/view-4.jpg", alt: "Restaurant View 4" },
-    { src: "/images/view-5.jpg", alt: "Restaurant View 5" }
-  ];
-
-  // Auto-advance carousel every 5 seconds
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setSlideDirection('left');
-      setTimeout(() => {
-        setCurrentIndex((prev) => (prev + 1) % carouselImages.length);
-        setSlideDirection(null);
-      }, 500);
-    }, 5000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const nextImage = () => {
-    setSlideDirection('left');
-    setTimeout(() => {
-      setCurrentIndex((prev) => (prev + 1) % carouselImages.length);
-      setSlideDirection(null);
-    }, 500);
-  };
-
-  const prevImage = () => {
-    setSlideDirection('right');
-    setTimeout(() => {
-      setCurrentIndex((prev) => (prev - 1 + carouselImages.length) % carouselImages.length);
-      setSlideDirection(null);
-    }, 500);
-  };
-
-  const getPrevIndex = () => (currentIndex - 1 + carouselImages.length) % carouselImages.length;
-  const getNextIndex = () => (currentIndex + 1) % carouselImages.length;
-
+function FeatureCard({ icon, title, description }: { icon: string, title: string, description: string }) {
   return (
-    <div className="relative h-96 flex items-center justify-center w-full">
-      <style>{`
-        @keyframes slideOutLeft {
-          from {
-            transform: translateX(0);
-            opacity: 1;
-          }
-          to {
-            transform: translateX(-50%);
-            opacity: 0;
-          }
-        }
-        @keyframes slideInFromRight {
-          from {
-            transform: translateX(50%);
-            opacity: 0;
-          }
-          to {
-            transform: translateX(0);
-            opacity: 1;
-          }
-        }
-        @keyframes slideOutRight {
-          from {
-            transform: translateX(0);
-            opacity: 1;
-          }
-          to {
-            transform: translateX(50%);
-            opacity: 0;
-          }
-        }
-        @keyframes slideInFromLeft {
-          from {
-            transform: translateX(-50%);
-            opacity: 0;
-          }
-          to {
-            transform: translateX(0);
-            opacity: 1;
-          }
-        }
-        @keyframes fadeOutLeft {
-          from {
-            opacity: 1;
-          }
-          to {
-            opacity: 0;
-          }
-        }
-        @keyframes fadeInLeft {
-          from {
-            opacity: 0;
-          }
-          to {
-            opacity: 1;
-          }
-        }
-        @keyframes fadeOutRight {
-          from {
-            opacity: 1;
-          }
-          to {
-            opacity: 0;
-          }
-        }
-        @keyframes fadeInRight {
-          from {
-            opacity: 0;
-          }
-          to {
-            opacity: 1;
-          }
-        }
-        .slide-out-left {
-          animation: slideOutLeft 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-        }
-        .slide-in-from-right {
-          animation: slideInFromRight 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-        }
-        .slide-out-right {
-          animation: slideOutRight 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-        }
-        .slide-in-from-left {
-          animation: slideInFromLeft 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-        }
-        .fade-out-left {
-          animation: fadeOutLeft 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-        }
-        .fade-in-left {
-          animation: fadeInLeft 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-        }
-        .fade-out-right {
-          animation: fadeOutRight 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-        }
-        .fade-in-right {
-          animation: fadeInRight 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-        }
-      `}</style>
-      <div className="absolute inset-0 rounded-[48px] bg-gradient-to-br from-brand-light/80 to-brand-accent/30 blur-3xl" />
-      
-      {/* Carousel Container */}
-      <div className="relative w-full h-full flex items-center justify-center">
-        {/* Left blurred image - ANIMATED */}
-        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1/4 h-2/3 z-10 pointer-events-none">
-          {/* Current left image */}
-          <div className={`absolute inset-0 rounded-[24px] overflow-hidden shadow-lg blur-sm border border-white/30 ${
-            slideDirection ? (slideDirection === 'left' ? 'fade-out-left' : 'fade-out-right') : ''
-          }`}>
-            <Image
-              src={carouselImages[getPrevIndex()].src}
-              alt={carouselImages[getPrevIndex()].alt}
-              fill
-              className="object-cover"
-            />
-          </div>
-          
-          {/* Next left image */}
-          <div className={`absolute inset-0 rounded-[24px] overflow-hidden shadow-lg blur-sm border border-white/30 ${
-            slideDirection ? (slideDirection === 'left' ? 'fade-in-left' : 'fade-in-right') : 'opacity-0'
-          }`}>
-            <Image
-              src={carouselImages[slideDirection === 'left' ? currentIndex : (getPrevIndex() - 1 + carouselImages.length) % carouselImages.length].src}
-              alt={carouselImages[slideDirection === 'left' ? currentIndex : (getPrevIndex() - 1 + carouselImages.length) % carouselImages.length].alt}
-              fill
-              className="object-cover"
-            />
-          </div>
-        </div>
-
-        {/* Center main image - SLIDING */}
-        <div className="absolute left-1/4 top-1/2 -translate-y-1/2 w-1/2 h-full z-20">
-          {/* Current center image */}
-          <div 
-            className={`absolute inset-0 cursor-pointer rounded-[36px] overflow-hidden border-2 border-brand-light/40 shadow-2xl bg-brand-light/30 backdrop-blur-sm hover:shadow-3xl transition-shadow duration-300 ${
-              slideDirection === 'left' ? 'slide-out-left' : slideDirection === 'right' ? 'slide-out-right' : ''
-            }`}
-            onClick={nextImage}
-          >
-            <Image
-              src={carouselImages[currentIndex].src}
-              alt={carouselImages[currentIndex].alt}
-              fill
-              className="object-cover"
-              priority
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent opacity-0 hover:opacity-100 transition-opacity duration-500 flex items-center justify-center">
-              <p className="text-white text-sm font-semibold bg-black/40 px-4 py-2 rounded-full">
-                Click to next
-              </p>
-            </div>
-          </div>
-
-          {/* Next center image coming in */}
-          {slideDirection && (
-            <div 
-              className={`absolute inset-0 rounded-[36px] overflow-hidden border-2 border-brand-light/40 shadow-2xl bg-brand-light/30 backdrop-blur-sm ${
-                slideDirection === 'left' ? 'slide-in-from-right' : 'slide-in-from-left'
-              }`}
-            >
-              <Image
-                src={carouselImages[slideDirection === 'left' ? getNextIndex() : getPrevIndex()].src}
-                alt={carouselImages[slideDirection === 'left' ? getNextIndex() : getPrevIndex()].alt}
-                fill
-                className="object-cover"
-                priority
-              />
-            </div>
-          )}
-        </div>
-
-        {/* Right blurred image - ANIMATED */}
-        <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1/4 h-2/3 z-10 pointer-events-none">
-          {/* Current right image */}
-          <div className={`absolute inset-0 rounded-[24px] overflow-hidden shadow-lg blur-sm border border-white/30 ${
-            slideDirection ? (slideDirection === 'left' ? 'fade-out-right' : 'fade-out-left') : ''
-          }`}>
-            <Image
-              src={carouselImages[getNextIndex()].src}
-              alt={carouselImages[getNextIndex()].alt}
-              fill
-              className="object-cover"
-            />
-          </div>
-
-          {/* Next right image */}
-          <div className={`absolute inset-0 rounded-[24px] overflow-hidden shadow-lg blur-sm border border-white/30 ${
-            slideDirection ? (slideDirection === 'left' ? 'fade-in-right' : 'fade-in-left') : 'opacity-0'
-          }`}>
-            <Image
-              src={carouselImages[slideDirection === 'left' ? (getNextIndex() + 1) % carouselImages.length : (getNextIndex() - 1 + carouselImages.length) % carouselImages.length].src}
-              alt={carouselImages[slideDirection === 'left' ? (getNextIndex() + 1) % carouselImages.length : (getNextIndex() - 1 + carouselImages.length) % carouselImages.length].alt}
-              fill
-              className="object-cover"
-            />
-          </div>
-        </div>
+    <div className="bg-white p-8 shadow-sm border border-gray-100 hover:shadow-md transition-shadow h-full flex flex-col">
+      <div className="text-4xl mb-6">{icon}</div>
+      <h3 className="text-xl font-bold text-[#242424] mb-3">{title}</h3>
+      <p className="text-slate-600 leading-relaxed text-sm flex-grow">{description}</p>
+      <div className="mt-6 pt-4 border-t border-gray-100">
+        <a href="#" className="text-[#0078D4] font-semibold text-sm hover:underline flex items-center gap-1">
+          Learn more
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+        </a>
       </div>
-
-      {/* Navigation Dots with Auto-play indicator */}
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-30">
-        {carouselImages.map((_, index) => (
-          <button
-            key={index}
-            onClick={() => {
-              if (index > currentIndex) {
-                setSlideDirection('left');
-              } else if (index < currentIndex) {
-                setSlideDirection('right');
-              }
-              setTimeout(() => {
-                setCurrentIndex(index);
-                setSlideDirection(null);
-              }, 500);
-            }}
-            className={`h-2.5 rounded-full transition-all duration-500 relative ${
-              index === currentIndex
-                ? "bg-brand w-8 shadow-lg"
-                : "bg-brand-light/40 w-2.5 hover:bg-brand-light/60"
-            }`}
-            aria-label={`Go to image ${index + 1}`}
-          >
-            {index === currentIndex && (
-              <style>{`
-                @keyframes progress-bar {
-                  from { width: 100%; }
-                  to { width: 0; }
-                }
-                .progress-indicator {
-                  animation: progress-bar 5s linear infinite;
-                }
-              `}</style>
-            )}
-            {index === currentIndex && (
-              <div className="absolute inset-0 bg-brand/30 rounded-full progress-indicator" />
-            )}
-          </button>
-        ))}
-      </div>
-
-      {/* Navigation Arrows */}
-      <button
-        onClick={prevImage}
-        className="absolute left-2 top-1/2 -translate-y-1/2 z-30 p-2 rounded-full bg-brand/80 hover:bg-brand text-white shadow-lg transition-all duration-300 hover:scale-110"
-        aria-label="Previous image"
-      >
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-        </svg>
-      </button>
-      <button
-        onClick={nextImage}
-        className="absolute right-2 top-1/2 -translate-y-1/2 z-30 p-2 rounded-full bg-brand/80 hover:bg-brand text-white shadow-lg transition-all duration-300 hover:scale-110"
-        aria-label="Next image"
-      >
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-        </svg>
-      </button>
     </div>
   );
 }
 
+function ProductCard({ product, meta }: { product: Product, meta?: ProductMeta }) {
+  return (
+    <div className="group bg-white shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300 overflow-hidden flex flex-col h-full">
+      <div className="relative h-48 w-full overflow-hidden bg-gray-100">
+        {meta?.image ? (
+          <Image
+            src={meta.image}
+            alt={product.name}
+            fill
+            className="object-cover transition-transform duration-500 group-hover:scale-105"
+          />
+        ) : (
+          <div className="flex items-center justify-center h-full text-gray-400">No Image</div>
+        )}
+        <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm px-3 py-1 text-xs font-bold text-[#242424] shadow-sm">
+          {meta?.category || "Menu Item"}
+        </div>
+      </div>
+
+      <div className="p-6 flex flex-col flex-grow">
+        <h3 className="text-lg font-bold text-[#242424] mb-2 group-hover:text-[#0078D4] transition-colors">
+          {product.name}
+        </h3>
+        <p className="text-slate-600 text-sm mb-4 flex-grow line-clamp-3">
+          {meta?.description || "Delicious authentic Vietnamese dish prepared with fresh ingredients."}
+        </p>
+
+        <div className="flex items-center justify-between mt-auto pt-4 border-t border-gray-100">
+          <span className="text-lg font-semibold text-[#242424]">
+            {(product.unit_amount / 100).toLocaleString("de-DE", { style: "currency", currency: product.currency })}
+          </span>
+          <button className="text-[#0078D4] hover:bg-[#0078D4]/10 p-2 rounded-full transition-colors">
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function MicrosoftFooter() {
+  return (
+    <footer className="bg-[#f2f2f2] text-[#616161] text-xs py-12 px-[5%]">
+      <div className="max-w-[1600px] mx-auto grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-8 mb-12">
+        <div className="space-y-3">
+          <h4 className="font-semibold text-[#242424]">What's New</h4>
+          <ul className="space-y-2">
+            <li><a href="#" className="hover:underline">Seasonal Menu</a></li>
+            <li><a href="#" className="hover:underline">Chef's Specials</a></li>
+            <li><a href="#" className="hover:underline">Events</a></li>
+          </ul>
+        </div>
+        <div className="space-y-3">
+          <h4 className="font-semibold text-[#242424]">Restaurant</h4>
+          <ul className="space-y-2">
+            <li><a href="#" className="hover:underline">About Us</a></li>
+            <li><a href="#" className="hover:underline">Careers</a></li>
+            <li><a href="#" className="hover:underline">Press</a></li>
+          </ul>
+        </div>
+        <div className="space-y-3">
+          <h4 className="font-semibold text-[#242424]">Support</h4>
+          <ul className="space-y-2">
+            <li><a href="#" className="hover:underline">Contact</a></li>
+            <li><a href="#" className="hover:underline">Reservations</a></li>
+            <li><a href="#" className="hover:underline">FAQ</a></li>
+          </ul>
+        </div>
+      </div>
+      <div className="flex flex-col md:flex-row justify-between items-center pt-8 border-t border-gray-200 gap-4">
+        <div className="flex items-center gap-6">
+          <div className="flex items-center gap-2">
+            <span className="text-lg">🌍</span>
+            <span>English (US)</span>
+          </div>
+          <span className="hidden md:inline">Your Privacy Choices</span>
+        </div>
+        <div className="flex gap-6">
+          <a href="#" className="hover:underline">Sitemap</a>
+          <a href="#" className="hover:underline">Contact Microsoft</a>
+          <a href="#" className="hover:underline">Privacy</a>
+          <a href="#" className="hover:underline">Terms of use</a>
+          <a href="#" className="hover:underline">Trademarks</a>
+          <a href="#" className="hover:underline">Safety & eco</a>
+          <a href="#" className="hover:underline">About our ads</a>
+          <span>© Microsoft 2025</span>
+        </div>
+      </div>
+    </footer>
+  )
+}
+
+// --- Main Page ---
+
 export default function ExamplePage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeCategory, setActiveCategory] = useState("Alle");
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -568,7 +255,7 @@ export default function ExamplePage() {
           setProducts(data.products);
         }
       } catch (error) {
-        console.error("Fehler beim Laden der Produkte:", error);
+        console.error("Error loading products:", error);
       } finally {
         setLoading(false);
       }
@@ -576,494 +263,78 @@ export default function ExamplePage() {
     fetchProducts();
   }, []);
 
-  const categories = ["Alle", ...Array.from(new Set(products.map((p: Product) => productMeta[p.id.toLowerCase()]?.category || "Sonstiges")))];
-
-  const filteredProducts =
-    activeCategory === "Alle"
-      ? products
-      : products.filter((p: Product) => productMeta[p.id.toLowerCase()]?.category === activeCategory);
-
-  const formatPrice = (amount: number, currency?: string) =>
-    (amount / 100).toLocaleString("de-DE", {
-      style: "currency",
-      currency: currency ?? "EUR"
-    });
-
-  const galleryImages: Array<{
-    src: string;
-    alt: string;
-    style: CSSProperties;
-    zIndex: number;
-  }> = [
-    {
-      src: "/images/goi-cuon.jpg",
-      alt: "Frische Sommerrollen mit Kräutern auf einem Teller",
-      style: { top: "0%", left: "5%", width: "32%", aspectRatio: "4 / 5" },
-      zIndex: 5
-    },
-    {
-      src: "/images/bo-kho-goi-cuon.jpg",
-      alt: "Bò Kho in einer Schale mit Dip",
-      style: { bottom: "-6%", left: "15%", width: "38%", aspectRatio: "5 / 6" },
-      zIndex: 3
-    },
-    {
-      src: "/images/fried-gyoza.jpg",
-      alt: "Knusprige Gyoza in Gusseisenpfanne",
-      style: { top: "10%", right: "-12%", width: "45%", aspectRatio: "3 / 2" },
-      zIndex: 4
-    },
-    {
-      src: "/images/bun-thit-xao.jpg",
-      alt: "Bún Thịt Xào mit frischem Gemüse",
-      style: { bottom: "-12%", right: "0%", width: "40%", aspectRatio: "4 / 5" },
-      zIndex: 2
-    },
-    {
-      src: "/images/curry.jpg",
-      alt: "Duftender vietnamesischer Curry in Keramikschale",
-      style: { top: "42%", left: "-10%", width: "36%", aspectRatio: "4 / 5" },
-      zIndex: 1
-    },
-    {
-      src: "/images/steamed-gyoza.jpg",
-      alt: "Gedämpfte Gyoza mit Dip-Schälchen",
-      style: { top: "-18%", right: "15%", width: "28%", aspectRatio: "3 / 4" },
-      zIndex: 6
-    }
-  ];
-
   return (
-    <>
-      <style>{`
-        @keyframes fadeInUp {
-          from {
-            opacity: 0;
-            transform: translateY(30px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
+    <div className="min-h-screen bg-white font-sans text-slate-900">
+      <MicrosoftHeader />
 
-        @keyframes slideUp {
-          from {
-            opacity: 0;
-            transform: translateY(60px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
+      <main>
+        <HeroSection />
 
-        @keyframes blurIn {
-          from {
-            opacity: 0;
-            filter: blur(10px);
-          }
-          to {
-            opacity: 1;
-            filter: blur(0);
-          }
-        }
-      `}</style>
-
-      <NavBar />
-      <main className="flex min-h-screen flex-col" style={{ backgroundColor: '#F7F7F0' }}>
-        
-        {/* Hero Section */}
-        <section className="relative min-h-screen flex items-center justify-center overflow-hidden py-20 px-6">
-          <div className="absolute inset-0 bg-gradient-to-br from-brand/5 via-transparent to-brand-accent/10 pointer-events-none" />
-          
-          <ScrollReveal className="relative z-10 text-center max-w-4xl mx-auto">
-            <div className="space-y-6">
-              <div className="inline-block">
-                <span className="text-xs uppercase tracking-widest font-semibold text-brand/70 font-sans">
-                  Familiengeführt seit 1996
-                </span>
-              </div>
-              
-              <h1 className="text-5xl sm:text-6xl lg:text-7xl font-display font-bold text-brand-dark leading-tight">
-                NGUYEN<br /><span className="text-brand">Vietnam Restaurant</span>
-              </h1>
-              
-              <p className="text-lg sm:text-xl text-slate-700 max-w-2xl mx-auto leading-relaxed font-light">
-                Herzlich willkommen im Herzen von München-Schwabing. Erleben Sie die unverwechselbar leichte vietnamesische Küche in gastfreundlicher Atmosphäre mit aufmerksamen Service und frisch zubereiteten Köstlichkeiten.
-              </p>
-
-              <div className="flex gap-4 justify-center pt-8 flex-wrap">
-                <a href="#speisekarte" className="btn-primary">
-                  Speisekarte erkunden
-                </a>
-                <a href="tel:+498928803451" className="btn-light">
-                  089 28803451
-                </a>
-              </div>
-            </div>
-          </ScrollReveal>
-        </section>
-
-        {/* Story Section */}
-        <section className="py-20 sm:py-32" style={{ backgroundColor: '#F7F7F0' }}>
-          <div className="mx-auto max-w-6xl px-6">
-            <div className="grid md:grid-cols-2 gap-12 items-center">
-              <ScrollReveal>
-                <div className="space-y-6">
-                  <h2 className="text-4xl sm:text-5xl font-display font-bold text-brand-dark">
-                    Unsere Geschichte
-                  </h2>
-                  <p className="text-lg text-slate-700 leading-relaxed">
-                    Im NGUYEN bereiten wir unsere Speisen von Hand und mit größter Sorgfalt zu. Die vietnamesische Küche ist geprägt von Tradition und Leichtigkeit. Entdecken Sie eine Vielfalt an milden bis aromatisch-würzigen Gerichten und lassen Sie sich auf Wunsch einen Hauch vietnamesisches Feuer servieren.
-                  </p>
-                  <p className="text-lg text-slate-700 leading-relaxed">
-                    Reis begleitet uns in jeder Variation: als Reispapier, Reisnudeln oder duftender Jasminreis. Probieren Sie Pho Bò, Goi Cuon oder unser vegetarisches Bun – jede Spezialität erzählt eine Geschichte aus Saigon.
-                  </p>
-                  <div className="flex gap-4 pt-4">
-                    <div className="flex-1">
-                      <p className="text-3xl font-bold text-brand">1996</p>
-                      <p className="text-sm text-slate-600">Gründungsjahr</p>
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-3xl font-bold text-brand">∞</p>
-                      <p className="text-sm text-slate-600">Familiengeführt</p>
-                    </div>
-                  </div>
-                </div>
-              </ScrollReveal>
-              
-              <ScrollReveal>
-                <CarouselStory />
-              </ScrollReveal>
+        {/* Features Grid */}
+        <section className="py-16 px-[5%] bg-white">
+          <div className="max-w-[1600px] mx-auto">
+            <h2 className="text-3xl font-semibold text-[#242424] mb-12">Why Choose Us</h2>
+            <div className="grid md:grid-cols-3 gap-6">
+              <FeatureCard
+                icon="🌿"
+                title="Fresh Ingredients"
+                description="We select ingredients daily and prepare every dish immediately. No compromises, just love and freshness."
+              />
+              <FeatureCard
+                icon="👨‍🍳"
+                title="Traditional Recipes"
+                description="Authentic recipes from Saigon, prepared with passion and experience passed down through generations."
+              />
+              <FeatureCard
+                icon="🎭"
+                title="Warm Atmosphere"
+                description="Warm colors, carefully arranged details, and service that is attentive and heartfelt."
+              />
             </div>
           </div>
         </section>
 
-        {/* What Makes Us Special */}
-        <section className="py-20 sm:py-32" style={{ backgroundColor: '#F7F7F0' }}>
-          <div className="mx-auto max-w-6xl px-6">
-            <ScrollReveal className="text-center mb-16">
-              <h2 className="text-4xl sm:text-5xl font-display font-bold text-brand-dark mb-4">
-                Was uns auszeichnet
-              </h2>
-              <p className="text-lg text-slate-600 max-w-xl mx-auto">
-                Qualität, Authentizität und Leidenschaft in jedem Gericht
-              </p>
-            </ScrollReveal>
-
-            <div className="grid md:grid-cols-3 gap-8">
-              {[
-                {
-                  icon: "🌿",
-                  title: "Frische Zutaten",
-                  description: "Wir wählen Zutaten täglich frisch aus und bereiten jedes Gericht unmittelbar zu. Ohne Kompromisse, mit viel Liebe."
-                },
-                {
-                  icon: "👨‍🍳",
-                  title: "Traditionelle Rezepte",
-                  description: "Authentische Rezepte aus Saigon, zubereitet mit Leidenschaft und Erfahrung über Generationen hinweg."
-                },
-                {
-                  icon: "🎭",
-                  title: "Warme Atmosphäre",
-                  description: "Warme Farben, sorgfältig arrangierte Details und ein Service, der aufmerksam und herzlich ist."
-                }
-              ].map((item, index) => (
-                <ScrollReveal key={index}>
-                  <div className="group rounded-2xl p-8 shadow-soft hover:shadow-xl transition-all duration-500 hover:-translate-y-1" style={{ backgroundColor: '#F7F7F0' }}>
-                    <div className="text-5xl mb-4">{item.icon}</div>
-                    <h3 className="text-2xl font-bold text-brand-dark mb-3">{item.title}</h3>
-                    <p className="text-slate-600 leading-relaxed">{item.description}</p>
-                  </div>
-                </ScrollReveal>
-              ))}
+        {/* Menu Grid */}
+        <section id="menu" className="py-16 px-[5%] bg-[#f2f2f2]">
+          <div className="max-w-[1600px] mx-auto">
+            <div className="flex items-center justify-between mb-12">
+              <h2 className="text-3xl font-semibold text-[#242424]">Our Menu</h2>
+              <a href="#" className="text-[#0078D4] font-semibold hover:underline flex items-center gap-1">
+                View Full Menu
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+              </a>
             </div>
-          </div>
-        </section>
 
-        {/* Menu Preview Section */}
-        <section id="speisekarte" className="py-20 sm:py-32 text-white relative overflow-hidden" style={{ background: 'linear-gradient(to right, rgba(179, 142, 90, 0.9), rgba(44, 44, 44, 0.9))' }}>
-          <div className="absolute inset-0 opacity-10">
-            <div className="absolute top-10 right-10 w-40 h-40 rounded-full bg-white/20 blur-3xl" />
-            <div className="absolute bottom-10 left-10 w-40 h-40 rounded-full bg-white/20 blur-3xl" />
-          </div>
-
-          <div className="mx-auto max-w-6xl px-6 relative z-10">
-            <ScrollReveal className="text-center mb-16">
-              <h2 className="text-4xl sm:text-5xl font-display font-bold mb-4">
-                Unsere <span style={{ color: '#F7F7F0' }}>Speisekarte</span>
-              </h2>
-              <p className="text-xl text-white/90 max-w-2xl mx-auto">
-                Sorgfältig ausgewählte Gerichte, die die Seele Vietnams einfangen
-              </p>
-            </ScrollReveal>
-
-            {/* Category Filter */}
-            <ScrollReveal className="mb-16">
-              <div className="flex flex-wrap justify-center gap-3">
-                {categories.map((category) => (
-                  <button
-                    key={category}
-                    onClick={() => setActiveCategory(category)}
-                    className={`px-6 py-2.5 rounded-full font-medium transition-all duration-500 text-sm uppercase tracking-wide ${
-                      activeCategory === category
-                        ? "text-brand-dark shadow-lg scale-105 border border-brand-light"
-                        : "bg-white/20 text-white hover:bg-white/30 border border-white/30"
-                    }`}
-                    style={activeCategory === category ? { backgroundColor: '#F7F7F0' } : undefined}
-                  >
-                    {category}
-                  </button>
-                ))}
-              </div>
-            </ScrollReveal>
-
-            {/* Products Grid */}
             {loading ? (
-              <div className="text-center py-20">
-                <p className="text-white/70">Produkte werden geladen...</p>
+              <div className="flex justify-center py-20">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0078D4]"></div>
               </div>
             ) : (
-              <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-                {filteredProducts.map((product, index) => {
-                  const meta = productMeta[product.id.toLowerCase()];
-                  return (
-                    <ScrollReveal key={product.id}>
-                      <div className="group h-full overflow-hidden rounded-2xl shadow-soft hover:shadow-2xl transition-all duration-500 hover:-translate-y-2" style={{ backgroundColor: '#F7F7F0' }}>
-                        {/* Image */}
-                        <div className="relative h-64 w-full overflow-hidden" style={{ background: 'linear-gradient(to bottom right, rgba(179, 142, 90, 0.2), rgba(204, 136, 102, 0.2))' }}>
-                          {meta?.image && (
-                            <Image
-                              src={meta.image}
-                              alt={product.name}
-                              fill
-                              className="object-cover transition-all duration-700 group-hover:scale-110"
-                            />
-                          )}
-                        </div>
-
-                        {/* Content */}
-                        <div className="p-6">
-                          <p className="text-xs font-bold uppercase tracking-widest text-brand/60 mb-2">
-                            {meta?.category || "Gericht"}
-                          </p>
-                          <h3 className="text-xl font-display font-bold text-brand-dark mb-3">
-                            {product.name}
-                          </h3>
-                          <p className="text-sm leading-relaxed text-slate-600 mb-4">
-                            {meta?.description}
-                          </p>
-                          <div className="flex items-center justify-between pt-4" style={{ borderTop: '1px solid rgba(179, 142, 90, 0.2)' }}>
-                            <span className="text-2xl font-bold text-brand">
-                              {formatPrice(product.unit_amount, product.currency)}
-                            </span>
-                            <button className="rounded-full bg-gradient-to-r from-brand to-brand-accent px-5 py-2 font-semibold text-white shadow-soft hover:shadow-lg transition-all duration-300 hover:scale-105">
-                              +
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </ScrollReveal>
-                  );
-                })}
+              <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {products.map((product) => (
+                  <ProductCard
+                    key={product.id}
+                    product={product}
+                    meta={productMeta[product.id.toLowerCase()]}
+                  />
+                ))}
               </div>
             )}
           </div>
         </section>
 
-        {/* Food Showcase Gallery */}
-        <section className="relative overflow-hidden py-20 sm:py-32" style={{ background: `linear-gradient(to bottom, #F7F7F0, rgba(179, 142, 90, 0.1), #F7F7F0)` }}>
-          <div className="pointer-events-none absolute inset-0">
-            <div className="absolute -top-24 right-12 h-64 w-64 rounded-full bg-brand/10 blur-3xl" />
-            <div className="absolute bottom-0 left-1/3 h-72 w-72 rounded-full bg-brand-accent/10 blur-3xl" />
-            <div className="absolute top-1/2 left-0 h-40 w-40 -translate-x-1/2 -translate-y-1/2 rounded-full bg-brand-accent/30 blur-3xl" />
-          </div>
-
-          <div className="relative z-10 mx-auto max-w-7xl px-6">
-            <div className="grid items-center gap-16 lg:grid-cols-[0.9fr,1.1fr]">
-              <ScrollReveal className="space-y-8">
-                <p className="text-xs uppercase tracking-[0.35rem] font-semibold text-brand/70">
-                  Unsere Speisen-Galerie
-                </p>
-                <div className="text-4xl sm:text-5xl lg:text-6xl font-display font-bold leading-tight text-brand-dark space-y-4">
-                  <span className="block">Wir sind ein Kollektiv von</span>
-                  <span className="block text-brand">Köchinnen, Denkern und</span>
-                  <span className="block">Kreativen, die Geschmack gestalten,</span>
-                  <span className="block">Vertrauen verdienen und Momente veredeln.</span>
-                </div>
-                <p className="text-lg text-slate-600 max-w-xl">
-                  Jede Komposition entsteht aus frischen Kräutern, aromatischen Brühen und saisonalen Zutaten,
-                  liebevoll arrangiert, um unsere Gäste zu berühren. Diese Galerie zeigt eine Auswahl unserer
-                  Lieblingskreationen – statisch festgehalten, doch voller lebendiger Geschichten.
-                </p>
-                <div className="flex flex-wrap gap-4">
-                  <a href="#speisekarte" className="btn-primary">
-                    Speisekarte entdecken
-                  </a>
-                  <a href="tel:+498928803451" className="btn-light">
-                    Tisch reservieren
-                  </a>
-                </div>
-              </ScrollReveal>
-
-              <ScrollReveal>
-                <div className="relative h-[520px] sm:h-[640px]">
-                  <div className="absolute inset-0 rounded-[48px] bg-gradient-to-br from-brand-light/80 to-brand-accent/30 blur-3xl" />
-                  {galleryImages.map((image, index) => (
-                    <div
-                      key={`${image.src}-${index}`}
-                      className="group absolute overflow-hidden rounded-[36px] border shadow-2xl backdrop-blur-sm transition-transform duration-700 ease-out hover:-translate-y-2 hover:rotate-[1deg]"
-                      style={{ ...image.style, zIndex: image.zIndex, borderColor: 'rgba(179, 142, 90, 0.4)', backgroundColor: 'rgba(247, 247, 240, 0.3)' }}
-                    >
-                      <Image
-                        src={image.src}
-                        alt={image.alt}
-                        fill
-                        sizes="(max-width: 768px) 60vw, (max-width: 1200px) 35vw, 30vw"
-                        className="object-cover transition-transform duration-700 group-hover:scale-105"
-                        priority={index === 0}
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
-                    </div>
-                  ))}
-                </div>
-              </ScrollReveal>
-            </div>
-          </div>
+        {/* Call to Action */}
+        <section className="py-20 px-[5%] bg-[#0078D4] text-white text-center">
+          <h2 className="text-3xl md:text-4xl font-bold mb-6">Ready to experience Vietnam?</h2>
+          <p className="text-lg mb-8 max-w-2xl mx-auto opacity-90">Book your table now and enjoy an unforgettable evening with us.</p>
+          <button className="bg-white text-[#0078D4] font-bold py-3 px-8 rounded-sm hover:bg-gray-100 transition-colors shadow-lg">
+            Reserve a Table
+          </button>
         </section>
 
-        {/* Mission Statement */}
-        <section className="py-20 sm:py-32" style={{ backgroundColor: '#F7F7F0' }}>
-          <div className="mx-auto max-w-4xl px-6">
-            <ScrollReveal className="text-center space-y-8">
-              <div className="text-5xl sm:text-6xl font-display font-bold leading-tight text-brand-dark">
-                <div className="overflow-hidden mb-4">
-                  <p>Wir sind eine Familie von</p>
-                </div>
-                <div className="overflow-hidden mb-4">
-                  <p>Köchen, Denkern und</p>
-                </div>
-                <div className="overflow-hidden mb-4">
-                  <p>leidenschaftlichen Menschen</p>
-                </div>
-              </div>
-
-              <p className="text-lg sm:text-xl text-slate-700 leading-relaxed max-w-2xl mx-auto">
-                die authentische Speisen zubereiten, die das Vertrauen verdienen, menschliches Potenzial entfalten und das Leben bedeutungsvoll bereichern.
-              </p>
-
-              <div className="flex gap-4 pt-4 flex-wrap justify-center">
-                <a 
-                  href="tel:+498928803451"
-                  className="btn-primary"
-                >
-                  Jetzt Reservieren
-                </a>
-                <a 
-                  href="#gallery"
-                  className="btn-light"
-                >
-                  Galerie anschauen
-                </a>
-              </div>
-            </ScrollReveal>
-          </div>
-        </section>
-
-        {/* Restaurant Gallery */}
-        <section id="gallery" className="py-20 sm:py-32" style={{ backgroundColor: '#F7F7F0' }}>
-          <div className="mx-auto max-w-7xl px-6">
-            <ScrollReveal className="text-center mb-16">
-              <h2 className="text-4xl sm:text-5xl font-display font-bold text-brand-dark mb-4">
-                Unser Restaurant
-              </h2>
-              <p className="text-lg text-slate-600 max-w-xl mx-auto">
-                Atmosphäre, die Erinnerungen schafft – Buddhistische Klarheit und Idylle
-              </p>
-            </ScrollReveal>
-
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-              {[1, 2, 3, 4, 5, 6, 7, 8].map((index) => (
-                <ScrollReveal key={index}>
-                  <div className="group relative h-64 lg:h-80 overflow-hidden rounded-2xl shadow-soft hover:shadow-2xl transition-all duration-500 hover:-translate-y-1" style={{ background: `linear-gradient(to bottom right, rgba(179, 142, 90, 0.3), rgba(204, 136, 102, 0.2))` }}>
-                    <Image
-                      src={`/images/view-${index}.jpg`}
-                      alt={`Restaurant View ${index}`}
-                      fill
-                      className="object-cover transition-all duration-700 group-hover:scale-110"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                  </div>
-                </ScrollReveal>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Info & Hours Section */}
-        <section className="py-20 sm:py-32" style={{ backgroundColor: 'rgba(179, 142, 90, 0.05)' }}>
-          <div className="mx-auto max-w-6xl px-6">
-            <div className="grid md:grid-cols-3 gap-8">
-              <ScrollReveal>
-                <div className="rounded-2xl p-8 shadow-soft" style={{ backgroundColor: '#F7F7F0' }}>
-                  <h3 className="text-2xl font-display font-bold text-brand-dark mb-4">Adresse</h3>
-                  <p className="text-slate-700 leading-relaxed">
-                    Georgenstraße 67<br />
-                    80799 München-Schwabing
-                  </p>
-                </div>
-              </ScrollReveal>
-
-              <ScrollReveal>
-                <div className="rounded-2xl p-8 shadow-soft" style={{ backgroundColor: '#F7F7F0' }}>
-                  <h3 className="text-2xl font-display font-bold text-brand-dark mb-4">Öffnungszeiten</h3>
-                  <p className="text-sm text-slate-700 space-y-2">
-                    <span className="block"><strong>Mo–Fr & So:</strong> 12:00–15:00 & 17:30–22:30</span>
-                    <span className="block"><strong>Sa:</strong> 17:30–22:30</span>
-                    <span className="block text-xs text-slate-600 pt-2">Warme Küche: Mo-Fr bis 21:00 Uhr</span>
-                  </p>
-                </div>
-              </ScrollReveal>
-
-              <ScrollReveal>
-                <div className="rounded-2xl p-8 shadow-soft text-white" style={{ background: 'linear-gradient(to bottom right, rgba(179, 142, 90, 0.9), rgba(204, 136, 102, 0.8))' }}>
-                  <h3 className="text-2xl font-display font-bold mb-4">Reservierungen</h3>
-                  <p className="text-lg font-semibold mb-3">089 28803451</p>
-                  <a href="tel:+498928803451" className="inline-block px-6 py-2 text-brand font-bold rounded-full hover:opacity-90 transition-opacity duration-300" style={{ backgroundColor: '#F7F7F0' }}>
-                    Jetzt anrufen
-                  </a>
-                </div>
-              </ScrollReveal>
-            </div>
-          </div>
-        </section>
-
-        {/* CTA Section */}
-        <section className="py-20 sm:py-32 text-white" style={{ background: 'linear-gradient(to bottom right, rgba(179, 142, 90, 0.95), rgba(44, 44, 44, 0.95))' }}>
-          <div className="mx-auto max-w-4xl px-6 text-center">
-            <ScrollReveal>
-              <div className="space-y-8">
-                <h2 className="text-4xl sm:text-5xl font-display font-bold">
-                  Bereit für ein kulinarisches Abenteuer?
-                </h2>
-                <p className="text-lg text-white/90 max-w-xl mx-auto">
-                  Reservieren Sie Ihren Tisch und erleben Sie die Magie authentischer vietnamesischer Küche in herzlicher Atmosphäre.
-                </p>
-                <div className="flex gap-4 justify-center pt-4 flex-wrap">
-                  <a href="tel:+498928803451" className="inline-flex items-center justify-center rounded-full text-brand px-8 py-3 font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105" style={{ backgroundColor: '#F7F7F0' }}>
-                    Reservieren
-                  </a>
-                  <a href="#speisekarte" className="inline-flex items-center justify-center rounded-full border-2 border-white text-white px-8 py-3 font-semibold hover:bg-white/10 transition-all duration-300">
-                    Speisekarte anschauen
-                  </a>
-                </div>
-              </div>
-            </ScrollReveal>
-          </div>
-        </section>
       </main>
-      <SiteFooter />
-    </>
+
+      <MicrosoftFooter />
+    </div>
   );
 }
