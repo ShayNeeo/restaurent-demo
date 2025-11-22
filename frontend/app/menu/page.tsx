@@ -10,63 +10,24 @@ type Product = {
   name: string;
   unit_amount: number;
   currency: string;
+  image_url?: string | null;
+  description?: string | null;
+  category?: string | null;
+  allergens?: string | null;
+  additives?: string | null;
+  spice_level?: string | null;
+  serving_size?: string | null;
+  dietary_tags?: string | null;
+  ingredients?: string | null;
 };
 
 type ProductsResponse = {
   products: Product[];
 };
 
-type ProductMeta = {
-  image: string;
-  description: string;
-  category: string;
-};
-
-const productMeta: Record<string, ProductMeta> = {
-  lobster: {
-    image: "/images/bo-kho-goi-cuon.jpg",
-    description:
-      "Hausgemachte Pasta mit Hummer in aromatischer Bisque. Ein Signature-Dish des Hauses.",
-    category: "Spezialitäten"
-  },
-  pho: {
-    image: "/images/pho-chay.jpg",
-    description:
-      "Aromatische Reisnudelsuppe mit frischen Kräutern, Limette und zarter Brühe.",
-    category: "Suppen"
-  },
-  bao: {
-    image: "/images/khai-vi-starter.jpg",
-    description:
-      "Fluffige Bao-Buns gefüllt mit saftigem Fleisch oder Tofu, mariniert in Hoisin.",
-    category: "Street Food"
-  },
-  gyoza: {
-    image: "/images/steamed-gyoza.jpg",
-    description:
-      "Handgefaltete Teigtaschen mit Gemüse- oder Fleischfüllung, dazu Soja-Dip.",
-    category: "Vorspeisen"
-  },
-  curry: {
-    image: "/images/curry.jpg",
-    description:
-      "Kremiges Kokoscurry mit saisonalem Gemüse und feinen Kräutern.",
-    category: "Hauptgerichte"
-  },
-  bun: {
-    image: "/images/bun-thit-xao.jpg",
-    description:
-      "Lauwarmes Reisnudel-Bowl mit frischen Kräutern, knackigem Gemüse und Sauce Nước Chấm.",
-    category: "Bowls"
-  }
-};
-
-const fallbackMeta: ProductMeta = {
-  image: "/images/view-4.jpg",
-  description:
-    "Frisch zubereitet mit typischen Kräutern Vietnams – perfekt für einen Abend in Schwabing.",
-  category: "Klassiker"
-};
+const FALLBACK_IMAGE = "/images/view-4.jpg";
+const FALLBACK_DESCRIPTION = "Frisch zubereitet mit typischen Kräutern Vietnams – perfekt für einen Abend in Schwabing.";
+const FALLBACK_CATEGORY = "Klassiker";
 
 function formatCurrency(amount: number, currency: string) {
   return new Intl.NumberFormat("de-DE", {
@@ -120,16 +81,13 @@ export default function MenuPage() {
 
     const map = new Map<string, Product[]>();
     for (const product of products) {
-      const key =
-        Object.entries(productMeta).find(([keyword]) =>
-          product.name.toLowerCase().includes(keyword)
-        )?.[1].category || fallbackMeta.category;
-      if (!map.has(key)) {
-        map.set(key, []);
+      const category = product.category || FALLBACK_CATEGORY;
+      if (!map.has(category)) {
+        map.set(category, []);
       }
-      map.get(key)!.push(product);
+      map.get(category)!.push(product);
     }
-    return Array.from(map.entries());
+    return Array.from(map.entries()).sort(([a], [b]) => a.localeCompare(b));
   }, [products]);
 
   const handleAddToCart = (product: Product) => {
@@ -184,10 +142,11 @@ export default function MenuPage() {
                 </div>
                 <div className="grid gap-6 md:grid-cols-2">
                   {items.map((product) => {
-                    const meta =
-                      Object.entries(productMeta).find(([keyword]) =>
-                        product.name.toLowerCase().includes(keyword)
-                      )?.[1] || fallbackMeta;
+                    const imageUrl = product.image_url || FALLBACK_IMAGE;
+                    const description = product.description || FALLBACK_DESCRIPTION;
+                    const allergens = product.allergens?.split(',').map(a => a.trim()).filter(Boolean) || [];
+                    const dietaryTags = product.dietary_tags?.split(',').map(t => t.trim()).filter(Boolean) || [];
+                    
                     return (
                       <article
                         key={product.id}
@@ -195,7 +154,7 @@ export default function MenuPage() {
                       >
                         <div className="relative h-32 w-32 shrink-0 overflow-hidden rounded-3xl bg-brand/5">
                           <Image
-                            src={meta.image}
+                            src={imageUrl}
                             alt={product.name}
                             fill
                             sizes="128px"
@@ -204,10 +163,51 @@ export default function MenuPage() {
                         </div>
                         <div className="flex flex-1 flex-col justify-between">
                           <div>
-                            <h3 className="text-lg font-semibold text-brand-dark">
-                              {product.name}
-                            </h3>
-                            <p className="mt-2 text-sm text-slate-600">{meta.description}</p>
+                            <div className="flex items-start justify-between gap-2">
+                              <h3 className="text-lg font-semibold text-brand-dark">
+                                {product.name}
+                              </h3>
+                              {product.serving_size && (
+                                <span className="shrink-0 rounded-full bg-brand/10 px-2 py-1 text-xs font-medium text-brand">
+                                  {product.serving_size}
+                                </span>
+                              )}
+                            </div>
+                            <p className="mt-2 text-sm text-slate-600">{description}</p>
+                            {product.ingredients && (
+                              <p className="mt-2 text-xs text-slate-500">
+                                <span className="font-medium">Zutaten:</span> {product.ingredients}
+                              </p>
+                            )}
+                            <div className="mt-3 flex flex-wrap gap-2">
+                              {product.spice_level && (
+                                <span className="inline-flex items-center rounded-full bg-red-50 px-2 py-1 text-xs font-medium text-red-700">
+                                  🌶️ {product.spice_level}
+                                </span>
+                              )}
+                              {dietaryTags.map((tag) => (
+                                <span
+                                  key={tag}
+                                  className="inline-flex items-center rounded-full bg-green-50 px-2 py-1 text-xs font-medium text-green-700"
+                                >
+                                  {tag === 'vegetarian' ? '🥬' : tag === 'vegan' ? '🌱' : ''} {tag}
+                                </span>
+                              ))}
+                            </div>
+                            {(allergens.length > 0 || product.additives) && (
+                              <div className="mt-2 text-xs text-slate-500">
+                                {allergens.length > 0 && (
+                                  <span>
+                                    <span className="font-medium">Allergene:</span> {allergens.join(', ')}
+                                  </span>
+                                )}
+                                {product.additives && (
+                                  <span className={allergens.length > 0 ? ' ml-3' : ''}>
+                                    <span className="font-medium">Zusatzstoffe:</span> {product.additives}
+                                  </span>
+                                )}
+                              </div>
+                            )}
                           </div>
                           <div className="mt-4 flex items-center justify-between">
                             <p className="text-lg font-semibold text-brand">

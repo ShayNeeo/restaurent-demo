@@ -67,7 +67,8 @@ pub fn router() -> Router {
         .route("/api/admin/pending-orders", get(get_pending_orders))
         .route("/api/admin/pending-orders/:order_id", delete(delete_pending_order))
         .route("/api/admin/cleanup", post(cleanup_stale_pending))
-        .route("/api/admin/products", get(list_products))
+        .route("/api/admin/products", get(list_products).post(add_product))
+        .route("/api/admin/products/:id", patch(update_product).delete(delete_product))
         .route("/api/admin/gift-coupons", get(list_gift_coupons))
 }
 
@@ -353,6 +354,15 @@ struct ProductInfo {
     id: String,
     name: String,
     price_cents: i64,
+    image_url: Option<String>,
+    description: Option<String>,
+    category: Option<String>,
+    allergens: Option<String>,
+    additives: Option<String>,
+    spice_level: Option<String>,
+    serving_size: Option<String>,
+    dietary_tags: Option<String>,
+    ingredients: Option<String>,
 }
 
 #[derive(Serialize)]
@@ -360,16 +370,227 @@ struct ProductsResponse {
     products: Vec<ProductInfo>,
 }
 
+#[derive(Deserialize)]
+struct AddProductRequest {
+    id: String,
+    name: String,
+    unit_amount: i64,
+    currency: Option<String>,
+    image_url: Option<String>,
+    description: Option<String>,
+    category: Option<String>,
+    allergens: Option<String>,
+    additives: Option<String>,
+    spice_level: Option<String>,
+    serving_size: Option<String>,
+    dietary_tags: Option<String>,
+    ingredients: Option<String>,
+}
+
+#[derive(Deserialize)]
+struct UpdateProductRequest {
+    name: Option<String>,
+    unit_amount: Option<i64>,
+    currency: Option<String>,
+    image_url: Option<String>,
+    description: Option<String>,
+    category: Option<String>,
+    allergens: Option<String>,
+    additives: Option<String>,
+    spice_level: Option<String>,
+    serving_size: Option<String>,
+    dietary_tags: Option<String>,
+    ingredients: Option<String>,
+}
+
 async fn list_products(Extension(state): Extension<Arc<AppState>>, headers: HeaderMap) -> Result<Json<ProductsResponse>, axum::http::StatusCode> {
     let email = extract_email_from_token(&headers, &state).ok_or(axum::http::StatusCode::UNAUTHORIZED)?;
     if !is_admin_user(&email, &state).await { return Err(axum::http::StatusCode::FORBIDDEN); }
     
-    let products = sqlx::query_as::<_, ProductInfo>("SELECT id, name, unit_amount AS price_cents FROM products ORDER BY name COLLATE NOCASE ASC LIMIT 200")
+    let products = sqlx::query_as::<_, ProductInfo>(
+        "SELECT id, name, unit_amount AS price_cents, image_url, description, category, allergens, additives, spice_level, serving_size, dietary_tags, ingredients FROM products ORDER BY category, name COLLATE NOCASE ASC LIMIT 200"
+    )
         .fetch_all(&state.pool)
         .await
         .unwrap_or_default();
     
     Ok(Json(ProductsResponse { products }))
+}
+
+async fn add_product(
+    Extension(state): Extension<Arc<AppState>>,
+    headers: HeaderMap,
+    Json(payload): Json<AddProductRequest>
+) -> Result<Json<serde_json::Value>, axum::http::StatusCode> {
+    let email = extract_email_from_token(&headers, &state).ok_or(axum::http::StatusCode::UNAUTHORIZED)?;
+    if !is_admin_user(&email, &state).await { return Err(axum::http::StatusCode::FORBIDDEN); }
+    
+    let currency = payload.currency.unwrap_or_else(|| "EUR".to_string());
+    
+    sqlx::query(
+        r#"INSERT INTO products (id, name, unit_amount, currency, image_url, description, category, allergens, additives, spice_level, serving_size, dietary_tags, ingredients) 
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"#
+    )
+        .bind(&payload.id)
+        .bind(&payload.name)
+        .bind(payload.unit_amount)
+        .bind(&currency)
+        .bind(payload.image_url.as_ref())
+        .bind(payload.description.as_ref())
+        .bind(payload.category.as_ref())
+        .bind(payload.allergens.as_ref())
+        .bind(payload.additives.as_ref())
+        .bind(payload.spice_level.as_ref())
+        .bind(payload.serving_size.as_ref())
+        .bind(payload.dietary_tags.as_ref())
+        .bind(payload.ingredients.as_ref())
+        .execute(&state.pool)
+        .await
+        .map_err(|_| axum::http::StatusCode::BAD_REQUEST)?;
+    
+    Ok(Json(serde_json::json!({"ok": true, "id": payload.id})))
+}
+
+async fn update_product(
+    Extension(state): Extension<Arc<AppState>>,
+    headers: HeaderMap,
+    Path(product_id): Path<String>,
+    Json(payload): Json<UpdateProductRequest>
+) -> Result<Json<serde_json::Value>, axum::http::StatusCode> {
+    let email = extract_email_from_token(&headers, &state).ok_or(axum::http::StatusCode::UNAUTHORIZED)?;
+    if !is_admin_user(&email, &state).await { return Err(axum::http::StatusCode::FORBIDDEN); }
+    
+    // Use individual UPDATE queries for each field (simpler and safer)
+    if let Some(ref name) = payload.name {
+        sqlx::query("UPDATE products SET name = ? WHERE id = ?")
+            .bind(name)
+            .bind(&product_id)
+            .execute(&state.pool)
+            .await
+            .map_err(|_| axum::http::StatusCode::BAD_REQUEST)?;
+    }
+    if let Some(unit_amount) = payload.unit_amount {
+        sqlx::query("UPDATE products SET unit_amount = ? WHERE id = ?")
+            .bind(unit_amount)
+            .bind(&product_id)
+            .execute(&state.pool)
+            .await
+            .map_err(|_| axum::http::StatusCode::BAD_REQUEST)?;
+    }
+    if let Some(ref currency) = payload.currency {
+        sqlx::query("UPDATE products SET currency = ? WHERE id = ?")
+            .bind(currency)
+            .bind(&product_id)
+            .execute(&state.pool)
+            .await
+            .map_err(|_| axum::http::StatusCode::BAD_REQUEST)?;
+    }
+    if let Some(ref image_url) = payload.image_url {
+        sqlx::query("UPDATE products SET image_url = ? WHERE id = ?")
+            .bind(image_url)
+            .bind(&product_id)
+            .execute(&state.pool)
+            .await
+            .map_err(|_| axum::http::StatusCode::BAD_REQUEST)?;
+    }
+    if let Some(ref description) = payload.description {
+        sqlx::query("UPDATE products SET description = ? WHERE id = ?")
+            .bind(description)
+            .bind(&product_id)
+            .execute(&state.pool)
+            .await
+            .map_err(|_| axum::http::StatusCode::BAD_REQUEST)?;
+    }
+    if let Some(ref category) = payload.category {
+        sqlx::query("UPDATE products SET category = ? WHERE id = ?")
+            .bind(category)
+            .bind(&product_id)
+            .execute(&state.pool)
+            .await
+            .map_err(|_| axum::http::StatusCode::BAD_REQUEST)?;
+    }
+    if let Some(ref allergens) = payload.allergens {
+        sqlx::query("UPDATE products SET allergens = ? WHERE id = ?")
+            .bind(allergens)
+            .bind(&product_id)
+            .execute(&state.pool)
+            .await
+            .map_err(|_| axum::http::StatusCode::BAD_REQUEST)?;
+    }
+    if let Some(ref additives) = payload.additives {
+        sqlx::query("UPDATE products SET additives = ? WHERE id = ?")
+            .bind(additives)
+            .bind(&product_id)
+            .execute(&state.pool)
+            .await
+            .map_err(|_| axum::http::StatusCode::BAD_REQUEST)?;
+    }
+    if let Some(ref spice_level) = payload.spice_level {
+        sqlx::query("UPDATE products SET spice_level = ? WHERE id = ?")
+            .bind(spice_level)
+            .bind(&product_id)
+            .execute(&state.pool)
+            .await
+            .map_err(|_| axum::http::StatusCode::BAD_REQUEST)?;
+    }
+    if let Some(ref serving_size) = payload.serving_size {
+        sqlx::query("UPDATE products SET serving_size = ? WHERE id = ?")
+            .bind(serving_size)
+            .bind(&product_id)
+            .execute(&state.pool)
+            .await
+            .map_err(|_| axum::http::StatusCode::BAD_REQUEST)?;
+    }
+    if let Some(ref dietary_tags) = payload.dietary_tags {
+        sqlx::query("UPDATE products SET dietary_tags = ? WHERE id = ?")
+            .bind(dietary_tags)
+            .bind(&product_id)
+            .execute(&state.pool)
+            .await
+            .map_err(|_| axum::http::StatusCode::BAD_REQUEST)?;
+    }
+    if let Some(ref ingredients) = payload.ingredients {
+        sqlx::query("UPDATE products SET ingredients = ? WHERE id = ?")
+            .bind(ingredients)
+            .bind(&product_id)
+            .execute(&state.pool)
+            .await
+            .map_err(|_| axum::http::StatusCode::BAD_REQUEST)?;
+    }
+    
+    // Verify product exists
+    let exists = sqlx::query_scalar::<_, i64>("SELECT COUNT(*) FROM products WHERE id = ?")
+        .bind(&product_id)
+        .fetch_one(&state.pool)
+        .await
+        .unwrap_or(0);
+    
+    if exists == 0 {
+        return Err(axum::http::StatusCode::NOT_FOUND);
+    }
+    
+    Ok(Json(serde_json::json!({"ok": true})))
+}
+
+async fn delete_product(
+    Extension(state): Extension<Arc<AppState>>,
+    headers: HeaderMap,
+    Path(product_id): Path<String>
+) -> Result<Json<serde_json::Value>, axum::http::StatusCode> {
+    let email = extract_email_from_token(&headers, &state).ok_or(axum::http::StatusCode::UNAUTHORIZED)?;
+    if !is_admin_user(&email, &state).await { return Err(axum::http::StatusCode::FORBIDDEN); }
+    
+    let result = sqlx::query("DELETE FROM products WHERE id = ?")
+        .bind(&product_id)
+        .execute(&state.pool)
+        .await
+        .map_err(|_| axum::http::StatusCode::BAD_REQUEST)?;
+    
+    if result.rows_affected() == 0 {
+        return Err(axum::http::StatusCode::NOT_FOUND);
+    }
+    
+    Ok(Json(serde_json::json!({"ok": true})))
 }
 
 #[derive(Serialize, FromRow)]

@@ -2,9 +2,7 @@
 -- Restaurant Demo - Initial Schema (Consolidated)
 -- ============================================================================
 -- This migration creates the complete, final database schema
--- Previous: Migrations 0001-0009 were redundant and caused conflicts
--- Reason: schema.sql and individual migrations were duplicating work
--- Solution: Consolidated into single migration for clarity and reliability
+-- Includes all product metadata fields from the start
 -- ============================================================================
 
 -- USERS TABLE
@@ -19,11 +17,21 @@ CREATE TABLE IF NOT EXISTS users (
 
 -- PRODUCTS TABLE
 -- Menu items available for purchase
+-- Includes all metadata fields: image_url, description, category, allergens, additives, spice_level, serving_size, dietary_tags, ingredients
 CREATE TABLE IF NOT EXISTS products (
   id TEXT PRIMARY KEY,
   name TEXT NOT NULL,
   unit_amount INTEGER NOT NULL,    -- Price in cents
-  currency TEXT NOT NULL DEFAULT 'EUR'
+  currency TEXT NOT NULL DEFAULT 'EUR',
+  image_url TEXT,
+  description TEXT,
+  category TEXT,
+  allergens TEXT,                  -- Comma-separated allergen codes (a, b, c, d, e, f, g, h, i, k, l, m, n, o, p, q, r, s, t, u)
+  additives TEXT,                  -- Comma-separated additive codes (1-15)
+  spice_level TEXT,                -- e.g., "nicht scharf", "leicht scharf", "mittel scharf"
+  serving_size TEXT,               -- e.g., "Vorspeise", "Hauptspeise", "klein", "große", "pro st"
+  dietary_tags TEXT,               -- Comma-separated: "vegetarian", "vegan", etc.
+  ingredients TEXT                 -- Detailed ingredients list
 );
 
 -- COUPONS TABLE
@@ -119,4 +127,3 @@ CREATE INDEX IF NOT EXISTS idx_pending_gifts_created_at ON pending_gifts(created
 INSERT INTO products (id, name, unit_amount, currency)
 SELECT 'test_1', 'Lobster Tortellini', 2000, 'EUR'
 WHERE NOT EXISTS (SELECT 1 FROM products);
-

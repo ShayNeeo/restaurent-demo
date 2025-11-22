@@ -6,6 +6,14 @@ set -euo pipefail
 # - Node.js 20.x + npm
 # - Rust (stable) via rustup
 # - SQLite3 + headers, build tools, OpenSSL CLI
+#
+# Environment Variables:
+#   DOMAIN              - Domain name(s) for nginx setup (comma-separated for multiple)
+#   ADMIN_USER          - Admin email address (auto-creates admin user if database is new)
+#   ADMIN_PASSWORD      - Admin password (min 6 characters, auto-creates admin user if database is new)
+#   RESET_DATABASE      - Set to "true" or "1" to delete existing database and start fresh
+#   SETUP_CERTBOT       - Set to "false" to skip certbot (for Cloudflare proxy setup)
+#   INTERNAL_FRONTEND_PORT - Internal port for Next.js (default: 3000 if DOMAIN set, 5173 otherwise)
 
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 
@@ -400,6 +408,18 @@ DATA_DIR="$ROOT_DIR/backend/data"
 mkdir -p "$DATA_DIR"
 chmod 755 "$DATA_DIR"
 
+# Check if database should be reset
+RESET_DB="${RESET_DATABASE:-false}"
+if [ "$RESET_DB" = "true" ] || [ "$RESET_DB" = "1" ]; then
+  if [ -f "$DATA_DIR/app.db" ]; then
+    echo "[install] ⚠️  RESET_DATABASE is set - deleting existing database..."
+    rm -f "$DATA_DIR/app.db"
+    echo "[install] ✅ Database deleted. Starting fresh..."
+  else
+    echo "[install] ℹ️  RESET_DATABASE is set but no database exists. Continuing..."
+  fi
+fi
+
 # Create database file if it doesn't exist
 touch "$DATA_DIR/app.db"
 chmod 644 "$DATA_DIR/app.db"
@@ -429,54 +449,95 @@ echo "[install] Starting backend (detached)..."
 
 # Wait for backend to start before setting up admin user
 echo "[install] Waiting for backend to start..."
-sleep 3
+sleep 5
 
-# If first run, prompt to create admin user
-if [ "$IS_FIRST_RUN" = true ]; then
-  echo ""
-  echo "============================================"
-  echo "⚙️  First-time setup detected!"
-  echo "============================================"
-  echo ""
-  read -p "📧 Enter admin email: " ADMIN_USER_EMAIL
-  
-  # Validate email format (basic check)
-  if [[ ! "$ADMIN_USER_EMAIL" =~ ^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$ ]]; then
-    echo "❌ Invalid email format. Skipping admin user creation."
-  else
-    read -sp "🔐 Enter admin password (min 6 characters): " ADMIN_USER_PASSWORD
+# Check if admin user should be created
+# Use environment variables ADMIN_USER and ADMIN_PASSWORD if provided
+ADMIN_USER_EMAIL="${ADMIN_USER:-}"
+ADMIN_USER_PASSWORD="${ADMIN_PASSWORD:-}"
+
+# Check if database has users (after migrations have run)
+DB_HAS_USERS=false
+if [ -s "$DATA_DIR/app.db" ]; then
+  # Check if any users exist in the database (after migrations)
+  USER_COUNT=$(sqlite3 "$DATA_DIR/app.db" "SELECT COUNT(*) FROM users;" 2>/dev/null || echo "0")
+  if [ "$USER_COUNT" -gt 0 ]; then
+    DB_HAS_USERS=true
+  fi
+fi
+
+# Create admin user if:
+# 1. Database is new (first run) OR database has no users, AND
+# 2. ADMIN_USER and ADMIN_PASSWORD are provided OR we're in interactive mode
+if [ "$IS_FIRST_RUN" = true ] || [ "$DB_HAS_USERS" = false ]; then
+  if [ -n "$ADMIN_USER_EMAIL" ] && [ -n "$ADMIN_USER_PASSWORD" ]; then
+    # Non-interactive mode: use environment variables
     echo ""
+    echo "[install] Creating admin user from environment variables..."
+  else
+    # Interactive mode: prompt for credentials
+    echo ""
+    echo "============================================"
+    echo "⚙️  Admin user setup required!"
+    echo "============================================"
+    echo ""
+    echo "💡 Tip: Set ADMIN_USER and ADMIN_PASSWORD environment variables for non-interactive setup"
+    echo ""
+    read -p "📧 Enter admin email: " ADMIN_USER_EMAIL
     
-    # Validate password length
-    if [ ${#ADMIN_USER_PASSWORD} -lt 6 ]; then
-      echo "❌ Password too short (minimum 6 characters). Skipping admin user creation."
+    # Validate email format (basic check)
+    if [[ ! "$ADMIN_USER_EMAIL" =~ ^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$ ]]; then
+      echo "❌ Invalid email format. Skipping admin user creation."
+      ADMIN_USER_EMAIL=""
     else
-      # Get the backend port (default 8080)
-      BACKEND_URL="${BACKEND_URL:-http://127.0.0.1:8080}"
-      
-      # Attempt to create admin user
+      read -sp "🔐 Enter admin password (min 6 characters): " ADMIN_USER_PASSWORD
       echo ""
-      echo "[install] Creating admin user..."
-      ADMIN_RESPONSE=$(curl -s -X POST "$BACKEND_URL/api/auth/setup-admin" \
-        -H "Content-Type: application/json" \
-        -d "{\"email\": \"$ADMIN_USER_EMAIL\", \"password\": \"$ADMIN_USER_PASSWORD\"}" 2>/dev/null)
       
-      if echo "$ADMIN_RESPONSE" | grep -q "token"; then
-        echo "✅ Admin user created successfully!"
-        echo ""
-        echo "Login credentials:"
-        echo "  Email: $ADMIN_USER_EMAIL"
-        echo "  Password: (as entered)"
-        echo ""
-      else
-        echo "⚠️  Admin user creation may have failed. You can create it manually later:"
-        echo "curl -X POST $BACKEND_URL/api/auth/setup-admin \\"
-        echo "  -H 'Content-Type: application/json' \\"
-        echo "  -d '{\"email\": \"admin@domain.com\", \"password\": \"YourPassword123\"}'"
+      # Validate password length
+      if [ ${#ADMIN_USER_PASSWORD} -lt 6 ]; then
+        echo "❌ Password too short (minimum 6 characters). Skipping admin user creation."
+        ADMIN_USER_PASSWORD=""
       fi
     fi
   fi
-  echo ""
+  
+  # Create admin user if we have credentials
+  if [ -n "$ADMIN_USER_EMAIL" ] && [ -n "$ADMIN_USER_PASSWORD" ]; then
+    # Get the backend URL
+    BACKEND_URL="${BACKEND_URL:-http://127.0.0.1:8080}"
+    
+    # Wait a bit more for backend to be fully ready
+    sleep 2
+    
+    # Attempt to create admin user
+    echo "[install] Creating admin user..."
+    ADMIN_RESPONSE=$(curl -s -X POST "$BACKEND_URL/api/auth/setup-admin" \
+      -H "Content-Type: application/json" \
+      -d "{\"email\": \"$ADMIN_USER_EMAIL\", \"password\": \"$ADMIN_USER_PASSWORD\"}" 2>/dev/null)
+    
+    if echo "$ADMIN_RESPONSE" | grep -q "token"; then
+      echo "✅ Admin user created successfully!"
+      echo ""
+      echo "Login credentials:"
+      echo "  Email: $ADMIN_USER_EMAIL"
+      if [ -z "${ADMIN_PASSWORD:-}" ]; then
+        echo "  Password: (as entered)"
+      else
+        echo "  Password: (from ADMIN_PASSWORD environment variable)"
+      fi
+      echo ""
+    else
+      echo "⚠️  Admin user creation may have failed. Response: $ADMIN_RESPONSE"
+      echo "You can create it manually later:"
+      echo "curl -X POST $BACKEND_URL/api/auth/setup-admin \\"
+      echo "  -H 'Content-Type: application/json' \\"
+      echo "  -d '{\"email\": \"admin@domain.com\", \"password\": \"YourPassword123\"}'"
+      echo ""
+    fi
+  else
+    echo "⚠️  Skipping admin user creation. You can create it manually later."
+    echo ""
+  fi
 fi
 
 echo "[install] Starting frontend (detached)..."
