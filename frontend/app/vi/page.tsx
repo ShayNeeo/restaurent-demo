@@ -16,6 +16,9 @@ type Product = {
   name: string;
   unit_amount: number;
   currency: string;
+  image_url?: string | null;
+  description?: string | null;
+  category?: string | null;
 };
 
 type ProductMeta = {
@@ -464,7 +467,6 @@ function CarouselStory() {
 export default function VietnameseHomePage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeCategory, setActiveCategory] = useState("Tất cả");
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -473,7 +475,9 @@ export default function VietnameseHomePage() {
         const response = await fetch(`${backendUrl}/api/products`);
         if (response.ok) {
           const data = (await response.json()) as ProductsResponse;
-          setProducts(data.products);
+          // Shuffle and take 20 random products for homepage
+          const shuffled = [...data.products].sort(() => Math.random() - 0.5);
+          setProducts(shuffled.slice(0, 20));
         }
       } catch (error) {
         console.error("Lỗi tải sản phẩm:", error);
@@ -483,13 +487,6 @@ export default function VietnameseHomePage() {
     };
     fetchProducts();
   }, []);
-
-  const categories = ["Tất cả", ...Array.from(new Set(products.map((p: Product) => productMeta[p.id.toLowerCase()]?.category || "Khác")))];
-
-  const filteredProducts =
-    activeCategory === "Tất cả"
-      ? products
-      : products.filter((p: Product) => productMeta[p.id.toLowerCase()]?.category === activeCategory);
 
   const formatPrice = (amount: number, currency?: string) =>
     (amount / 100).toLocaleString("vi-VN", {
@@ -724,23 +721,11 @@ export default function VietnameseHomePage() {
               </p>
             </ScrollReveal>
 
-            {/* Category Filter */}
+            {/* Show random selection info */}
             <ScrollReveal className="mb-16">
-              <div className="flex flex-wrap justify-center gap-3">
-                {categories.map((category) => (
-                  <button
-                    key={category}
-                    onClick={() => setActiveCategory(category)}
-                    className={`px-6 py-2.5 rounded-full font-medium transition-all duration-500 text-sm uppercase tracking-wide ${
-                      activeCategory === category
-                        ? "bg-amber-100 text-brand shadow-lg scale-105"
-                        : "bg-white/20 text-white hover:bg-white/30 border border-white/30"
-                    }`}
-                  >
-                    {category}
-                  </button>
-                ))}
-              </div>
+              <p className="text-center text-white/80 text-sm">
+                Một lựa chọn ngẫu nhiên các món đặc biệt của chúng tôi
+              </p>
             </ScrollReveal>
 
             {/* Products Grid */}
@@ -750,34 +735,37 @@ export default function VietnameseHomePage() {
               </div>
             ) : (
               <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-                {filteredProducts.map((product) => {
+                {products.map((product) => {
                   const meta = productMeta[product.id.toLowerCase()];
+                  const imageUrl = product.image_url || meta?.image || "/images/view-4.jpg";
+                  const category = product.category || meta?.category || "Món ăn";
+                  const description = product.description || meta?.description || "";
                   return (
                     <ScrollReveal key={product.id}>
                       <div className="group h-full overflow-hidden rounded-2xl bg-white/95 shadow-soft hover:shadow-2xl transition-all duration-500 hover:-translate-y-2">
                         {/* Image */}
                         <div className="relative h-64 w-full overflow-hidden bg-gradient-to-br from-amber-100 to-amber-50">
-                          {meta?.image && (
-                            <Image
-                              src={meta.image}
-                              alt={product.name}
-                              fill
-                              className="object-cover transition-all duration-700 group-hover:scale-110"
-                            />
-                          )}
+                          <Image
+                            src={imageUrl}
+                            alt={product.name}
+                            fill
+                            className="object-cover transition-all duration-700 group-hover:scale-110"
+                          />
                         </div>
 
                         {/* Content */}
                         <div className="p-6">
                           <p className="text-xs font-bold uppercase tracking-widest text-brand/60 mb-2">
-                            {meta?.category || "Món ăn"}
+                            {category}
                           </p>
                           <h3 className="text-xl font-display font-bold text-brand-dark mb-3">
                             {product.name}
                           </h3>
-                          <p className="text-sm leading-relaxed text-slate-600 mb-4">
-                            {meta?.description}
-                          </p>
+                          {description && (
+                            <p className="text-sm leading-relaxed text-slate-600 mb-4">
+                              {description}
+                            </p>
+                          )}
                           <div className="flex items-center justify-between pt-4 border-t border-amber-100">
                             <span className="text-2xl font-bold text-brand">
                               {formatPrice(product.unit_amount, product.currency)}
