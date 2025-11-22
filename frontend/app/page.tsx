@@ -634,6 +634,58 @@ function CarouselStory() {
   );
 }
 
+function GalleryImages({ images }: { images: typeof galleryImages }) {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 640);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  const getSafePosition = (val: string | number | undefined): string | number | undefined => {
+    if (!isMobile) return val;
+    if (typeof val === 'string' && val.endsWith('%')) {
+      const num = parseFloat(val);
+      return num < 0 ? '2%' : val;
+    }
+    return val;
+  };
+
+  return (
+    <div className="relative h-[400px] sm:h-[520px] lg:h-[640px] px-4 sm:px-0">
+      <div className="absolute inset-0 rounded-[48px] bg-gradient-to-br from-brand-light/80 to-brand-accent/30 blur-3xl" />
+      {images.map((image, index) => (
+        <div
+          key={`${image.src}-${index}`}
+          className="group absolute overflow-hidden rounded-[36px] border border-brand-light/40 bg-brand-light/30 shadow-2xl backdrop-blur-sm transition-transform duration-700 ease-out hover:-translate-y-2 hover:rotate-[1deg]"
+          style={{
+            ...image.style,
+            left: getSafePosition(image.style.left),
+            right: getSafePosition(image.style.right),
+            top: getSafePosition(image.style.top),
+            bottom: getSafePosition(image.style.bottom),
+            zIndex: image.zIndex,
+          }}
+        >
+          <Image
+            src={image.src}
+            alt={image.alt}
+            fill
+            sizes="(max-width: 768px) 60vw, (max-width: 1200px) 35vw, 30vw"
+            className="object-cover transition-transform duration-700 group-hover:scale-105"
+            priority={index === 0}
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function HomePage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -645,9 +697,9 @@ export default function HomePage() {
         const response = await fetch(`${backendUrl}/api/products`);
         if (response.ok) {
           const data = (await response.json()) as ProductsResponse;
-          // Shuffle and take 20 random products for homepage
+          // Shuffle and take 11 random products for homepage
           const shuffled = [...data.products].sort(() => Math.random() - 0.5);
-          setProducts(shuffled.slice(0, 20));
+          setProducts(shuffled.slice(0, 11));
         }
       } catch (error) {
         console.error("Fehler beim Laden der Produkte:", error);
@@ -904,7 +956,7 @@ export default function HomePage() {
               </p>
             </ScrollReveal>
 
-            {/* Products Grid - 7 rows x 3 columns = 21 spots (20 products + 1 view all card) */}
+            {/* Products Grid - 4 rows x 3 columns = 12 spots (11 products + 1 view all card) */}
             {loading ? (
               <div className="text-center py-20">
                 <p className="text-white/70">Produkte werden geladen...</p>
@@ -955,7 +1007,7 @@ export default function HomePage() {
                     </ScrollReveal>
                   );
                 })}
-                {/* View All Menus Card - 21st spot */}
+                {/* View All Menus Card - 12th spot */}
                 <ScrollReveal>
                   <a
                     href="/menu"
@@ -991,8 +1043,8 @@ export default function HomePage() {
             <div className="absolute top-1/2 left-0 h-40 w-40 -translate-x-1/2 -translate-y-1/2 rounded-full bg-brand-accent/20 blur-3xl" />
           </div>
 
-          <div className="relative z-10 mx-auto max-w-7xl px-6">
-            <div className="grid items-center gap-16 lg:grid-cols-[0.9fr,1.1fr]">
+          <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-6">
+            <div className="grid items-center gap-8 sm:gap-12 lg:gap-16 lg:grid-cols-[0.9fr,1.1fr]">
               <ScrollReveal className="space-y-8">
                 <p className="text-xs uppercase tracking-[0.35rem] font-semibold text-brand/70">
                   Unsere Speisen-Galerie
@@ -1024,26 +1076,7 @@ export default function HomePage() {
               </ScrollReveal>
 
               <ScrollReveal>
-                <div className="relative h-[520px] sm:h-[640px]">
-                  <div className="absolute inset-0 rounded-[48px] bg-gradient-to-br from-brand-light/80 to-brand-accent/30 blur-3xl" />
-                  {galleryImages.map((image, index) => (
-                    <div
-                      key={`${image.src}-${index}`}
-                      className="group absolute overflow-hidden rounded-[36px] border border-brand-light/40 bg-brand-light/30 shadow-2xl backdrop-blur-sm transition-transform duration-700 ease-out hover:-translate-y-2 hover:rotate-[1deg]"
-                      style={{ ...image.style, zIndex: image.zIndex }}
-                    >
-                      <Image
-                        src={image.src}
-                        alt={image.alt}
-                        fill
-                        sizes="(max-width: 768px) 60vw, (max-width: 1200px) 35vw, 30vw"
-                        className="object-cover transition-transform duration-700 group-hover:scale-105"
-                        priority={index === 0}
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
-                    </div>
-                  ))}
-                </div>
+                <GalleryImages images={galleryImages} />
               </ScrollReveal>
             </div>
           </div>
