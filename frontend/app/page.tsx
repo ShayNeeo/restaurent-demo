@@ -653,17 +653,37 @@ function GalleryImages({ images }: { images: GalleryImage[] }) {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  const getSafePosition = (val: string | number | undefined): string | number | undefined => {
+  const getSafePosition = (val: string | number | undefined, index: number): string | number | undefined => {
     if (!isMobile) return val;
     if (typeof val === 'string' && val.endsWith('%')) {
       const num = parseFloat(val);
-      return num < 0 ? '2%' : val;
+      // On mobile, ensure minimum spacing - clamp negative values more aggressively
+      // Also adjust based on index to create better spacing
+      if (num < 0) {
+        // Create staggered spacing to prevent overlap
+        const minSpacing = 5 + (index % 3) * 2; // 5%, 7%, 9% minimum spacing
+        return `${minSpacing}%`;
+      }
+      // Ensure positive values don't get too close to edges
+      if (num > 90) return '90%';
+      return val;
     }
     return val;
   };
 
+  const getMobileWidth = (originalWidth: string | number | undefined, index: number): string | number | undefined => {
+    if (!isMobile) return originalWidth;
+    if (typeof originalWidth === 'string' && originalWidth.endsWith('%')) {
+      const num = parseFloat(originalWidth);
+      // Reduce width on mobile to prevent overlap (max 45% per image)
+      const maxWidth = Math.min(num, 45);
+      return `${maxWidth}%`;
+    }
+    return originalWidth;
+  };
+
   return (
-    <div className="relative h-[400px] sm:h-[520px] lg:h-[640px] px-4 sm:px-0">
+    <div className="relative h-[500px] sm:h-[520px] lg:h-[640px] px-6 sm:px-0">
       <div className="absolute inset-0 rounded-[48px] bg-gradient-to-br from-brand-light/80 to-brand-accent/30 blur-3xl" />
       {images.map((image, index) => (
         <div
@@ -671,10 +691,11 @@ function GalleryImages({ images }: { images: GalleryImage[] }) {
           className="group absolute overflow-hidden rounded-[36px] border border-brand-light/40 bg-brand-light/30 shadow-2xl backdrop-blur-sm transition-transform duration-700 ease-out hover:-translate-y-2 hover:rotate-[1deg]"
           style={{
             ...image.style,
-            left: getSafePosition(image.style.left),
-            right: getSafePosition(image.style.right),
-            top: getSafePosition(image.style.top),
-            bottom: getSafePosition(image.style.bottom),
+            left: getSafePosition(image.style.left, index),
+            right: getSafePosition(image.style.right, index),
+            top: getSafePosition(image.style.top, index),
+            bottom: getSafePosition(image.style.bottom, index),
+            width: getMobileWidth(image.style.width, index),
             zIndex: image.zIndex,
           }}
         >
