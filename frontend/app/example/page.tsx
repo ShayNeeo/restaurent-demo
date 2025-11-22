@@ -75,7 +75,7 @@ const productMeta: Record<string, ProductMeta> = {
 function MaiHeader() {
   return (
     <header className="fixed top-6 left-0 right-0 z-50 flex justify-center px-4 pointer-events-none">
-      <div className="pointer-events-auto bg-white/90 backdrop-blur-md rounded-full shadow-sm border border-stone-100 px-6 py-3 flex items-center justify-between w-full max-w-[1200px]">
+      <div className="pointer-events-auto bg-brand-light/90 backdrop-blur-md rounded-full shadow-sm border border-stone-100 px-6 py-3 flex items-center justify-between w-full max-w-[1200px]">
         <div className="flex items-center gap-4">
           <button className="p-2 hover:bg-stone-100 rounded-full transition-colors">
             <svg className="w-4 h-4 text-stone-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
@@ -345,7 +345,7 @@ function MenuGrid({ products, loading }: { products: Product[], loading: boolean
                       <div className="flex items-center justify-center h-full text-stone-300">No Image</div>
                     )}
                     {meta?.tag && (
-                      <div className="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1 text-xs font-mono uppercase tracking-wider text-mai-dark">
+                      <div className="absolute top-4 left-4 bg-brand-light/90 backdrop-blur px-3 py-1 text-xs font-mono uppercase tracking-wider text-mai-dark">
                         {meta.tag}
                       </div>
                     )}

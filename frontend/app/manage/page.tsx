@@ -442,7 +442,7 @@ export default function ManagePage() {
                     onClick={() => addToOrder(product)}
                     className="group relative bg-gray-700 hover:bg-gray-600 rounded-lg overflow-hidden border border-gray-600 hover:border-yellow-500 transition"
                   >
-                    <div className="relative h-32 bg-gradient-to-br from-amber-100 to-amber-50">
+                    <div className="relative h-32 bg-gradient-to-br from-brand-accent/20 to-brand-accent/10">
                       {PRODUCT_IMAGES[product.id.toLowerCase()] && (
                         <Image
                           src={PRODUCT_IMAGES[product.id.toLowerCase()]}

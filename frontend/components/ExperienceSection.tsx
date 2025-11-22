@@ -35,7 +35,7 @@ export function ExperienceSection() {
               <h3 className="text-xl font-semibold text-brand-dark">
                 {item.title}
               </h3>
-              <p className="mt-3 text-sm leading-relaxed text-slate-600">
+              <p className="mt-3 text-sm leading-relaxed text-brand-dark/70">
                 {item.description}
               </p>
             </article>
@@ -48,7 +48,7 @@ export function ExperienceSection() {
           <h3 className="mt-3 text-2xl font-semibold text-brand">
             Verwöhnen Sie Ihre Liebsten mit einem Gutscheinerlebnis
           </h3>
-          <p className="mt-3 text-sm text-slate-600">
+          <p className="mt-3 text-sm text-brand-dark/70">
             Fragen Sie unser Team nach Geschenk-Gutscheinen, die Sie direkt vor
             Ort erwerben können – inklusive persönlicher Beratung zu Menüempfehlungen.
           </p>

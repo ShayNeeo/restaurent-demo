@@ -152,13 +152,13 @@ export default function CheckoutPage() {
   return (
     <main className="bg-brand-light/70 pt-24 pb-20">
       <div className="mx-auto grid w-full max-w-6xl gap-10 px-6 lg:grid-cols-[1.1fr_0.9fr]">
-        <section className="rounded-[2.5rem] border border-white/10 bg-white/90 p-8 shadow-soft">
+        <section className="rounded-[2.5rem] border border-white/10 bg-brand-light/90 p-8 shadow-soft">
           <header className="mb-8">
             <span className="badge bg-brand/10 text-brand">Checkout</span>
             <h1 className="mt-4 text-3xl font-semibold text-brand-dark">
               Fast geschafft! Jetzt noch kurz bestätigen.
             </h1>
-            <p className="mt-2 text-sm text-slate-600">
+            <p className="mt-2 text-sm text-brand-dark/70">
               Nach dem Klick auf „Bezahlen“ werden Sie zu PayPal geleitet. Sobald die Zahlung abgeschlossen
               ist, erhalten Sie eine Bestätigungs-E-Mail.
             </p>
@@ -240,7 +240,7 @@ export default function CheckoutPage() {
 
           <hr className="my-8 border-dashed border-brand/20" />
 
-          <div className="space-y-4 text-sm text-slate-600">
+          <div className="space-y-4 text-sm text-brand-dark/70">
             <h2 className="text-base font-semibold uppercase tracking-[0.3em] text-brand">
               Sicherheit & Bezahlung
             </h2>
@@ -253,10 +253,10 @@ export default function CheckoutPage() {
         </section>
 
         <aside className="space-y-6">
-          <div className="rounded-[2.5rem] border border-brand/20 bg-white/80 p-7 shadow-soft">
+          <div className="rounded-[2.5rem] border border-brand/20 bg-brand-light/80 p-7 shadow-soft">
             <h2 className="mb-4 text-lg font-semibold text-brand">Bestellübersicht</h2>
             {items.length === 0 ? (
-              <p className="text-sm text-slate-500">
+              <p className="text-sm text-brand-dark/60">
                 Ihr Warenkorb ist leer. Entdecken Sie unsere{" "}
                 <a
                   href="/menu"
@@ -272,7 +272,7 @@ export default function CheckoutPage() {
                   <li key={item.productId} className="flex justify-between gap-4">
                     <div>
                       <p className="font-semibold text-brand-dark">{item.name}</p>
-                      <p className="text-xs uppercase tracking-[0.3em] text-slate-500">
+                      <p className="text-xs uppercase tracking-[0.3em] text-brand-dark/60">
                         × {item.quantity}
                       </p>
                     </div>
@@ -284,7 +284,7 @@ export default function CheckoutPage() {
               </ul>
             )}
 
-            <dl className="mt-6 space-y-2 text-sm text-slate-600">
+            <dl className="mt-6 space-y-2 text-sm text-brand-dark/70">
               <div className="flex items-center justify-between">
                 <dt>Zwischensumme</dt>
                 <dd className="font-medium text-brand-dark">{formatCurrency(subtotal)}</dd>
@@ -314,7 +314,7 @@ export default function CheckoutPage() {
               <p className="mt-3 text-sm text-red-500">{error}</p>
             ) : null}
 
-            <p className="mt-4 text-xs text-slate-500">
+            <p className="mt-4 text-xs text-brand-dark/60">
               Mit dem Abschluss Ihrer Bestellung akzeptieren Sie unsere{" "}
               <a href="/coupon" className="underline underline-offset-4">
                 Gutscheinbedingungen

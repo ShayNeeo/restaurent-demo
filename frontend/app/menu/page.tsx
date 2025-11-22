@@ -109,7 +109,7 @@ export default function MenuPage() {
           <h1 className="mt-4 text-3xl font-semibold text-brand-dark sm:text-4xl">
             Vietnamesische Küche mit Münchner Seele
           </h1>
-          <p className="mx-auto mt-4 max-w-2xl text-base text-slate-600">
+          <p className="mx-auto mt-4 max-w-2xl text-base text-brand-dark/70">
             Alle Gerichte werden frisch zubereitet und lassen sich auch zum Mitnehmen bestellen.
             Stellen Sie sich Ihr Menü individuell zusammen und schließen Sie den Kauf bequem über
             PayPal ab.
@@ -117,7 +117,7 @@ export default function MenuPage() {
         </header>
 
         {loading ? (
-          <div className="flex min-h-[200px] items-center justify-center rounded-3xl border border-dashed border-brand/30 bg-white/60">
+          <div className="flex min-h-[200px] items-center justify-center rounded-3xl border border-dashed border-brand/30 bg-brand-light/60">
             <div className="text-sm uppercase tracking-[0.4em] text-brand">
               Laden…
             </div>
@@ -150,7 +150,7 @@ export default function MenuPage() {
                     return (
                       <article
                         key={product.id}
-                        className="group flex gap-6 rounded-[2.5rem] border border-white/0 bg-white/90 p-6 shadow-soft transition hover:-translate-y-1 hover:shadow-xl"
+                        className="group flex gap-6 rounded-[2.5rem] border border-brand-light/0 bg-brand-light/90 p-6 shadow-soft transition hover:-translate-y-1 hover:shadow-xl"
                       >
                         <div className="relative h-32 w-32 shrink-0 overflow-hidden rounded-3xl bg-brand/5">
                           <Image
@@ -173,9 +173,9 @@ export default function MenuPage() {
                                 </span>
                               )}
                             </div>
-                            <p className="mt-2 text-sm text-slate-600">{description}</p>
+                            <p className="mt-2 text-sm text-brand-dark/70">{description}</p>
                             {product.ingredients && (
-                              <p className="mt-2 text-xs text-slate-500">
+                              <p className="mt-2 text-xs text-brand-dark/60">
                                 <span className="font-medium">Zutaten:</span> {product.ingredients}
                               </p>
                             )}
@@ -195,7 +195,7 @@ export default function MenuPage() {
                               ))}
                             </div>
                             {(allergens.length > 0 || product.additives) && (
-                              <div className="mt-2 text-xs text-slate-500">
+                              <div className="mt-2 text-xs text-brand-dark/60">
                                 {allergens.length > 0 && (
                                   <span>
                                     <span className="font-medium">Allergene:</span> {allergens.join(', ')}
@@ -243,7 +243,7 @@ export default function MenuPage() {
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
             <a
               href="tel:+498928803451"
-              className="rounded-full bg-white px-5 py-3 text-sm font-semibold uppercase tracking-[0.4em] text-brand transition hover:bg-yellow-100"
+              className="rounded-full bg-brand-light px-5 py-3 text-sm font-semibold uppercase tracking-[0.4em] text-brand transition hover:bg-brand-accent/20"
             >
               089 28803451
             </a>

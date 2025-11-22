@@ -13,14 +13,14 @@ export function AboutSection() {
           <h2 className="section-title">
             Familiengeführte Gastfreundschaft – mitten in Schwabing
           </h2>
-          <p className="text-lg leading-relaxed text-slate-700">
+          <p className="text-lg leading-relaxed text-brand-dark/80">
             Die vietnamesische Küche ist geprägt von Tradition und
             Leichtigkeit. Im NGUYEN bereiten wir unsere Speisen von Hand und mit
             größter Sorgfalt zu. Entdecken Sie eine Vielfalt an milden bis
             aromatisch-würzigen Gerichten und lassen Sie sich auf Wunsch einen
             Hauch vietnamesisches Feuer servieren.
           </p>
-          <p className="text-lg leading-relaxed text-slate-700">
+          <p className="text-lg leading-relaxed text-brand-dark/80">
             Reis begleitet uns in jeder Variation: als Reispapier, Reisnudeln
             oder duftender Jasminreis. Probieren Sie Pho Bò, Goi Cuon oder unser
             vegetarisches Bun – jede Spezialität erzählt eine Geschichte aus
@@ -29,14 +29,14 @@ export function AboutSection() {
           <div className="grid gap-5 sm:grid-cols-2">
             <div className="card">
               <h3 className="text-xl font-semibold text-brand">Ambiente</h3>
-              <p className="mt-2 text-sm leading-relaxed text-slate-600">
+              <p className="mt-2 text-sm leading-relaxed text-brand-dark/70">
                 Warme Farben, sorgfältig arrangierte Details und ein Service, der
                 aufmerksam und herzlich ist – so schmeckt Vietnam doppelt gut.
               </p>
             </div>
             <div className="card">
               <h3 className="text-xl font-semibold text-brand">Frische</h3>
-              <p className="mt-2 text-sm leading-relaxed text-slate-600">
+              <p className="mt-2 text-sm leading-relaxed text-brand-dark/70">
                 Wir wählen Zutaten täglich frisch aus und bereiten jedes Gericht
                 unmittelbar zu. Ohne Kompromisse, mit viel Liebe.
               </p>
@@ -69,7 +69,7 @@ export function AboutSection() {
             <p className="text-sm font-medium uppercase tracking-[0.3em] text-brand/70">
               Highlights
             </p>
-            <ul className="mt-3 space-y-2 text-sm text-slate-600">
+            <ul className="mt-3 space-y-2 text-sm text-brand-dark/70">
               <li>• Traditionelle Rezepte aus Saigon</li>
               <li>• Vegetarische und vegane Optionen</li>
               <li>• Exquisite Pho-Variationen & Fingerfood</li>

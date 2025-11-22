@@ -16,7 +16,7 @@ export function GallerySection() {
     <section id="galerie" className="bg-brand/95 py-20 sm:py-28">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-10 px-6 text-white">
         <div className="flex flex-col items-center text-center">
-          <span className="badge bg-white/10 text-white">Impressionen</span>
+          <span className="badge bg-brand-light/10 text-white">Impressionen</span>
           <h2 className="mt-4 text-3xl font-semibold sm:text-4xl">
             Atmosphäre zum Wohlfühlen
           </h2>

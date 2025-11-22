@@ -39,7 +39,7 @@ export function NavBar() {
   }, [mobileOpen]);
 
   const baseClasses =
-    "fixed inset-x-0 top-0 z-50 border-b border-white/10 transition-transform duration-300";
+    "fixed inset-x-0 top-0 z-50 border-b border-brand-light/10 transition-transform duration-300";
   const background = atTop ? "bg-transparent" : "bg-brand/80 backdrop-blur";
 
   return (
@@ -48,7 +48,7 @@ export function NavBar() {
         <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-4">
           <Link
             href="#hero"
-            className="font-display text-2xl text-white drop-shadow transition hover:text-yellow-300"
+            className="font-display text-2xl text-white drop-shadow transition hover:text-brand-accent"
           >
             Nguyen Restaurant
           </Link>
@@ -58,14 +58,14 @@ export function NavBar() {
               <a
                 key={link.href}
                 href={link.href}
-                className="transition hover:text-yellow-200"
+                className="transition hover:text-brand-accent/80"
               >
                 {link.label}
               </a>
             ))}
             <a
               href="tel:+498928803451"
-              className="rounded-full bg-white/20 px-4 py-2 text-sm font-semibold uppercase tracking-[0.35em] transition hover:bg-white/30"
+              className="rounded-full bg-brand-light/20 px-4 py-2 text-sm font-semibold uppercase tracking-[0.35em] transition hover:bg-brand-light/30"
             >
               089 28803451
             </a>
@@ -79,7 +79,7 @@ export function NavBar() {
               type="button"
               aria-label={mobileOpen ? "Navigation schließen" : "Navigation öffnen"}
               onClick={() => setMobileOpen((prev) => !prev)}
-              className="flex h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white transition hover:border-white hover:bg-white/20"
+              className="flex h-11 w-11 items-center justify-center rounded-full border border-brand-light/20 bg-brand-light/10 text-white transition hover:border-white hover:bg-brand-light/20"
             >
               <span className="sr-only">
                 {mobileOpen ? "Navigation schließen" : "Navigation öffnen"}
@@ -122,7 +122,7 @@ export function NavBar() {
             key={link.href}
             href={link.href}
             onClick={() => setMobileOpen(false)}
-            className="text-base font-semibold uppercase tracking-[0.35em] transition hover:text-yellow-200"
+            className="text-base font-semibold uppercase tracking-[0.35em] transition hover:text-brand-accent/80"
           >
             {link.label}
           </a>
@@ -130,18 +130,18 @@ export function NavBar() {
         <a
           href="tel:+498928803451"
           onClick={() => setMobileOpen(false)}
-          className="rounded-full bg-white/20 px-4 py-2 text-center text-base font-semibold uppercase tracking-[0.35em] text-white transition hover:bg-white/30"
+          className="rounded-full bg-brand-light/20 px-4 py-2 text-center text-base font-semibold uppercase tracking-[0.35em] text-white transition hover:bg-brand-light/30"
         >
           089 28803451
         </a>
         <a
           href="/coupon"
           onClick={() => setMobileOpen(false)}
-          className="rounded-full border border-white/20 px-4 py-2 text-center text-base font-semibold uppercase tracking-[0.35em] text-white transition hover:border-yellow-300 hover:text-yellow-300"
+          className="rounded-full border border-brand-light/20 px-4 py-2 text-center text-base font-semibold uppercase tracking-[0.35em] text-white transition hover:border-yellow-300 hover:text-brand-accent"
         >
           Gutscheine
         </a>
-        <div className="flex justify-center border-t border-white/10 pt-4">
+        <div className="flex justify-center border-t border-brand-light/10 pt-4">
           <LanguageSwitcher />
         </div>
       </nav>

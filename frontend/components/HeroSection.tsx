@@ -95,7 +95,7 @@ export function HeroSection() {
       </div>
 
       <div className="relative z-10 mx-auto flex w-full max-w-4xl flex-col items-center gap-6 px-6 text-center">
-        <span className="badge bg-white/20 text-sm uppercase tracking-[0.3em] text-white">
+        <span className="badge bg-brand-light/20 text-sm uppercase tracking-[0.3em] text-white">
           {slides[active].eyebrow}
         </span>
         <h1 className="font-display text-4xl leading-tight text-white drop-shadow-xl sm:text-5xl md:text-6xl">
@@ -112,7 +112,7 @@ export function HeroSection() {
             Speisekarte entdecken
           </a>
         </div>
-        <div className="mt-8 grid w-full gap-4 rounded-3xl bg-white/10 p-6 text-left backdrop-blur sm:grid-cols-3">
+        <div className="mt-8 grid w-full gap-4 rounded-3xl bg-brand-light/10 p-6 text-left backdrop-blur sm:grid-cols-3">
           <div>
             <p className="text-xs uppercase tracking-[0.4em] text-white/50">Adresse</p>
             <p className="mt-1 text-sm font-semibold">
@@ -148,7 +148,7 @@ export function HeroSection() {
               type="button"
               onClick={() => setActive(index)}
               className={`h-2 w-8 rounded-full transition ${
-                index === active ? "bg-yellow-300" : "bg-white/40 hover:bg-white/70"
+                index === active ? "bg-yellow-300" : "bg-brand-light/40 hover:bg-brand-light/70"
               }`}
               aria-label={`Slide ${index + 1}`}
             />

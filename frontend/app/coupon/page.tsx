@@ -183,16 +183,16 @@ export default function CouponPage() {
           <h1 className="mt-4 text-3xl font-semibold text-brand-dark">
             Genuss verschenken oder Guthaben einlösen
           </h1>
-          <p className="mx-auto mt-3 max-w-3xl text-base text-slate-600">
+          <p className="mx-auto mt-3 max-w-3xl text-base text-brand-dark/70">
             Unsere Geschenk-Gutscheine erhalten Sie digital mit 10% Bonus on top. Codes lassen sich hier
             prüfen und auf Ihre Bestellung anwenden.
           </p>
         </header>
 
         <div className="mt-12 grid gap-10 lg:grid-cols-2">
-          <section className="rounded-[2.5rem] border border-brand/20 bg-white/90 p-8 shadow-soft">
+          <section className="rounded-[2.5rem] border border-brand/20 bg-brand-light/90 p-8 shadow-soft">
             <h2 className="text-xl font-semibold text-brand">Code prüfen & anwenden</h2>
-            <p className="mt-2 text-sm text-slate-600">
+            <p className="mt-2 text-sm text-brand-dark/70">
               Geben Sie Ihren Gutschein- oder Geschenkcode ein, um das verfügbare Guthaben zu prüfen.
               Wenn Sie bereits Artikel im Warenkorb haben, zeigen wir Ihnen sofort den geltenden Rabatt.
             </p>
@@ -203,7 +203,7 @@ export default function CouponPage() {
                 value={checkCode}
                 onChange={(event) => setCheckCode(event.target.value)}
                 placeholder="Gutschein- oder Geschenkcode"
-                className="w-full rounded-2xl border border-brand/20 bg-white px-4 py-3 text-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/30"
+                className="w-full rounded-2xl border border-brand/20 bg-brand-light px-4 py-3 text-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/30"
               />
               <button
                 type="submit"
@@ -226,15 +226,15 @@ export default function CouponPage() {
               </div>
             ) : null}
 
-            <div className="mt-6 rounded-2xl border border-brand/20 bg-white/70 p-4 text-xs text-slate-500">
+            <div className="mt-6 rounded-2xl border border-brand/20 bg-brand-light/70 p-4 text-xs text-brand-dark/60">
               Tipp: Gutscheine werden automatisch im Checkout berücksichtigt. Sie können mehrere Codes
               nacheinander anwenden, solange Restguthaben vorhanden ist.
             </div>
           </section>
 
-          <section className="rounded-[2.5rem] border border-brand/20 bg-white/90 p-8 shadow-soft">
+          <section className="rounded-[2.5rem] border border-brand/20 bg-brand-light/90 p-8 shadow-soft">
             <h2 className="text-xl font-semibold text-brand">Geschenkgutschein kaufen</h2>
-            <p className="mt-2 text-sm text-slate-600">
+            <p className="mt-2 text-sm text-brand-dark/70">
               Bezahlen Sie bequem mit PayPal und erhalten Sie automatisch 10% Bonusguthaben. Der Code wird
               Ihnen per E-Mail zugesendet.
             </p>
@@ -255,7 +255,7 @@ export default function CouponPage() {
                     className={`rounded-2xl border px-4 py-3 text-sm font-semibold transition ${
                       selectedAmount === value && !customAmount
                         ? "border-brand bg-brand text-white"
-                        : "border-brand/20 bg-white hover:border-brand"
+                        : "border-brand/20 bg-brand-light hover:border-brand"
                     }`}
                   >
                     {formatCurrency(value)}
@@ -283,7 +283,7 @@ export default function CouponPage() {
                   setSelectedAmount(0);
                 }}
                 placeholder="z. B. 75"
-                className="mt-3 w-full rounded-2xl border border-brand/20 bg-white px-4 py-3 text-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/30"
+                className="mt-3 w-full rounded-2xl border border-brand/20 bg-brand-light px-4 py-3 text-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/30"
               />
             </div>
 
@@ -300,14 +300,14 @@ export default function CouponPage() {
                 value={giftEmail}
                 onChange={(event) => setGiftEmail(event.target.value)}
                 placeholder="optionale E-Mail-Adresse"
-                className="mt-3 w-full rounded-2xl border border-brand/20 bg-white px-4 py-3 text-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/30"
+                className="mt-3 w-full rounded-2xl border border-brand/20 bg-brand-light px-4 py-3 text-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/30"
               />
-              <p className="mt-2 text-xs text-slate-500">
+              <p className="mt-2 text-xs text-brand-dark/60">
                 Wenn leer, nutzen wir die PayPal-E-Mail-Adresse für die Zustellung.
               </p>
             </div>
 
-            <div className="mt-8 rounded-2xl border border-brand/20 bg-white/70 px-4 py-4 text-sm text-slate-600">
+            <div className="mt-8 rounded-2xl border border-brand/20 bg-brand-light/70 px-4 py-4 text-sm text-brand-dark/70">
               <div className="flex items-center justify-between">
                 <span>Sie zahlen</span>
                 <span className="font-semibold text-brand">
@@ -335,7 +335,7 @@ export default function CouponPage() {
               <p className="mt-3 text-sm text-red-500">{buyError}</p>
             ) : null}
 
-            <p className="mt-6 text-xs text-slate-500">
+            <p className="mt-6 text-xs text-brand-dark/60">
               Geschenkgutscheine bleiben unbegrenzt gültig. Restwerte werden automatisch gespeichert und
               können bei der nächsten Bestellung eingelöst werden.
             </p>

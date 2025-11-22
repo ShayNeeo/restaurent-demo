@@ -107,8 +107,8 @@ export function MenuPreview() {
                 <h3 className="text-xl font-semibold text-brand">
                   {category.title}
                 </h3>
-                <p className="text-sm text-slate-600">{category.description}</p>
-                <ul className="mt-4 space-y-4 text-sm text-slate-700">
+                <p className="text-sm text-brand-dark/70">{category.description}</p>
+                <ul className="mt-4 space-y-4 text-sm text-brand-dark/80">
                   {category.highlights.map((item) => (
                     <li key={item.name} className="border-l-4 border-brand/20 pl-4">
                       <div className="flex items-center justify-between gap-4 text-base font-semibold text-brand">
@@ -117,7 +117,7 @@ export function MenuPreview() {
                           {item.price}
                         </span>
                       </div>
-                      <p className="mt-1 text-sm text-slate-500">{item.detail}</p>
+                      <p className="mt-1 text-sm text-brand-dark/60">{item.detail}</p>
                     </li>
                   ))}
                 </ul>
@@ -128,7 +128,7 @@ export function MenuPreview() {
             </article>
           ))}
         </div>
-        <div className="flex flex-col items-center gap-3 text-center text-sm text-slate-600 sm:flex-row sm:justify-center">
+        <div className="flex flex-col items-center gap-3 text-center text-sm text-brand-dark/70 sm:flex-row sm:justify-center">
           <span className="font-semibold text-brand">
             Reservierung & Take-away: 089 28803451
           </span>

@@ -14,7 +14,7 @@ export function CartButton() {
     <button
       type="button"
       onClick={toggleCart}
-      className="relative inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm font-semibold uppercase tracking-[0.4em] text-white transition hover:border-white hover:bg-white/20"
+      className="relative inline-flex items-center gap-2 rounded-full border border-white/20 bg-brand-light/10 px-4 py-2 text-sm font-semibold uppercase tracking-[0.4em] text-white transition hover:border-white hover:bg-brand-light/20"
     >
       <svg
         aria-hidden="true"

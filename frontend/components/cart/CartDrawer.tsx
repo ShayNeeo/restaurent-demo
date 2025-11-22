@@ -69,7 +69,7 @@ export function CartDrawer() {
               {items.map((item) => (
                 <li
                   key={item.productId}
-                  className="rounded-2xl border border-white/10 bg-white/5 p-4"
+                  className="rounded-2xl border border-brand-light/10 bg-brand-light/5 p-4"
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div>
@@ -91,7 +91,7 @@ export function CartDrawer() {
                   </div>
 
                   <div className="mt-4 flex items-center justify-between">
-                    <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1">
+                    <div className="inline-flex items-center gap-2 rounded-full border border-brand-light/10 bg-brand-light/5 px-3 py-1">
                       <button
                         type="button"
                         onClick={() =>

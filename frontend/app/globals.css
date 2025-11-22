@@ -8,7 +8,7 @@
 
 body {
   min-height: 100vh;
-  background-color: #F7F7F0;
+  background-color: #FDFBF7; /* Rice Paper / Warm Off-White */
 }
 
 html {
@@ -20,7 +20,7 @@ html {
 }
 
 .section-subtitle {
-  @apply text-lg text-slate-600 max-w-2xl;
+  @apply text-lg text-brand-dark/70 max-w-2xl;
 }
 
 .btn-primary {
@@ -32,10 +32,10 @@ html {
 }
 
 .badge {
-  @apply inline-flex items-center gap-2 rounded-full bg-white/80 px-5 py-2 text-sm font-medium text-brand shadow;
+  @apply inline-flex items-center gap-2 rounded-full bg-brand-light/80 px-5 py-2 text-sm font-medium text-brand shadow;
 }
 
 .card {
-  @apply rounded-3xl bg-white/90 p-6 shadow-soft backdrop-blur;
+  @apply rounded-3xl bg-brand-light/90 p-6 shadow-soft backdrop-blur;
 }
 

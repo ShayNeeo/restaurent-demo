@@ -79,7 +79,7 @@ export function LanguageSwitcher() {
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 rounded-full bg-white/20 px-3 py-2 text-sm font-semibold text-white transition hover:bg-white/30 focus:outline-none focus:ring-2 focus:ring-white/30"
+        className="flex items-center gap-2 rounded-full bg-brand-light/20 px-3 py-2 text-sm font-semibold text-white transition hover:bg-brand-light/30 focus:outline-none focus:ring-2 focus:ring-white/30"
         aria-label="Language selector"
         aria-expanded={isOpen}
       >
@@ -111,7 +111,7 @@ export function LanguageSwitcher() {
               className={`flex w-full items-center gap-3 px-4 py-3 text-sm transition ${
                 currentLang === lang.code
                   ? "bg-brand/40 text-white"
-                  : "text-white/70 hover:bg-white/10 hover:text-white"
+                  : "text-white/70 hover:bg-brand-light/10 hover:text-white"
               } ${
                 languages.indexOf(lang) !== languages.length - 1
                   ? "border-b border-white/10"

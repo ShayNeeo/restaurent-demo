@@ -22,17 +22,17 @@ export function VisitSection() {
           <h2 className="section-title">
             Wir freuen uns auf Ihren Besuch in München-Schwabing
           </h2>
-          <p className="text-base text-slate-700">
+          <p className="text-base text-brand-dark/80">
             Reservieren Sie telefonisch oder kommen Sie spontan vorbei. Für
             Gruppen empfehlen wir eine kurze Voranmeldung, damit wir Ihre Wünsche
             perfekt vorbereiten können.
           </p>
-          <div className="rounded-3xl border border-brand/20 bg-white/80 p-6">
+          <div className="rounded-3xl border border-brand/20 bg-brand-light/80 p-6">
             <h3 className="text-lg font-semibold text-brand">Kontakt</h3>
             <p className="mt-2 text-sm font-semibold text-brand">
               Nguyen Restaurant
             </p>
-            <p className="mt-1 text-sm text-slate-600">
+            <p className="mt-1 text-sm text-brand-dark/70">
               Georgenstraße 67, 80799 München-Schwabing
             </p>
             <a
@@ -45,14 +45,14 @@ export function VisitSection() {
               📱 Jetzt online bestellen!
             </p>
           </div>
-          <div className="rounded-3xl border border-brand/20 bg-white/90 p-6">
+          <div className="rounded-3xl border border-brand/20 bg-brand-light/90 p-6">
             <h3 className="text-lg font-semibold text-brand">Öffnungszeiten</h3>
             <div className="mt-4 space-y-4 text-sm">
               {openingHours.map((line) => (
                 <div key={line.days}>
-                  <p className="font-semibold text-slate-700">{line.days}</p>
+                  <p className="font-semibold text-brand-dark/80">{line.days}</p>
                   {line.times.map((time) => (
-                    <p key={time} className="text-slate-600">
+                    <p key={time} className="text-brand-dark/70">
                       {time}
                     </p>
                   ))}

@@ -312,11 +312,11 @@ function CarouselStory() {
           animation: fadeInRight 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
         }
       `}</style>
-      <div className="absolute inset-0 rounded-[48px] bg-gradient-to-br from-white/80 to-amber-100/60 blur-3xl" />
+      <div className="absolute inset-0 rounded-[48px] bg-gradient-to-br from-brand-light/80 to-brand-accent/30 blur-3xl" />
       
       <div className="relative w-full h-full flex items-center justify-center">
         <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1/4 h-2/3 z-10 pointer-events-none">
-          <div className={`absolute inset-0 rounded-[24px] overflow-hidden shadow-lg blur-sm border border-white/30 ${
+          <div className={`absolute inset-0 rounded-[24px] overflow-hidden shadow-lg blur-sm border border-brand-light/30 ${
             slideDirection ? (slideDirection === 'left' ? 'fade-out-left' : 'fade-out-right') : ''
           }`}>
             <Image
@@ -327,7 +327,7 @@ function CarouselStory() {
             />
           </div>
           
-          <div className={`absolute inset-0 rounded-[24px] overflow-hidden shadow-lg blur-sm border border-white/30 ${
+          <div className={`absolute inset-0 rounded-[24px] overflow-hidden shadow-lg blur-sm border border-brand-light/30 ${
             slideDirection ? (slideDirection === 'left' ? 'fade-in-left' : 'fade-in-right') : 'opacity-0'
           }`}>
             <Image
@@ -341,7 +341,7 @@ function CarouselStory() {
 
         <div className="absolute left-1/4 top-1/2 -translate-y-1/2 w-1/2 h-full z-20">
           <div 
-            className={`absolute inset-0 cursor-pointer rounded-[36px] overflow-hidden border-2 border-white/40 shadow-2xl bg-white/30 backdrop-blur-sm hover:shadow-3xl transition-shadow duration-300 ${
+            className={`absolute inset-0 cursor-pointer rounded-[36px] overflow-hidden border-2 border-brand-light/40 shadow-2xl bg-brand-light/30 backdrop-blur-sm hover:shadow-3xl transition-shadow duration-300 ${
               slideDirection === 'left' ? 'slide-out-left' : slideDirection === 'right' ? 'slide-out-right' : ''
             }`}
             onClick={nextImage}
@@ -362,7 +362,7 @@ function CarouselStory() {
 
           {slideDirection && (
             <div 
-              className={`absolute inset-0 rounded-[36px] overflow-hidden border-2 border-white/40 shadow-2xl bg-white/30 backdrop-blur-sm ${
+              className={`absolute inset-0 rounded-[36px] overflow-hidden border-2 border-brand-light/40 shadow-2xl bg-brand-light/30 backdrop-blur-sm ${
                 slideDirection === 'left' ? 'slide-in-from-right' : 'slide-in-from-left'
               }`}
             >
@@ -378,7 +378,7 @@ function CarouselStory() {
         </div>
 
         <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1/4 h-2/3 z-10 pointer-events-none">
-          <div className={`absolute inset-0 rounded-[24px] overflow-hidden shadow-lg blur-sm border border-white/30 ${
+          <div className={`absolute inset-0 rounded-[24px] overflow-hidden shadow-lg blur-sm border border-brand-light/30 ${
             slideDirection ? (slideDirection === 'left' ? 'fade-out-right' : 'fade-out-left') : ''
           }`}>
             <Image
@@ -389,7 +389,7 @@ function CarouselStory() {
             />
           </div>
 
-          <div className={`absolute inset-0 rounded-[24px] overflow-hidden shadow-lg blur-sm border border-white/30 ${
+          <div className={`absolute inset-0 rounded-[24px] overflow-hidden shadow-lg blur-sm border border-brand-light/30 ${
             slideDirection ? (slideDirection === 'left' ? 'fade-in-right' : 'fade-in-left') : 'opacity-0'
           }`}>
             <Image
@@ -420,7 +420,7 @@ function CarouselStory() {
             className={`h-2.5 rounded-full transition-all duration-500 relative ${
               index === currentIndex
                 ? "bg-brand w-8 shadow-lg"
-                : "bg-white/40 w-2.5 hover:bg-white/60"
+                : "bg-brand-light/40 w-2.5 hover:bg-brand-light/60"
             }`}
             aria-label={`Đi tới ảnh ${index + 1}`}
           >
@@ -593,11 +593,11 @@ export default function VietnameseHomePage() {
       </Script>
 
       <NavBar />
-      <main className="flex min-h-screen flex-col bg-gradient-to-b from-amber-50 via-white to-amber-50">
+      <main className="flex min-h-screen flex-col bg-brand-light">
         
         {/* Hero Section */}
         <section className="relative min-h-screen flex items-center justify-center overflow-hidden py-20 px-6">
-          <div className="absolute inset-0 bg-gradient-to-br from-brand/5 via-transparent to-amber-200/10 pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-br from-brand/5 via-transparent to-brand-accent/10 pointer-events-none" />
           
           <ScrollReveal className="relative z-10 text-center max-w-4xl mx-auto">
             <div className="space-y-6">
@@ -611,7 +611,7 @@ export default function VietnameseHomePage() {
                 NGUYỄN<br /><span className="text-brand">Nhà hàng Việt Nam</span>
               </h1>
               
-              <p className="text-lg sm:text-xl text-slate-700 max-w-2xl mx-auto leading-relaxed font-light">
+              <p className="text-lg sm:text-xl text-brand-dark/80 max-w-2xl mx-auto leading-relaxed font-light">
                 Chào mừng đến trung tâm quận Schwabing, München. Thưởng thức ẩm thực Việt Nam chính hiệu trong không gian thân thiện với dịch vụ chu đáo và những món ăn tươi ngon.
               </p>
 
@@ -628,7 +628,7 @@ export default function VietnameseHomePage() {
         </section>
 
         {/* Story Section */}
-        <section className="py-20 sm:py-32 bg-white">
+        <section className="py-20 sm:py-32 bg-brand-light">
           <div className="mx-auto max-w-6xl px-6">
             <div className="grid md:grid-cols-2 gap-12 items-center">
               <ScrollReveal>
@@ -636,20 +636,20 @@ export default function VietnameseHomePage() {
                   <h2 className="text-4xl sm:text-5xl font-display font-bold text-brand-dark">
                     Câu chuyện của chúng tôi
                   </h2>
-                  <p className="text-lg text-slate-700 leading-relaxed">
+                  <p className="text-lg text-brand-dark/80 leading-relaxed">
                     Tại NGUYỄN, chúng tôi nấu ăn bằng tay với tình yêu và chăm sóc tối đa. Ẩm thực Việt Nam được đặc trưng bởi truyền thống và sự nhẹ nhàng. Khám phá vô vàn những món ăn từ nhẹ đến cay nồn và cho phép chúng tôi phục vụ bạn một chút lửa Việt nếu muốn.
                   </p>
-                  <p className="text-lg text-slate-700 leading-relaxed">
+                  <p className="text-lg text-brand-dark/80 leading-relaxed">
                     Cơm đồng hành với chúng tôi trong mọi hình thức: bánh tráng, mì gạo hoặc cơm hương lài thơm ngon. Hãy thử Phở Bò, Gỏi Cuốn hay Bún chay của chúng tôi – mỗi món đặc sản kể một câu chuyện từ Sài Gòn.
                   </p>
                   <div className="flex gap-4 pt-4">
                     <div className="flex-1">
                       <p className="text-3xl font-bold text-brand">1996</p>
-                      <p className="text-sm text-slate-600">Năm thành lập</p>
+                      <p className="text-sm text-brand-dark/70">Năm thành lập</p>
                     </div>
                     <div className="flex-1">
                       <p className="text-3xl font-bold text-brand">∞</p>
-                      <p className="text-sm text-slate-600">Gia đình thừa kế</p>
+                      <p className="text-sm text-brand-dark/70">Gia đình thừa kế</p>
                     </div>
                   </div>
                 </div>
@@ -669,7 +669,7 @@ export default function VietnameseHomePage() {
               <h2 className="text-4xl sm:text-5xl font-display font-bold text-brand-dark mb-4">
                 Điều gì làm nên chúng tôi đặc biệt
               </h2>
-              <p className="text-lg text-slate-600 max-w-xl mx-auto">
+              <p className="text-lg text-brand-dark/70 max-w-xl mx-auto">
                 Chất lượng, tính xác thực và đam mê trong mỗi món ăn
               </p>
             </ScrollReveal>
@@ -696,7 +696,7 @@ export default function VietnameseHomePage() {
                   <div className="group rounded-2xl bg-white p-8 shadow-soft hover:shadow-xl transition-all duration-500 hover:-translate-y-1">
                     <div className="text-5xl mb-4">{item.icon}</div>
                     <h3 className="text-2xl font-bold text-brand-dark mb-3">{item.title}</h3>
-                    <p className="text-slate-600 leading-relaxed">{item.description}</p>
+                    <p className="text-brand-dark/70 leading-relaxed">{item.description}</p>
                   </div>
                 </ScrollReveal>
               ))}
@@ -707,14 +707,14 @@ export default function VietnameseHomePage() {
         {/* Menu Preview Section */}
         <section id="speisekarte" className="py-20 sm:py-32 bg-gradient-to-r from-brand/90 to-brand-dark/90 text-white relative overflow-hidden">
           <div className="absolute inset-0 opacity-10">
-            <div className="absolute top-10 right-10 w-40 h-40 rounded-full bg-white/20 blur-3xl" />
-            <div className="absolute bottom-10 left-10 w-40 h-40 rounded-full bg-white/20 blur-3xl" />
+            <div className="absolute top-10 right-10 w-40 h-40 rounded-full bg-brand-light/20 blur-3xl" />
+            <div className="absolute bottom-10 left-10 w-40 h-40 rounded-full bg-brand-light/20 blur-3xl" />
           </div>
 
           <div className="mx-auto max-w-6xl px-6 relative z-10">
             <ScrollReveal className="text-center mb-16">
               <h2 className="text-4xl sm:text-5xl font-display font-bold mb-4">
-                <span className="text-amber-100">Thực đơn</span> của chúng tôi
+                <span className="text-brand-accent/20">Thực đơn</span> của chúng tôi
               </h2>
               <p className="text-xl text-white/90 max-w-2xl mx-auto">
                 Những món ăn được lựa chọn cẩn thận, nắm bắt tâm hồn Việt Nam
@@ -742,9 +742,9 @@ export default function VietnameseHomePage() {
                   const description = product.description || meta?.description || "";
                   return (
                     <ScrollReveal key={product.id}>
-                      <div className="group h-full overflow-hidden rounded-2xl bg-white/95 shadow-soft hover:shadow-2xl transition-all duration-500 hover:-translate-y-2">
+                      <div className="group h-full overflow-hidden rounded-2xl bg-brand-light/95 shadow-soft hover:shadow-2xl transition-all duration-500 hover:-translate-y-2">
                         {/* Image */}
-                        <div className="relative h-64 w-full overflow-hidden bg-gradient-to-br from-amber-100 to-amber-50">
+                        <div className="relative h-64 w-full overflow-hidden bg-gradient-to-br from-brand-accent/20 to-brand-light">
                           <Image
                             src={imageUrl}
                             alt={product.name}
@@ -762,11 +762,11 @@ export default function VietnameseHomePage() {
                             {product.name}
                           </h3>
                           {description && (
-                            <p className="text-sm leading-relaxed text-slate-600 mb-4">
+                            <p className="text-sm leading-relaxed text-brand-dark/70 mb-4">
                               {description}
                             </p>
                           )}
-                          <div className="flex items-center justify-between pt-4 border-t border-amber-100">
+                          <div className="flex items-center justify-between pt-4 border-t border-brand-accent/20">
                             <span className="text-2xl font-bold text-brand">
                               {formatPrice(product.unit_amount, product.currency)}
                             </span>
@@ -784,8 +784,74 @@ export default function VietnameseHomePage() {
           </div>
         </section>
 
+        {/* Food Showcase Gallery */}
+        <section className="relative overflow-hidden py-20 sm:py-32 bg-gradient-to-b from-brand-light via-brand-accent/10 to-brand-light">
+          <div className="pointer-events-none absolute inset-0">
+            <div className="absolute -top-24 right-12 h-64 w-64 rounded-full bg-brand/10 blur-3xl" />
+            <div className="absolute bottom-0 left-1/3 h-72 w-72 rounded-full bg-brand-accent/10 blur-3xl" />
+            <div className="absolute top-1/2 left-0 h-40 w-40 -translate-x-1/2 -translate-y-1/2 rounded-full bg-brand-accent/20 blur-3xl" />
+          </div>
+
+          <div className="relative z-10 mx-auto max-w-7xl px-6">
+            <div className="grid items-center gap-16 lg:grid-cols-[0.9fr,1.1fr]">
+              <ScrollReveal className="space-y-8">
+                <p className="text-xs uppercase tracking-[0.35rem] font-semibold text-brand/70">
+                  Thực Đơn Của Chúng Tôi
+                </p>
+                <div className="text-4xl sm:text-5xl lg:text-6xl font-display font-bold leading-tight text-brand-dark space-y-4">
+                  <span className="block">Chúng tôi là một tập thể của</span>
+                  <span className="block text-brand">các đầu bếp, nhà tư tưởng và</span>
+                  <span className="block">những người sáng tạo, những người tạo ra hương vị,</span>
+                  <span className="block">giành được niềm tin và làm đẹp những khoảnh khắc.</span>
+                </div>
+                <p className="text-lg text-brand-dark/70 max-w-xl">
+                  Mỗi món ăn được tạo ra từ các loại thảo mộc tươi, nước dùng thơm và các nguyên liệu theo mùa,
+                  được sắp xếp một cách tinh tế để chạm đến trái tim của khách hàng. Bộ sưu tập này giới thiệu một số
+                  món ăn yêu thích của chúng tôi – được ghi lại một cách tĩnh lặng, nhưng đầy những câu chuyện sống động.
+                </p>
+                <div className="flex flex-wrap gap-4">
+                  <a href="#speisekarte" className="btn-primary">
+                    Khám Phá Thực Đơn
+                  </a>
+                  <a 
+                    href="https://eat.allo.restaurant/restaurant/nguyen-vietnam-restaurant-munchen" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="btn-light"
+                  >
+                    Đặt Bàn
+                  </a>
+                </div>
+              </ScrollReveal>
+
+              <ScrollReveal>
+                <div className="relative h-[520px] sm:h-[640px]">
+                  <div className="absolute inset-0 rounded-[48px] bg-gradient-to-br from-brand-light/80 to-brand-accent/30 blur-3xl" />
+                  {galleryImages.map((image, index) => (
+                    <div
+                      key={`${image.src}-${index}`}
+                      className="group absolute overflow-hidden rounded-[36px] border border-brand-light/40 bg-brand-light/30 shadow-2xl backdrop-blur-sm transition-transform duration-700 ease-out hover:-translate-y-2 hover:rotate-[1deg]"
+                      style={{ ...image.style, zIndex: image.zIndex }}
+                    >
+                      <Image
+                        src={image.src}
+                        alt={image.alt}
+                        fill
+                        sizes="(max-width: 768px) 60vw, (max-width: 1200px) 35vw, 30vw"
+                        className="object-cover transition-transform duration-700 group-hover:scale-105"
+                        priority={index === 0}
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+                    </div>
+                  ))}
+                </div>
+              </ScrollReveal>
+            </div>
+          </div>
+        </section>
+
         {/* Mission Statement */}
-        <section className="py-20 sm:py-32 bg-white">
+        <section className="py-20 sm:py-32 bg-brand-light">
           <div className="mx-auto max-w-4xl px-6">
             <ScrollReveal className="text-center space-y-8">
               <div className="text-5xl sm:text-6xl font-display font-bold leading-tight text-brand-dark">
@@ -800,7 +866,7 @@ export default function VietnameseHomePage() {
                 </div>
               </div>
 
-              <p className="text-lg sm:text-xl text-slate-700 leading-relaxed max-w-2xl mx-auto">
+              <p className="text-lg sm:text-xl text-brand-dark/80 leading-relaxed max-w-2xl mx-auto">
                 những người nấu những món ăn chính hiệu, xứng đáng được tin tưởng, phát triển tiềm năng con người và làm phong phú cuộc sống.
               </p>
 
@@ -829,7 +895,7 @@ export default function VietnameseHomePage() {
               <h2 className="text-4xl sm:text-5xl font-display font-bold text-brand-dark mb-4">
                 Nhà hàng của chúng tôi
               </h2>
-              <p className="text-lg text-slate-600 max-w-xl mx-auto">
+              <p className="text-lg text-brand-dark/70 max-w-xl mx-auto">
                 Không gian tạo nên kỷ niệm – Sự yên tĩnh Phật giáo và thanh bình
               </p>
             </ScrollReveal>
@@ -837,7 +903,7 @@ export default function VietnameseHomePage() {
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
               {[1, 2, 3, 4, 5, 6, 7, 8].map((index) => (
                 <ScrollReveal key={index}>
-                  <div className="group relative h-64 lg:h-80 overflow-hidden rounded-2xl bg-gradient-to-br from-amber-200 to-amber-100 shadow-soft hover:shadow-2xl transition-all duration-500 hover:-translate-y-1">
+                  <div className="group relative h-64 lg:h-80 overflow-hidden rounded-2xl bg-gradient-to-br from-brand-accent/30 to-brand-accent/20 shadow-soft hover:shadow-2xl transition-all duration-500 hover:-translate-y-1">
                     <Image
                       src={`/images/view-${index}.jpg`}
                       alt={`Nhà hàng View ${index}`}
@@ -853,13 +919,13 @@ export default function VietnameseHomePage() {
         </section>
 
         {/* Gift Cards Section */}
-        <section className="py-20 sm:py-32 bg-gradient-to-r from-amber-50 to-white">
+        <section className="py-20 sm:py-32 bg-gradient-to-r from-brand-accent/10 to-white">
           <div className="mx-auto max-w-6xl px-6">
             <ScrollReveal className="text-center mb-16">
               <h2 className="text-4xl sm:text-5xl font-display font-bold text-brand-dark mb-4">
                 Thẻ quà tặng
               </h2>
-              <p className="text-lg text-slate-600 max-w-xl mx-auto">
+              <p className="text-lg text-brand-dark/70 max-w-xl mx-auto">
                 Tặng một cuộc phiêu lưu ẩm thực. Với thẻ quà tặng của chúng tôi, bạn có thể mời những người yêu thích của mình đến trải nghiệm ẩm thực không quên.
               </p>
             </ScrollReveal>
@@ -878,13 +944,13 @@ export default function VietnameseHomePage() {
         </section>
 
         {/* Info & Hours Section */}
-        <section className="py-20 sm:py-32 bg-amber-50">
+        <section className="py-20 sm:py-32 bg-brand-accent/10">
           <div className="mx-auto max-w-6xl px-6">
             <div className="grid md:grid-cols-3 gap-8">
               <ScrollReveal>
                 <div className="bg-white rounded-2xl p-8 shadow-soft">
                   <h3 className="text-2xl font-display font-bold text-brand-dark mb-4">Địa chỉ</h3>
-                  <p className="text-slate-700 leading-relaxed">
+                  <p className="text-brand-dark/80 leading-relaxed">
                     Georgenstraße 67<br />
                     80799 München-Schwabing
                   </p>
@@ -894,10 +960,10 @@ export default function VietnameseHomePage() {
               <ScrollReveal>
                 <div className="bg-white rounded-2xl p-8 shadow-soft">
                   <h3 className="text-2xl font-display font-bold text-brand-dark mb-4">Giờ mở cửa</h3>
-                  <p className="text-sm text-slate-700 space-y-2">
+                  <p className="text-sm text-brand-dark/80 space-y-2">
                     <span className="block"><strong>Thứ 2–Thứ 6 & CN:</strong> 12:00–15:00 & 17:30–22:30</span>
                     <span className="block"><strong>Thứ 7:</strong> 17:30–22:30</span>
-                    <span className="block text-xs text-slate-600 pt-2">Bếp nóng: Thứ 2-6 đến 21:00</span>
+                    <span className="block text-xs text-brand-dark/70 pt-2">Bếp nóng: Thứ 2-6 đến 21:00</span>
                   </p>
                 </div>
               </ScrollReveal>
@@ -906,7 +972,7 @@ export default function VietnameseHomePage() {
                 <div className="bg-gradient-to-br from-brand to-brand-accent rounded-2xl p-8 shadow-soft text-white">
                   <h3 className="text-2xl font-display font-bold mb-4">Đặt bàn</h3>
                   <p className="text-lg font-semibold mb-3">089 28803451</p>
-                  <a href="tel:+498928803451" className="inline-block px-6 py-2 bg-white text-brand font-bold rounded-full hover:bg-amber-100 transition-colors duration-300">
+                  <a href="tel:+498928803451" className="inline-block px-6 py-2 bg-white text-brand font-bold rounded-full hover:bg-brand-accent/20 transition-colors duration-300">
                     Gọi ngay
                   </a>
                 </div>
@@ -927,10 +993,10 @@ export default function VietnameseHomePage() {
                   Đặt bàn của bạn và trải nghiệm phép màu của ẩm thực Việt Nam chính hiệu trong không gian ấm áp thân thiện.
                 </p>
                 <div className="flex gap-4 justify-center pt-4 flex-wrap">
-                  <a href="tel:+498928803451" className="inline-flex items-center justify-center rounded-full bg-amber-100 text-brand px-8 py-3 font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+                  <a href="tel:+498928803451" className="inline-flex items-center justify-center rounded-full bg-brand-accent/20 text-brand px-8 py-3 font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
                     Đặt bàn
                   </a>
-                  <a href="#speisekarte" className="inline-flex items-center justify-center rounded-full border-2 border-white text-white px-8 py-3 font-semibold hover:bg-white/10 transition-all duration-300">
+                  <a href="#speisekarte" className="inline-flex items-center justify-center rounded-full border-2 border-white text-white px-8 py-3 font-semibold hover:bg-brand-light/10 transition-all duration-300">
                     Xem thực đơn
                   </a>
                 </div>
