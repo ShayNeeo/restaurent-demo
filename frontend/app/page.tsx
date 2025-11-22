@@ -217,14 +217,19 @@ function CarouselSection() {
               liebevoll arrangiert, um unsere Gäste zu berühren. Diese Galerie zeigt eine Auswahl unserer
               Lieblingskreationen – statisch festgehalten, doch voller lebendiger Geschichten.
             </p>
-            <div className="flex flex-wrap gap-4">
-              <a href="#speisekarte" className="btn-primary">
-                Speisekarte entdecken
-              </a>
-              <a href="tel:+498928803451" className="btn-light">
-                Tisch reservieren
-              </a>
-            </div>
+                <div className="flex flex-wrap gap-4">
+                  <a href="#speisekarte" className="btn-primary">
+                    Speisekarte entdecken
+                  </a>
+                  <a 
+                    href="https://eat.allo.restaurant/restaurant/nguyen-vietnam-restaurant-munchen" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="btn-light"
+                  >
+                    Tisch reservieren
+                  </a>
+                </div>
           </ScrollReveal>
 
           <ScrollReveal>
@@ -785,8 +790,13 @@ export default function HomePage() {
                 <a href="#speisekarte" className="btn-primary">
                   Speisekarte erkunden
                 </a>
-                <a href="tel:+498928803451" className="btn-light">
-                  089 28803451
+                <a 
+                  href="https://eat.allo.restaurant/restaurant/nguyen-vietnam-restaurant-munchen" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="btn-light"
+                >
+                  Tisch reservieren
                 </a>
               </div>
             </div>
@@ -894,7 +904,7 @@ export default function HomePage() {
               </p>
             </ScrollReveal>
 
-            {/* Products Grid */}
+            {/* Products Grid - 7 rows x 3 columns = 21 spots (20 products + 1 view all card) */}
             {loading ? (
               <div className="text-center py-20">
                 <p className="text-white/70">Produkte werden geladen...</p>
@@ -945,6 +955,29 @@ export default function HomePage() {
                     </ScrollReveal>
                   );
                 })}
+                {/* View All Menus Card - 21st spot */}
+                <ScrollReveal>
+                  <a
+                    href="/menu"
+                    className="group h-full flex flex-col items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-brand/90 to-brand-dark/90 shadow-soft hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 min-h-[400px]"
+                  >
+                    <div className="p-6 text-center text-white">
+                      <div className="text-5xl mb-4">📋</div>
+                      <h3 className="text-2xl font-display font-bold mb-3">
+                        Alle Speisen
+                      </h3>
+                      <p className="text-sm leading-relaxed text-white/90 mb-6">
+                        Entdecken Sie unsere vollständige Speisekarte mit allen Gerichten
+                      </p>
+                      <div className="inline-flex items-center gap-2 rounded-full bg-white/20 px-6 py-3 font-semibold text-white transition-all duration-300 group-hover:bg-white/30 group-hover:scale-105">
+                        <span>Alle anzeigen</span>
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </div>
+                    </div>
+                  </a>
+                </ScrollReveal>
               </div>
             )}
           </div>
@@ -979,7 +1012,12 @@ export default function HomePage() {
                   <a href="#speisekarte" className="btn-primary">
                     Speisekarte entdecken
                   </a>
-                  <a href="tel:+498928803451" className="btn-light">
+                  <a 
+                    href="https://eat.allo.restaurant/restaurant/nguyen-vietnam-restaurant-munchen" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="btn-light"
+                  >
                     Tisch reservieren
                   </a>
                 </div>
@@ -1033,7 +1071,9 @@ export default function HomePage() {
 
               <div className="flex gap-4 pt-4 flex-wrap justify-center">
                 <a 
-                  href="tel:+498928803451"
+                  href="https://eat.allo.restaurant/restaurant/nguyen-vietnam-restaurant-munchen"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="btn-primary"
                 >
                   Jetzt Reservieren
@@ -1133,8 +1173,13 @@ export default function HomePage() {
                 <div className="bg-gradient-to-br from-brand to-brand-accent rounded-2xl p-8 shadow-soft text-white">
                   <h3 className="text-2xl font-display font-bold mb-4">Reservierungen</h3>
                   <p className="text-lg font-semibold mb-3">089 28803451</p>
-                  <a href="tel:+498928803451" className="inline-block px-6 py-2 bg-white text-brand font-bold rounded-full hover:bg-amber-100 transition-colors duration-300">
-                    Jetzt anrufen
+                  <a 
+                    href="https://eat.allo.restaurant/restaurant/nguyen-vietnam-restaurant-munchen"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-block px-6 py-2 bg-white text-brand font-bold rounded-full hover:bg-amber-100 transition-colors duration-300"
+                  >
+                    Jetzt reservieren
                   </a>
                 </div>
               </ScrollReveal>
@@ -1154,7 +1199,12 @@ export default function HomePage() {
                   Reservieren Sie Ihren Tisch und erleben Sie die Magie authentischer vietnamesischer Küche in herzlicher Atmosphäre.
                 </p>
                 <div className="flex gap-4 justify-center pt-4 flex-wrap">
-                  <a href="tel:+498928803451" className="inline-flex items-center justify-center rounded-full bg-amber-100 text-brand px-8 py-3 font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+                  <a 
+                    href="https://eat.allo.restaurant/restaurant/nguyen-vietnam-restaurant-munchen"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center justify-center rounded-full bg-amber-100 text-brand px-8 py-3 font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+                  >
                     Reservieren
                   </a>
                   <a href="#speisekarte" className="inline-flex items-center justify-center rounded-full border-2 border-white text-white px-8 py-3 font-semibold hover:bg-white/10 transition-all duration-300">
