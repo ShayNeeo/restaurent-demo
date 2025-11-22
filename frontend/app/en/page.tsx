@@ -464,7 +464,14 @@ function CarouselStory() {
   );
 }
 
-function GalleryImages({ images }: { images: typeof galleryImages }) {
+type GalleryImage = {
+  src: string;
+  alt: string;
+  style: CSSProperties;
+  zIndex: number;
+};
+
+function GalleryImages({ images }: { images: GalleryImage[] }) {
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
